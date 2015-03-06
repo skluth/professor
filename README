@@ -1,1 +1,34 @@
-Professor 2.0 all new all shiny.
+Professor 2.0 all new, all shiny.
+
+
+
+Type 'make' from the base directory to build everything.
+
+Binaries and python extensions are installed to $PWD.
+
+Sourcing the setup.sh script should work.
+
+python
+import profdriver
+
+
+
+
+Development goals:
+  * Small, flexible code
+  * Core functionality (parametrisation, getValue) in C++, cython bindings to be used in scripts,
+    histogram agnostic (no yoda for sampling, interpolate)
+  * Parametrisation output in ASCII ('ProfDF') for portability, human readability
+  * sampling of parameter points: heavy use of library function
+  
+  * YODA dependence for ipolhistos, tune:
+    * use BinFinder of YODA for clever magic
+    * populate ProfDriver (name subject to change) from yoda files --- wrapper
+
+  * complete rewrites:
+    * prof-I
+
+  * cull:
+    * pickle output
+    * sensitivities
+    * support for anything besides pyminuit
