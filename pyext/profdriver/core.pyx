@@ -25,7 +25,7 @@ cdef class ProfDriver:
         return self._ptr.anchors()
 
     def calc(self, binid, order):
-        self._ptf.calc(binid, order)
+        self._ptr.calc(binid, order)
 
     def printMeta(self):
         self._ptr.printMeta()
