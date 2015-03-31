@@ -16,7 +16,7 @@ using boost::tuple;
 
 class ParamPoints{
   public:
-    ParamPoints();
+    //ParamPoints();
     ParamPoints(vector< vector<double> > ppoints);
     /// The destructor
     ~ParamPoints() {};

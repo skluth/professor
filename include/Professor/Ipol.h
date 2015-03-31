@@ -80,6 +80,7 @@ public:
 
   int order() const { return _order; }
 
+  string name() const {return _name; }
 
 private:
 
