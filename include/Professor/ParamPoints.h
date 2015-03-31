@@ -51,7 +51,6 @@ class ParamPoints{
     string toString(const string& info="") {
       stringstream ss;
       if (!info.empty()) ss << "# INFO " << info << "\n";
-      ss << "# DIM " << dim() <<"\n";
       ss << "# MINV ";
       for (const double& a : min()) ss << a<< " ";
       ss << " \n";
