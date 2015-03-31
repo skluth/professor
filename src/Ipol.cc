@@ -1,7 +1,49 @@
 #include "Professor/Ipol.h"
 #include <eigen3/Eigen/SVD>
+#include<boost/algorithm/string/split.hpp>                                      
+#include<boost/algorithm/string.hpp>
+#include<boost/algorithm/string/trim.hpp>
+
 
 using namespace Eigen;
+
+void Ipol::fromString(const string& s) {
+  vector<string> tokens;
+  // Check if a name is given in the string
+  if (s.find(':') != std::string::npos) {
+    vector<string> temp;
+    boost::algorithm::split(temp, s, boost::is_any_of(":"), boost::token_compress_on);
+    _name=temp[0];
+    
+    //Remove trailing and leading whitespaces
+    boost::algorithm::trim(temp[1]);
+
+    // Split string at whitespaces
+    boost::algorithm::split(tokens, temp[1], boost::is_any_of("\t "), boost::token_compress_on);
+  }
+  else {
+    boost::algorithm::split(tokens, s, boost::is_any_of("\t "), boost::token_compress_on);
+    _name = "";
+    // TODO also remove whitespace from string here?
+  }
+  _dim   = atoi(tokens[0].c_str()); 
+  _order = atoi(tokens[1].c_str());
+
+  for (unsigned int i=2; i<tokens.size();++i) _coeffs.push_back(atof(tokens[i].c_str()));
+
+
+
+
+    //boost::algorithm::split(tokens, line, boost::is_any_of("\t "), boost::token_compress_on);
+    //if (tokens[0] != "#") {
+      //int thisorder=atoi(tokens[1].c_str());
+      //vector<double> c;
+      //for (int i=2; i<tokens.size();i++) c.push_back(atof(tokens[i].c_str()));
+
+      //tuple<int, vector<double> > pb(thisorder, c);
+      //m_coeffs[tokens[0]] = pb;
+    //}
+}
 
 double Ipol::value(vector <double> P) {
   if (_coeffs.size() == 0 && _values.size()>0) {
