@@ -23,9 +23,7 @@ public:
   Ipol(ParamPoints& pts, vector<double> values, int order) {
     _values=values;
     _pts=&pts;
-    _center=pts.center();
     _order=order;
-    pts.printMeta();
   };
   //Ipol(const ParamPoints& pts, vector<double> values, int order) {pts.printMeta();};
 
@@ -59,16 +57,14 @@ public:
     //return _coeffs;
   //}
 
-  int dim() const { return _dim; }
+  int dim() const { return _pts->dim(); }
 
   int order() const { return _order; }
 
 
 private:
 
-  int _dim;
   int _order;
-  vector<double> _center;
 
   vector<double> _values;
 
@@ -88,7 +84,6 @@ private:
   vector<double> getLongVector6D(vector<double> p);
   vector<double> getLongVector(vector<double> p, vector<double> coeffs, int order);
   vector<double> getLongVector(vector<double> p, int order);
-  vector<double> getDP(vector<double> P, vector<double> C);
 
 };
 

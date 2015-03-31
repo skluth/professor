@@ -8,7 +8,7 @@ double Ipol::value(vector <double> P) {
     cout << "Coeffs empty, values not, calculating" << endl;
     _calcCoeffs();
   }
-  vector<double> LV = getLongVector(getDP(P, _center), _coeffs, order());
+  vector<double> LV = getLongVector(P, _coeffs, order());
   double v = 0.0;
   for (int i=0; i< LV.size();i++) {
     v += LV[i]*_coeffs[i];
@@ -18,16 +18,7 @@ double Ipol::value(vector <double> P) {
 
 void Ipol::_calcCoeffs() {
   assert(_pts->points().size() == _values.size());
-  //if (_center.size() <1) {
-    //this->setCenter(this->calcCenter()); //TODO add debug message?
-  //}
-  //if (m_min.size() <1) {
-    //this->m_min = this->calcMin();
-  //}
-  //if (m_max.size() <1) {
-    //this->m_max = this->calcMax();
-  //}
-  int ncoeff = numOfCoefficients(_center.size(), order());
+  int ncoeff = numOfCoefficients(dim(), order());
   if (ncoeff > _pts->points().size()) {
     cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->points().size()<< ") anchor points, aborting" <<endl;
     abort();
@@ -39,7 +30,7 @@ void Ipol::_calcCoeffs() {
   vector<double> tempDP;
   // Populate the to be inversed matrix
   for (int a=0;a<_pts->points().size();a++) {
-    tempLV = getLongVector(getDP(_pts->points()[a], _center), order());
+    tempLV = getLongVector(_pts->points()[a], order());
     for (int i=0;i<tempLV.size();i++) {
       DP(a, i) = tempLV[i];
     }
@@ -66,14 +57,6 @@ int Ipol::numOfCoefficients(int dim, int order) {
     }
   return ntok;
 }
-//int ProfKeeper::binomial(int n, int k) {
-    //int ntok = 1;
-    //int r = min(k, n-k);
-    //for(int i=0; i<r;++i) {
-      //ntok=ntok*(n-i)/(i+1);
-    //}
-    //return ntok;
-//}
 
 vector<double> Ipol::getLongVector(vector<double> p, vector<double> coeffs, int order) {
   if (order < 1 || order > 6) {
@@ -105,13 +88,6 @@ vector<double> Ipol::getLongVector(vector<double> p, int order) {
   if (order == 6) return getLongVector6D(p);
 }
 
-vector<double> Ipol::getDP(vector<double> P, vector<double> C) {
-  vector<double> dp;
-  for (int i=0; i<P.size();i++) {
-    dp.push_back(P[i] - C[i]);
-  }
-  return dp;
-}
 
 vector<double> Ipol::getLongVector1D(vector<double> p) {
   int nop = p.size();
