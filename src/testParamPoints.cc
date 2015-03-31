@@ -1,5 +1,5 @@
 // Test for ParamPoints class
-#include "ParamPoints.h"
+#include "Professor/ParamPoints.h"
 
 int main(int argc, char** argv)
 {

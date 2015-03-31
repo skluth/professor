@@ -1,6 +1,6 @@
 // Test for ParamPoints class
-#include "ParamPoints.h"
-#include "Ipol.h"
+#include "Professor/ParamPoints.h"
+#include "Professor/Ipol.h"
 #include <iostream>
 
 int main(int argc, char** argv)
