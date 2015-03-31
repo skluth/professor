@@ -1,10 +1,10 @@
 
 all: 
 	mkdir -p obj lib bin test
+	g++  -O3 -c -fPIC src/ParamPoints.cc -Iinclude -o obj/ParamPoints.o
+	g++ -g  -O3 src/testParamPoints.cc obj/ParamPoints.o -Iinclude -o test/testParamPoints
 	g++  -O3 -c -fPIC src/Ipol.cc -Iinclude -o obj/Ipol.o
-	#g++ -g  -O3 src/testParamPoints.cc obj/ParamPoints.o -Iinclude -o test/testParamPoints
-	#g++  -O3 -c -fPIC src/ParamPoints.cc -Iinclude -o obj/ParamPoints.o
-	#g++ -g  -O3 src/testIpol.cc obj/ParamPoints.o obj/Ipol.o -Iinclude -o test/testIpol
+	g++ -g  -O3 src/testIpol.cc obj/ParamPoints.o obj/Ipol.o -Iinclude -o test/testIpol
 
 
 clean:
