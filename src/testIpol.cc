@@ -21,6 +21,8 @@ int main(int argc, char** argv)
 
   ParamPoints pp(points);
 
+  std::cout << pp.toString("Professor 2.0");
+
   vector<double> val;
   val.push_back(0.0);
   val.push_back(1.0);
@@ -36,8 +38,8 @@ int main(int argc, char** argv)
   std::cout << ip->toString() << std::endl;
   std::cout << ip->toString("Crazy") << std::endl;
 
-  Ipol* ip2 = new Ipol("Test: 2 1 1.11022e-16 0 1");
-  Ipol* ip3 = new Ipol("2 1 1.11022e-16 0 1");
+  Ipol* ip2 = new Ipol("Test: 1 1.11022e-16 0 1");
+  Ipol* ip3 = new Ipol("1 1.11022e-16 0 1");
   std::cout << ip2->value(point) << std::endl;
   std::cout << ip3->value(point) << std::endl;
   std::cout << ip2->toString() << std::endl;

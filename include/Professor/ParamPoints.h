@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include "boost/tuple/tuple.hpp"
 #include <cassert> // TODO find proper include for assert
@@ -10,6 +11,7 @@
 
 using std::string;
 using std::vector;
+using std::stringstream;
 using boost::tuple;
 
 class ParamPoints{
@@ -44,6 +46,21 @@ class ParamPoints{
     void printPoints();
     void printMeta();
     void reset() {_parampoints.clear();_locked=false;};
+
+
+    string toString(const string& info="") {
+      stringstream ss;
+      if (!info.empty()) ss << "# INFO " << info << "\n";
+      ss << "# DIM " << dim() <<"\n";
+      ss << "# MINV ";
+      for (const double& a : min()) ss << a<< " ";
+      ss << " \n";
+      ss << "# MAXV ";
+      for (const double& a : max()) ss << a<< " ";
+      ss << " \n";
+      return ss.str();
+    }
+
 
     vector< vector<double> > points() {return _parampoints;};
 

@@ -37,7 +37,6 @@ public:
   Ipol(ParamPoints& pts, vector<double> values, int order, string name="") {
     _values=values;
     _pts=&pts;
-    _dim=pts.dim();
     _order=order;
     _name=name;
   };
@@ -48,7 +47,6 @@ public:
   string toString() {
     stringstream ss;
     if (!_name.empty()) ss << _name << ": ";
-    ss << this->dim() << " ";
     ss << this->order() << " ";
     for (const double& a : coeffs())
       ss << a << " ";
@@ -57,7 +55,6 @@ public:
   string toString(const string& name) {
     stringstream ss;
     if (!name.empty()) ss << name << ": ";
-    ss << this->dim() << " ";
     ss << this->order() << " ";
     for (const double& a : coeffs())
       ss << a << " ";
@@ -79,7 +76,7 @@ public:
     return _coeffs;
   }
 
-  int dim() const { return _dim; }
+  int dim() const { return _pts->dim(); }
 
   int order() const { return _order; }
 
@@ -87,7 +84,6 @@ public:
 private:
 
   int _order;
-  int _dim;
 
   string _name;
 

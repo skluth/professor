@@ -26,23 +26,9 @@ void Ipol::fromString(const string& s) {
     _name = "";
     // TODO also remove whitespace from string here?
   }
-  _dim   = atoi(tokens[0].c_str()); 
-  _order = atoi(tokens[1].c_str());
+  _order = atoi(tokens[0].c_str());
 
-  for (unsigned int i=2; i<tokens.size();++i) _coeffs.push_back(atof(tokens[i].c_str()));
-
-
-
-
-    //boost::algorithm::split(tokens, line, boost::is_any_of("\t "), boost::token_compress_on);
-    //if (tokens[0] != "#") {
-      //int thisorder=atoi(tokens[1].c_str());
-      //vector<double> c;
-      //for (int i=2; i<tokens.size();i++) c.push_back(atof(tokens[i].c_str()));
-
-      //tuple<int, vector<double> > pb(thisorder, c);
-      //m_coeffs[tokens[0]] = pb;
-    //}
+  for (unsigned int i=1; i<tokens.size();++i) _coeffs.push_back(atof(tokens[i].c_str()));
 }
 
 double Ipol::value(vector <double> P) {
