@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <map>
 #include "boost/tuple/tuple.hpp"
-#include "ParamPoints.h"
+#include "Professor/ParamPoints.h"
 
 using std::string;
 using std::min;

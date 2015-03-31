@@ -1,4 +1,4 @@
-#include "ParamPoints.h"
+#include "Professor/ParamPoints.h"
 
 ParamPoints::ParamPoints(vector< vector<double> > p) {
   _parampoints.clear();
