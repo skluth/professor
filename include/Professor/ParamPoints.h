@@ -14,13 +14,15 @@ using std::vector;
 using std::stringstream;
 using boost::tuple;
 
+/// Class for the parametrisation hypercube, i.e. anchors
 class ParamPoints{
   public:
-    //ParamPoints();
+    /// ctor, takes anchors as vector< vector<double> >
     ParamPoints(vector< vector<double> > ppoints);
     /// The destructor
     ~ParamPoints() {};
     
+    /// Overly complicated push_back
     void addParamPoint(vector<double> p) {
       if (!_locked) {
         // This ensures that all ppoints are of the same dimension
@@ -33,21 +35,37 @@ class ParamPoints{
       }
     };
 
+    /// Number of anchor points
     int npoints() {return _parampoints.size();}
+
+    /// Dimension of (anchor) points
     int dim() {
       if (npoints()>0) return _parampoints[0].size();
       else return 0;
     }
 
+    /// Centre of the anchor hyper cube
     vector<double> center();
+
+    /// Lowest edge of anchor hyper cube
     vector<double> min();
+    
+    /// Top edge of anchor hyper cube
     vector<double> max();
+
+    /// Edges of the anchor hyper cube
     vector<tuple<double, double> > edges();
+
+    /// print message: anchors
     void printPoints();
+    
+    /// print message: meta info
     void printMeta();
+
+    /// remove all anchors
     void reset() {_parampoints.clear();_locked=false;};
 
-
+    /// Header representation with metadata necesary to write out ProfDF
     string toString(const string& info="") {
       stringstream ss;
       if (!info.empty()) ss << "# INFO " << info << "\n";
@@ -60,7 +78,7 @@ class ParamPoints{
       return ss.str();
     }
 
-
+    /// all anchors
     vector< vector<double> > points() {return _parampoints;};
 
   private:

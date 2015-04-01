@@ -5,6 +5,7 @@
 #include<boost/algorithm/string/trim.hpp>
 
 
+using std::min;
 using namespace Eigen;
 
 void Ipol::fromString(const string& s) {
@@ -33,7 +34,6 @@ void Ipol::fromString(const string& s) {
 
 double Ipol::value(vector <double> P) {
   if (_coeffs.size() == 0 && _values.size()>0) {
-    cout << "Coeffs empty, values not, calculating" << endl;
     _calcCoeffs();
   }
   vector<double> LV = getLongVector(P, _coeffs, order());

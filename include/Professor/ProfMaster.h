@@ -7,14 +7,6 @@
  *
  * Requirements: boost, eigen3
  *
- * January 2015
- *
- * Usage:
- *
- *  ProfMaster *pdf = new ProfMaster("coeffs.ProfDF");
- *
- *  pdf->getValue(binid, P); // -> returns double
- *
  *
  */
 #ifndef PROFMASTER_H
@@ -26,11 +18,12 @@
 
 using std::string;
 using std::vector;
-//using std::tuple;
 using boost::tuple;
-// Coeffiecient map
+
+/// Coeffiecient map
 typedef std::unordered_map<string, Ipol*> ProfDF;
 
+/// Class that knows about anchors AND ipols
 class ProfMaster {
   
     private:
@@ -42,24 +35,33 @@ class ProfMaster {
         vector<string> m_params;
 
 
+    public:
+        /// ctor from anchors given as vector< vector<double> >
+        ProfMaster(vector< vector<double> > p) {_anchors=new ParamPoints(p);};
+
+        /// ctor from anchros given as ParamPoints
+        ProfMaster(ParamPoints& p) {_anchors=&p;}; // Basic ctor
+        
+        /// The destructor
+         ~ProfMaster();
+        
+        /// Needs implementation
+        void writeProfDF(const char* fname);
+        
+        /// Needs implementation
         void readProfDF(const char* fname);
 
-    public:
-         ProfMaster(vector< vector<double> > p) {_anchors=new ParamPoints(p);}; // Basic ctor
-         ProfMaster(ParamPoints& p) {_anchors=&p;}; // Basic ctor
-         //ProfMaster(); // Basic ctor
-         /// The destructor
-        void writeProfDF(const char* fname);
-         ~ProfMaster();
-
-         // Build from values
-         void addIpol(string name, std::vector<double> values, int order);
-         // Build from string
-         void addIpol(string ipolstring);
-
-         void setParamNames(vector<string> pnames) {m_params=pnames;};
+        /// Build from values ---- operator?
+        void addIpol(string name, std::vector<double> values, int order);
         
-         double getValue(string key, vector<double> P);
+        /// Build from string ---- operator?
+        void addIpol(string ipolstring);
+
+        /// Not necessary/implementad
+        void setParamNames(vector<string> pnames) {m_params=pnames;};
+        
+        /// call value on Ipol with name key
+        double getValue(string key, vector<double> P);
       
 };
 
