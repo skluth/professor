@@ -15,24 +15,24 @@ lookupdirs = [
 
 def ext(name, depends=[], statics=[]):
     return Extension(
-        "profdriver.%s" % name,
-        ["pyext/profdriver/%s.cpp" % name] + statics,
+        "profmaster.%s" % name,
+        ["pyext/profmaster/%s.cpp" % name] + statics,
         language="C++",
         depends=depends,
-        include_dirs=[incdir, "pyext/profdriver"],
-        extra_compile_args= str("-I%s/include -Wno-unused-but-set-variable -Wno-sign-compare"%(curdir)).split(),
+        include_dirs=[incdir, "pyext/profmaster"],
+        extra_compile_args= str("-I%s/include -Wno-unused-but-set-variable -Wno-sign-compare -std=c++11"%(curdir)).split(),
         library_dirs=lookupdirs,
         runtime_library_dirs=lookupdirs[1:],
-        libraries=["ProfDriver"])
+        libraries=["ProfMaster"])
 
 header_files = glob("../include/*.h")
 
 extns = [ext("core", header_files)]
 
-setup(name = "profdriver",
-      version="0.1.2",
+setup(name = "profmaster",
+      version="1.0.0",
       ext_modules = extns,
-      packages = ["profdriver"],
+      packages = ["profmaster"],
       package_dir = {"": "pyext"},
       description="Professor C++ driver bindings",
       author="Professor collaboration",

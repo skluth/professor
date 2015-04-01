@@ -9,4 +9,4 @@ except:
     del dl
 del sys
 
-from profdriver.core import *
+from profmaster.core import *
