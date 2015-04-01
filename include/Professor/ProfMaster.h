@@ -45,6 +45,7 @@ class ProfMaster {
         void readProfDF(const char* fname);
 
     public:
+         ProfMaster(vector< vector<double> > p) {_anchors=new ParamPoints(p);}; // Basic ctor
          ProfMaster(ParamPoints& p) {_anchors=&p;}; // Basic ctor
          //ProfMaster(); // Basic ctor
          /// The destructor
