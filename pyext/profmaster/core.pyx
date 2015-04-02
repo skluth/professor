@@ -26,11 +26,11 @@ cdef class Ipol:
 
     # Overloading workaround
     def __cinit__(self, V1, V2=-1, V3=-1, V4=-1):
-        if V2==-1 and V3==-1 and V4 == -1:
+        if  V3==-1:
             self._ptr = new c.Ipol(V1)
         else:
             pp = ParamPoints(V1)
-            self._ptr = new c.Ipol(pp._ptr[0], V2, V3, V4)
+            self._ptr = new c.Ipol(pp._ptr[0], list(V2), V3, V4)
 
 
     def value(self, P):
