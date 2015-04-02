@@ -89,6 +89,8 @@ public:
   /// Get the name of the parametrised object
   string name() const {return _name; }
 
+  ParamPoints* params() const {return _pts; }
+
 private:
   int _order;
   string _name;

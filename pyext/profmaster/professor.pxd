@@ -16,6 +16,8 @@ cdef extern from "Professor/Ipol.h":
         Ipol(string)
         double value(vector[double])
         int order()
+        vector[double] coeffs()
+        ParamPoints* params()
         string toString(string)
         string name()
 
