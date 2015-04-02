@@ -34,13 +34,11 @@ void Ipol::fromString(const string& s) {
 
 
 double Ipol::value(const vector<double>& params) const {
-  // if (_coeffs.size() == 0 && _values.size()>0) {
-  //   _calcCoeffs();
-  // }
   const vector<double> lv = _getLongVector(params, order());
+  assert(lv.size() == coeffs().size());
   double v = 0.0;
   for (size_t i=0; i< lv.size(); ++i) {
-    v += lv[i] * _coeffs[i];
+    v += lv[i] * coeff(i);
   }
   return v;
 }
@@ -72,9 +70,7 @@ void Ipol::_calcCoeffs() const {
   for (int i=0;i<ncoeff;i++) {
     temp.push_back(co[i]);
   }
-/*
-  tuple<int, vector<double> > pb(order, temp); // TODO: do we want coeffs more multiple orders
-  */
+  // tuple<int, vector<double> > pb(order, temp); // TODO: do we want coeffs more multiple orders
   _coeffs = temp;
 }
 

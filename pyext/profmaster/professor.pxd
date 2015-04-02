@@ -17,6 +17,7 @@ cdef extern from "Professor/Ipol.h":
         double value(const vector[double]&)
         int order()
         # TODO: add dim() and numCoeffs()
+        double coeff(size_t)
         const vector[double]& coeffs()
         ParamPoints* params()
         string toString()

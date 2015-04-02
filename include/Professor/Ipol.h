@@ -67,7 +67,12 @@ public:
   /// @todo Deal in uints
   int numOfCoefficients(int dim, int order) const;
 
-  /// Get a vector of coefficients --- at some point figure out how to call _calcCoeffs
+  /// Get a single coefficient, calculated lazily and cached
+  double coeff(size_t i) const {
+    return coeffs()[i];
+  }
+
+  /// Get the vector of coefficients, calculated lazily and cached
   const vector<double>& coeffs() const;
 
   /// Accessor to the dimension of the ParamPoints
