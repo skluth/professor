@@ -25,6 +25,12 @@ public:
 };
 
 
+/// Calculate the number of coefficients for the given parameter space dimension and polynomial order
+/// @todo Rename to numCoeffs() for compactness & compatibility with coeffs() function
+/// @todo Deal in uints
+int numCoeffs(int dim, int order);
+
+
 /// The heart of Professor
 class Ipol {
 public:
@@ -62,11 +68,6 @@ public:
   /// Get the value of the parametrisation at point p
   double value(const vector<double>& p) const;
 
-  /// Get the number of coefficients for the given parameter space dimension and polynomial order
-  /// @todo Rename to numCoeffs() for compactness & compatibility with coeffs() function
-  /// @todo Deal in uints
-  int numOfCoefficients(int dim, int order) const;
-
   /// Get a single coefficient, calculated lazily and cached
   double coeff(size_t i) const {
     return coeffs()[i];
@@ -99,8 +100,8 @@ protected:
   /// @todo What is the point of this, since the passed coeffs are not used?
   vector<double> _getLongVector(const vector<double>& p, const vector<double>& coeffs, int order) const {
     /// @todo Throw an IpolError instead
-    if (coeffs.size() != numOfCoefficients(p.size(), order))
-      std::cout << "ERROR invalid number of coefficients: " << coeffs.size() << " supplied, " << numOfCoefficients(p.size(), order) << " required, exiting" << std::endl;
+    if (coeffs.size() != numCoeffs(p.size(), order))
+      std::cout << "ERROR invalid number of coefficients: " << coeffs.size() << " supplied, " << numCoeffs(p.size(), order) << " required, exiting" << std::endl;
     return _getLongVector(p, order);
   }
 

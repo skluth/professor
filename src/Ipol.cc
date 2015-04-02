@@ -8,6 +8,17 @@ using namespace std;
 using namespace Eigen;
 
 
+// NB. Not a member function
+int numCoeffs(int dim, int order) {
+    int ntok = 1;
+    int r = min(order, dim);
+    for (int i=0; i<r;++i) {
+      ntok=ntok*(dim+order-i)/(i+1);
+    }
+  return ntok;
+}
+
+
 void Ipol::fromString(const string& s) {
   vector<string> tokens;
   // Check if a name is given in the string
@@ -46,7 +57,7 @@ double Ipol::value(const vector<double>& params) const {
 
 void Ipol::_calcCoeffs() const {
   assert(_pts->points().size() == _values.size());
-  int ncoeff = numOfCoefficients(dim(), order());
+  int ncoeff = numCoeffs(dim(), order());
   if (ncoeff > _pts->points().size()) {
     cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->points().size()<< ") anchor points, aborting" <<endl;
     abort();
@@ -72,17 +83,6 @@ void Ipol::_calcCoeffs() const {
   }
   // tuple<int, vector<double> > pb(order, temp); // TODO: do we want coeffs more multiple orders
   _coeffs = temp;
-}
-
-
-// Tested and working
-int Ipol::numOfCoefficients(int dim, int order) const {
-    int ntok = 1;
-    int r = min(order, dim);
-    for (int i=0; i<r;++i) {
-      ntok=ntok*(dim+order-i)/(i+1);
-    }
-  return ntok;
 }
 
 
@@ -121,7 +121,7 @@ vector<double> Ipol::_getLongVector1D(const vector<double>& p) const {
     retvec.push_back(p[i]);
   }
 
-  assert(retvec.size() == numOfCoefficients(nop,1));
+  assert(retvec.size() == numCoeffs(nop,1));
   return retvec;
 }
 
@@ -140,7 +140,7 @@ vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numOfCoefficients(nop,2));
+  assert(retvec.size() == numCoeffs(nop,2));
   return retvec;
 }
 
@@ -168,7 +168,7 @@ vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numOfCoefficients(nop,3));
+  assert(retvec.size() == numCoeffs(nop,3));
   return retvec;
 }
 
@@ -209,7 +209,7 @@ vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numOfCoefficients(nop,4));
+  assert(retvec.size() == numCoeffs(nop,4));
   return retvec;
 }
 
@@ -266,7 +266,7 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numOfCoefficients(nop,5));
+  assert(retvec.size() == numCoeffs(nop,5));
   return retvec;
 }
 
@@ -344,6 +344,6 @@ vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numOfCoefficients(nop,6));
+  assert(retvec.size() == numCoeffs(nop,6));
   return retvec;
 }
