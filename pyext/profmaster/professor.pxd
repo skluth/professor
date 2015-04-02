@@ -12,13 +12,15 @@ cdef extern from "Professor/ParamPoints.h":
 
 cdef extern from "Professor/Ipol.h":
     cdef cppclass Ipol:
-        Ipol(ParamPoints p, vector[double], int, string)
-        Ipol(string)
-        double value(vector[double])
+        Ipol(ParamPoints p, const vector[double]&, int, const string&)
+        Ipol(const string&)
+        double value(const vector[double]&)
         int order()
-        vector[double] coeffs()
+        # TODO: add dim() and numCoeffs()
+        const vector[double]& coeffs()
         ParamPoints* params()
-        string toString(string)
+        string toString()
+        string toString(const string&)
         string name()
 
 cdef extern from "Professor/ProfMaster.h":

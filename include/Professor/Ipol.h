@@ -1,86 +1,76 @@
-#ifndef IPOL_H
-#define IPOL_H
+#ifndef PROF_IPOL_H
+#define PROF_IPOL_H
+
+#include "Professor/ParamPoints.h"
 #include <string>
 #include <vector>
 #include <sstream>
-#include "Professor/ParamPoints.h"
 
+/// @todo Don't import these in public namespace. We should probably have a Professor namespace.
 using std::string;
 using std::cout;
 using std::endl;
 using std::vector;
 using std::stringstream;
 
+
 /// Throwable error
-class IpolError
-{
+/// @todo  What's the point in a non-silenceable exception with no state?! Assume this is a placeholder to be improved...
+class IpolError {
 public:
-    IpolError(string reason){
+    IpolError(const string& reason) {
       std::cerr << reason << std::endl;
     };
     ~IpolError(){};
 };
 
+
 /// The heart of Professor
-class Ipol 
-{
+class Ipol {
 public:
+
   /// ctor for calculation of coefficients
-  Ipol(ParamPoints& pts, vector<double> values, int order, string name="") {
-    _values=values;
-    _pts=&pts;
-    _order=order;
-    _name=name;
+  Ipol(ParamPoints& pts, const vector<double>& values, int order, const string& name="") {
+    _values = values;
+    _pts = &pts;
+    _order = order;
+    _name = name;
   };
- 
-  /// ctor to read ipol from file (one string for each object) 
-  Ipol(const string s) {
+
+  /// ctor to read ipol from file (one string for each object)
+  Ipol(const string& s) {
     fromString(s);
   };
-  
+
   /// The dtor
-  ~Ipol(){};
-
-
-  int numOfCoefficients(int, int);
+  // ~Ipol() { };
 
   /// Read and set coefficients (name), order from string
   void fromString(const string& s);
 
   /// Get string representation
-  string toString() {
-    stringstream ss;
-    if (!_name.empty()) ss << _name << ": ";
-    ss << this->order() << " ";
-    for (const double& a : coeffs())
-      ss << a << " ";
-    return ss.str();
-  }
-  
-  /// Get string representation --- define name explicitly
-  string toString(const string& name) {
+  string toString(const string& name="") const {
     stringstream ss;
     if (!name.empty()) ss << name << ": ";
+    else if (!_name.empty()) ss << _name << ": ";
     ss << this->order() << " ";
     for (const double& a : coeffs())
       ss << a << " ";
     return ss.str();
   }
-  
+
   /// Get the value of the parametrisation at point p
-  double value(vector <double> p);
+  double value(const vector<double>& p) const;
+
+  /// Get the number of coefficients for the given parameter space dimension and polynomial order
+  /// @todo Rename to numCoeffs() for compactness & compatibility with coeffs() function
+  /// @todo Deal in uints
+  int numOfCoefficients(int dim, int order) const;
 
   /// Get a vector of coefficients --- at some point figure out how to call _calcCoeffs
-  vector<double> coeffs() const {
-    if (_coeffs.empty()) {
-      if (_pts == NULL) throw IpolError("No ParameterPoints available when calculating ipol coeffs");
-      //_calcCoeffs(); TODO get this to work, something about constness being lost
-      _pts = NULL; //< Not necessary, but ensures consistency
-    }
-    return _coeffs;
-  }
+  const vector<double>& coeffs() const;
 
-  /// Accessor to the dimension of the ParamPoints --- can probably safely be removed
+  /// Accessor to the dimension of the ParamPoints
   int dim() const { return _pts->dim(); }
 
   /// Get the order of the parametrisation
@@ -89,23 +79,45 @@ public:
   /// Get the name of the parametrised object
   string name() const {return _name; }
 
-  ParamPoints* params() const {return _pts; }
+  /// Get the attached params -- may be NULL after the coeffs have been computed
+  const ParamPoints* params() const { return _pts; }
+
+
+protected:
+
+  /// Calculate parametrisation coefficients
+  void _calcCoeffs() const;
+
+  /// Get the vector of
+  vector<double> _getLongVector(const vector<double>& p, int order) const;
+
+  /// @todo What is the point of this, since the passed coeffs are not used?
+  vector<double> _getLongVector(const vector<double>& p, const vector<double>& coeffs, int order) const {
+    /// @todo Throw an IpolError instead
+    if (coeffs.size() != numOfCoefficients(p.size(), order))
+      std::cout << "ERROR invalid number of coefficients: " << coeffs.size() << " supplied, " << numOfCoefficients(p.size(), order) << " required, exiting" << std::endl;
+    return _getLongVector(p, order);
+  }
+
+  /// @name Explicit long-vector calculators for various polynomial orders
+  //@{
+  vector<double> _getLongVector1D(const vector<double>& p) const;
+  vector<double> _getLongVector2D(const vector<double>& p) const;
+  vector<double> _getLongVector3D(const vector<double>& p) const;
+  vector<double> _getLongVector4D(const vector<double>& p) const;
+  vector<double> _getLongVector5D(const vector<double>& p) const;
+  vector<double> _getLongVector6D(const vector<double>& p) const;
+  //@}
+
 
 private:
+
   int _order;
   string _name;
   vector<double> _values;
   mutable vector<double> _coeffs;
   mutable ParamPoints* _pts; //= 0; TODO: warning: non-static data member initializers only available with -std=c++11
-  void _calcCoeffs(); // Most generic way of parametrisation
-  vector<double> getLongVector1D(vector<double> p);
-  vector<double> getLongVector2D(vector<double> p);
-  vector<double> getLongVector3D(vector<double> p);
-  vector<double> getLongVector4D(vector<double> p);
-  vector<double> getLongVector5D(vector<double> p);
-  vector<double> getLongVector6D(vector<double> p);
-  vector<double> getLongVector(vector<double> p, vector<double> coeffs, int order);
-  vector<double> getLongVector(vector<double> p, int order);
+
 };
 
 #endif
