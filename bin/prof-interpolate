@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+def readParams(fname):
+    with open(fname) as f:
+        A = sorted([i.strip().split() for i in f if not i.startswith("#") and not len(i.strip()) == 0])
+    P = map(lambda x: float(x[1]), A)
+    return P
+
+def binIds(fname):
+    from yoda import readYODA
+    histos = filter(lambda x: x.type=="Histo1D" or x.type=="Profile1D", readYODA(fname).values())
+    binids = []
+    for h in histos:
+        for num, b in enumerate(h.bins):
+            binids.append( (h.path, num))
+    return binids
+
+
+
+import argparse
+parser = argparse.ArgumentParser(description='Parametrise and write out')
+parser.add_argument('--mcdir', type=str, help='Directory with subruns')
+parser.add_argument('--order', type=int, default=3, help='Order of polynomial for parametrisation')
+parser.add_argument('--output', type=str, default="Coeffs.prof", help='Output file name')
+parser.add_argument('--pfname', default="used_params", type=str, help='Parameter file name')
+args = parser.parse_args()
+
+
+import glob, os
+yodafiles = filter(lambda x: args.pfname in os.listdir(os.path.dirname(x)), glob.glob("%s/*/*yoda*"%args.mcdir))
+goodruns = map(os.path.dirname, yodafiles)
+print "Reading %i parameter points"%len(goodruns)
+params = map(lambda x:readParams(os.path.join(x, args.pfname)), goodruns)
+
+binids = binIds(yodafiles[0])
+
+from yoda import readYODA
+print "Reading %i YODA files"%len(yodafiles)
+histos = map(readYODA, yodafiles)
+
+from profmaster import Ipol
+print "Preparing..."
+ipols = []
+badbins = []
+for num, b in enumerate(binids):
+    thebins = [x[b[0]].bins[b[1]] for x in histos]
+    if histos[0][b[0]].type=="Histo1D":
+        values = [x.height for x in thebins]
+    else:
+        try:
+            values = [x.mean for x in thebins]
+        except:
+            badbins.append(b)
+    if values:
+        i=Ipol(params, values, args.order, b[0]+":%i"%b[1])
+        ipols.append(i)
+    import sys
+    sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
+    sys.stdout.flush()
+
+
+print "\nParametrising..."
+with open(args.output, "w") as f:
+    #map(lambda x:f.write("%s\n"%x.toString()), ipols)
+    for num, i in enumerate(ipols):
+        f.write("%s\n"%i.toString())
+        import sys
+        sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
+        sys.stdout.flush()
+
+from IPython import embed
+embed()
+
+
