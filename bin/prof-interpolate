@@ -38,7 +38,7 @@ from yoda import readYODA
 print "Reading %i YODA files"%len(yodafiles)
 histos = map(readYODA, yodafiles)
 
-from profmaster import Ipol
+from professor2 import Ipol
 print "Preparing..."
 ipols = []
 badbins = []
