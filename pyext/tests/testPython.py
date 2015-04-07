@@ -9,7 +9,7 @@ A=linspace(0, 10, 20)
 X = array([[a] for a in A])
 Y=f(A)
 
-from profmaster import ProfMaster
+from professor2 import ProfMaster
 
 pm = ProfMaster(X)
 

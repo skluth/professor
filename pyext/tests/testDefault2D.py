@@ -17,7 +17,7 @@ for i in xrange(M_X.shape[0]):
         P.append( [i,j])
         Y.append(f(i,j))
 
-from profmaster import Ipol
+from professor2 import Ipol
 ipols = [Ipol(P, Y, i, "order%i"%i) for i in xrange(1,7)]
 
 for I in ipols[2:3]:

@@ -12,7 +12,7 @@ A = linspace(0, 10, 20)
 X = array([[a] for a in A])
 Y = f(A)
 
-from profmaster import Ipol
+from professor2 import Ipol
 ipols = [Ipol(X, Y, i, "order%i"%i) for i in xrange(1,7)]
 
 Z = [[i.value(x) for x in X] for i in ipols]
