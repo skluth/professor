@@ -15,26 +15,26 @@ lookupdirs = [
 
 def ext(name, depends=[], statics=[]):
     return Extension(
-        "profmaster.%s" % name,
-        ["pyext/profmaster/%s.cpp" % name] + statics,
+        "professor2.%s" % name,
+        ["pyext/professor2/%s.cpp" % name] + statics,
         language="C++",
         depends=depends,
-        include_dirs=[incdir, "pyext/profmaster"],
+        include_dirs=[incdir, "pyext/professor2"],
         extra_compile_args= str("-I%s/include -Wno-unused-but-set-variable -Wno-sign-compare -std=c++11"%(curdir)).split(),
         library_dirs=lookupdirs,
         runtime_library_dirs=lookupdirs[1:],
-        libraries=["ProfMaster"])
+        libraries=["Professor2"])
 
 header_files = glob("../include/*.h")
 
 extns = [ext("core", header_files)]
 
-setup(name = "profmaster",
+setup(name = "professor2",
       version="1.0.0",
       ext_modules = extns,
-      packages = ["profmaster"],
+      packages = ["professor2"],
       package_dir = {"": "pyext"},
-      description="Professor C++ driver bindings",
+      description="Professor version 2",
       author="Professor collaboration",
       author_email="professor@projects.hepforge.org",
       url="http://professor.hepforge.org"

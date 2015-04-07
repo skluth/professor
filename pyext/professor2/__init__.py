@@ -9,4 +9,4 @@ except:
     del dl
 del sys
 
-from profmaster.core import *
+from professor2.core import *

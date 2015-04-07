@@ -19,7 +19,7 @@ cdef extern from "Professor/Ipol.h":
         # TODO: add dim() and numCoeffs()
         double coeff(size_t)
         const vector[double]& coeffs()
-        ParamPoints* params()
+        const ParamPoints& params()
         string toString()
         string toString(const string&)
         string name()

@@ -32,9 +32,6 @@ cdef class Ipol:
             pp = ParamPoints(V1)
             self._ptr = new c.Ipol(pp._ptr[0], list(V2), V3, V4)
 
-    #def params(self):
-        #return self._ptr.params()
-
     def coeffs(self):
         return self._ptr.coeffs()
 

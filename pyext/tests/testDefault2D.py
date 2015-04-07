@@ -23,7 +23,6 @@ ipols = [Ipol(P, Y, i, "order%i"%i) for i in xrange(1,7)]
 for I in ipols[2:3]:
     for i in xrange(M_X.shape[0]):
         for j in xrange(M_X.shape[1]):
-            print i, j
             M_Z[i][j] = I.value(asarray([M_X[i][j], M_Y[i][j]]))
 
     import matplotlib.pyplot as plt
