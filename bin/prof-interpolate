@@ -58,7 +58,8 @@ for num, b in enumerate(binids):
     sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
     sys.stdout.flush()
 
-
+import time
+time1 = time.time()
 print "\nParametrising..."
 with open(args.output, "w") as f:
     #map(lambda x:f.write("%s\n"%x.toString()), ipols)
@@ -67,8 +68,9 @@ with open(args.output, "w") as f:
         import sys
         sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
         sys.stdout.flush()
-
-from IPython import embed
-embed()
+time2 = time.time()
+print 'Interpolation took %0.3f ms'%((time2-time1)*1000.0)
+#from IPython import embed
+#embed()
 
 
