@@ -1,8 +1,11 @@
-// Test for ParamPoints class
+/// Test for ParamPoints class
+
 #include "Professor/ParamPoints.h"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
+
+  using namespace std;
+
   vector<double> anchor1, anchor2, anchor3;
   anchor1.push_back(0.5449);
   anchor1.push_back(0.6028);

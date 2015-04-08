@@ -31,19 +31,19 @@ public:
 int numCoeffs(int dim, int order);
 
 
-/// The heart of Professor
+/// The heart of Professor: the interpolation of a single numerical value through the parameter space
 class Ipol {
 public:
 
-  /// ctor for calculation of coefficients
-  Ipol(ParamPoints& pts, const vector<double>& values, int order, const string& name="") {
+  /// Constructor for calculation of coefficients
+  Ipol(const ParamPoints& pts, const vector<double>& values, int order, const string& name="") {
     _values = values;
     _pts = &pts;
     _order = order;
     _name = name;
   };
 
-  /// ctor to read ipol from file (one string for each object)
+  /// Constructor to read ipol from file (one string for each object)
   Ipol(const string& s) {
     fromString(s);
   };
@@ -122,7 +122,7 @@ private:
   string _name;
   vector<double> _values;
   mutable vector<double> _coeffs;
-  mutable ParamPoints* _pts; //= 0; TODO: warning: non-static data member initializers only available with -std=c++11
+  mutable const ParamPoints* _pts; //= 0; TODO: warning: non-static data member initializers only available with -std=c++11
 
 };
 
