@@ -12,7 +12,7 @@ using namespace Eigen;
 int numCoeffs(int dim, int order) {
     int ntok = 1;
     int r = min(order, dim);
-    for (int i=0; i<r;++i) {
+    for (int i = 0; i < r; ++i) {
       ntok=ntok*(dim+order-i)/(i+1);
     }
   return ntok;
@@ -39,7 +39,7 @@ void Ipol::fromString(const string& s) {
   }
   _order = atoi(tokens[0].c_str());
 
-  for (size_t i=1; i<tokens.size();++i)
+  for (size_t i = 1; i < tokens.size(); ++i)
     _coeffs.push_back(atof(tokens[i].c_str()));
 }
 
@@ -48,7 +48,7 @@ double Ipol::value(const vector<double>& params) const {
   const vector<double> lv = _getLongVector(params, order());
   assert(lv.size() == coeffs().size());
   double v = 0.0;
-  for (size_t i=0; i< lv.size(); ++i) {
+  for (size_t i = 0; i < lv.size(); ++i) {
     v += lv[i] * coeff(i);
   }
   return v;
@@ -56,21 +56,23 @@ double Ipol::value(const vector<double>& params) const {
 
 
 void Ipol::_calcCoeffs() const {
-  assert(_pts->points().size() == _values.size());
+  assert(_pts != NULL);
+  cerr << _pts << ": " << _pts->size() << ", " <<  _values.size() << endl;
+  assert(_pts->size() == _values.size());
   int ncoeff = numCoeffs(dim(), order());
-  if (ncoeff > _pts->points().size()) {
-    cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->points().size()<< ") anchor points, aborting" <<endl;
+  if (ncoeff > _pts->size()) {
+    cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->size()<< ") anchor points, aborting" <<endl;
     abort();
   }
-  MatrixXd DP = MatrixXd(_pts->points().size(), ncoeff);
-  VectorXd MC = VectorXd(_pts->points().size());
+  MatrixXd DP = MatrixXd(_pts->size(), ncoeff);
+  VectorXd MC = VectorXd(_pts->size());
 
   vector<double> tempLV;
   vector<double> tempDP;
   // Populate the to be inversed matrix
-  for (int a=0;a<_pts->points().size();a++) {
-    tempLV = _getLongVector(_pts->points()[a], order());
-    for (int i=0;i<tempLV.size();i++) {
+  for (int a = 0; a < _pts->size(); ++a) {
+    tempLV = _getLongVector(_pts->at(a), order());
+    for (int i = 0; i < tempLV.size(); ++i) {
       DP(a, i) = tempLV[i];
     }
     // The vector of values (corresponding to anchors)
@@ -78,7 +80,7 @@ void Ipol::_calcCoeffs() const {
   }
   VectorXd co = DP.jacobiSvd(ComputeThinU|ComputeThinV).solve(MC);
   vector<double> temp;
-  for (int i=0;i<ncoeff;i++) {
+  for (int i = 0; i < ncoeff; ++i) {
     temp.push_back(co[i]);
   }
   // tuple<int, vector<double> > pb(order, temp); // TODO: do we want coeffs more multiple orders
@@ -88,7 +90,7 @@ void Ipol::_calcCoeffs() const {
 
 const vector<double>& Ipol::coeffs() const {
   if (_coeffs.empty()) {
-    if (_pts == NULL) throw IpolError("No ParameterPoints available when calculating ipol coeffs");
+    if (_pts == NULL) throw IpolError("No parameter points available when calculating ipol coeffs");
     _calcCoeffs(); // TODO get this to work, something about constness being lost
     _pts = NULL; //< Not necessary, but ensures consistency
   }
@@ -96,8 +98,6 @@ const vector<double>& Ipol::coeffs() const {
 }
 
 
-
-/// @todo There is surely, somehow, a better way to do this?!?
 
 vector<double> Ipol::_getLongVector(const vector<double>& p, int order) const {
   if (order < 1 || order > 6) {
@@ -117,7 +117,7 @@ vector<double> Ipol::_getLongVector1D(const vector<double>& p) const {
   int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i=0;i<nop;i++) { // Linear coefficients, for beta
+  for (int i = 0; i < nop; ++i) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
 
@@ -129,12 +129,12 @@ vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
   int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i=0;i<nop;i++) { // Linear coefficients, for beta
+  for (int i = 0; i < nop; i++) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      if (i<=j) {
+  for (int i = 0; i < nop; i++) {
+    for (int j = 0; j < nop; j++) {
+      if (i <= j) {
         retvec.push_back(p[i]*p[j]);
       }
     }
@@ -145,15 +145,17 @@ vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
 }
 
 vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
+  /// @todo Build the first terms in _getLongVector2D
+
   int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i=0;i<nop;i++) { // Linear coefficients, for beta
+  for (int i = 0; i < nop; i++) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      if (i<=j) {
+  for (int i = 0; i < nop; i++) {
+    for (int j = 0; j < nop; j++) {
+      if (i <= j) {
         retvec.push_back(p[i]*p[j]);
       }
     }
@@ -172,7 +174,10 @@ vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
   return retvec;
 }
 
+
 vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
+  /// @todo Build the first terms in _getLongVector3D
+
   int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
@@ -213,7 +218,10 @@ vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
   return retvec;
 }
 
+
 vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
+  /// @todo Build the first terms in _getLongVector4D
+
   int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
@@ -270,7 +278,10 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
   return retvec;
 }
 
+
 vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
+  /// @todo Build the first terms in _getLongVector5D
+
   int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha

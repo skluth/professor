@@ -15,22 +15,21 @@ cdef class ProfMaster:
     def getValue(self, name, P):
         return self._ptr.getValue(name, P)
 
-cdef class ParamPoints:
-    cdef c.ParamPoints *_ptr
+# cdef class ParamPoints:
+#     cdef c.ParamPoints *_ptr
 
-    def __cinit__(self, V):
-        self._ptr=new c.ParamPoints(V)
+#     def __cinit__(self, V):
+#         self._ptr=new c.ParamPoints(V)
 
 cdef class Ipol:
     cdef c.Ipol *_ptr
 
     # Overloading workaround
-    def __cinit__(self, V1, V2=-1, V3=-1, V4=-1):
-        if  V3==-1:
+    def __cinit__(self, V1, V2=None, V3=None, V4=None):
+        if V3 is None:
             self._ptr = new c.Ipol(V1)
         else:
-            pp = ParamPoints(V1)
-            self._ptr = new c.Ipol(pp._ptr[0], list(V2), V3, V4)
+            self._ptr = new c.Ipol(V1, list(V2), V3, V4)
 
     def coeffs(self):
         return self._ptr.coeffs()
@@ -46,4 +45,3 @@ cdef class Ipol:
 
     def name(self):
         return self._ptr.name()
-
