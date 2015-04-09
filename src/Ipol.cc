@@ -146,51 +146,23 @@ vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
       for (size_t k=0;k<p.size();k++)
         if (i<=j && i<=k && j<=k)
           retvec.push_back(p[i]*p[j]*p[k]);
-  assert(retvec.size() == numCoeffs(p.size(),3));
+  assert(retvec.size() == numCoeffs(p.size(), 3));
   return retvec;
 }
 
 
 vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
-  /// @todo Build the first terms in _getLongVector3D
-
-  vector<double> retvec;
-  retvec.push_back(1.0);    // This is the offset, for alpha
-  for (size_t i=0;i<p.size();i++) { // Linear coefficients, for beta
-    retvec.push_back(p[i]);
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      if (i<=j) {
-        retvec.push_back(p[i]*p[j]);
-      }
-    }
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        if (i<=j && i<=k && j<=k) {
-          retvec.push_back(p[i]*p[j]*p[k]);
-        }
-      }
-    }
-  }
+  vector<double> retvec = _getLongVector3D(p);
   // Quartic coefficients
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        for (size_t l=0;l<p.size();l++) {
+  for (size_t i=0;i<p.size();i++)
+    for (size_t j=0;j<p.size();j++)
+      for (size_t k=0;k<p.size();k++)
+        for (size_t l=0;l<p.size();l++)
           if (i<=j && i<=k && i<=l &&
                       j<=k && j<=l &&
-                              k<=l) {
+                              k<=l)
             retvec.push_back(p[i]*p[j]*p[k]*p[l]);
-          }
-        }
-      }
-    }
-  }
-
-  assert(retvec.size() == numCoeffs(p.size(),4));
+  assert(retvec.size() == numCoeffs(p.size(), 4));
   return retvec;
 }
 
