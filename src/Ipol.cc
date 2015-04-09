@@ -128,6 +128,7 @@ vector<double> Ipol::_getLongVector1D(const vector<double>& p) const {
 
 vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
   vector<double> retvec = _getLongVector1D(p);
+  // Quadratic coefficients
   for (size_t i = 0; i < p.size(); i++)
     for (size_t j = 0; j < p.size(); j++)
       if (i <= j)
@@ -138,30 +139,13 @@ vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
 
 
 vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
-  /// @todo Build the first terms in _getLongVector2D
-
-  vector<double> retvec;
-  retvec.push_back(1.0);    // This is the offset, for alpha
-  for (size_t i = 0; i < p.size(); i++) { // Linear coefficients, for beta
-    retvec.push_back(p[i]);
-  }
-  for (size_t i = 0; i < p.size(); i++) {
-    for (size_t j = 0; j < p.size(); j++) {
-      if (i <= j) {
-        retvec.push_back(p[i]*p[j]);
-      }
-    }
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        if (i<=j && i<=k && j<=k) {
+  vector<double> retvec = _getLongVector2D(p);
+  // Cubic coefficients
+  for (size_t i=0;i<p.size();i++)
+    for (size_t j=0;j<p.size();j++)
+      for (size_t k=0;k<p.size();k++)
+        if (i<=j && i<=k && j<=k)
           retvec.push_back(p[i]*p[j]*p[k]);
-        }
-      }
-    }
-  }
-
   assert(retvec.size() == numCoeffs(p.size(),3));
   return retvec;
 }
@@ -191,6 +175,7 @@ vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
       }
     }
   }
+  // Quartic coefficients
   for (size_t i=0;i<p.size();i++) {
     for (size_t j=0;j<p.size();j++) {
       for (size_t k=0;k<p.size();k++) {
@@ -245,6 +230,7 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
       }
     }
   }
+  // Quintic coefficients
   for (size_t i=0;i<p.size();i++) {
     for (size_t j=0;j<p.size();j++) {
       for (size_t k=0;k<p.size();k++) {
@@ -322,6 +308,7 @@ vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
       }
     }
   }
+  // 6th order coefficients
   for (size_t i=0;i<p.size();i++) {
     for (size_t j=0;j<p.size();j++) {
       for (size_t k=0;k<p.size();k++) {
