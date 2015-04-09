@@ -60,7 +60,7 @@ void Ipol::_calcCoeffs() const {
   assert(_pts->numPoints() == _values.size());
   int ncoeff = numCoeffs(dim(), order());
   if (ncoeff > _pts->numPoints()) {
-    cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->numPoints()<< ") anchor points, aborting" <<endl;
+    cout << "Error: not enough (" << ncoeff << " vs. " << _pts->numPoints() << ") anchor points, aborting" << endl;
     abort();
   }
   MatrixXd DP = MatrixXd(_pts->numPoints(), ncoeff);

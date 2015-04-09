@@ -1,0 +1,16 @@
+PROFESSOR2 TO-DO LIST
+=====================
+
+- Add Professor namespace in C++
+
+   And re-think whether we need to explicitly name the Python module 'professor2' (probably yes)
+
+- Remove uncatchable calls to exit() and I/O streams
+
+   Prefer to throw exceptions / return strings directly, and when a print
+   function is needed, give it an optional arg to specify the target stream.
+
+- Is Boost needed?
+
+   Can't it be replaced by C++11 std:: functionality, and maybe a little bit of
+   writing our own string utils?
