@@ -25,16 +25,15 @@ for I in ipols[2:3]:
         for j in xrange(M_X.shape[1]):
             M_Z[i][j] = I.value(asarray([M_X[i][j], M_Y[i][j]]))
 
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    # Draw anchors as scatter graph first
-    X1=map(lambda x:x[0], P)
-    Y1=map(lambda x:x[1], P)
-    Z1=Y
-    ax.scatter(X1,Y1,Z1, c="r")
-    ax.plot_wireframe(M_X, M_Y, M_Z,rstride=1, cstride=1)
-    fig.show()
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+# Draw anchors as scatter graph first
+X1 = map(lambda x:x[0], P)
+Y1 = map(lambda x:x[1], P)
+Z1 = Y
+ax.scatter(X1,Y1,Z1, c="r")
+ax.plot_wireframe(M_X, M_Y, M_Z,rstride=1, cstride=1)
+plt.show()
 #raw_input("Press any key")
