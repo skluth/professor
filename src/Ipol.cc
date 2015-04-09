@@ -186,81 +186,20 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
 
 
 vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
-  /// @todo Build the first terms in _getLongVector5D
-
-  vector<double> retvec;
-  retvec.push_back(1.0);    // This is the offset, for alpha
-  for (size_t i=0;i<p.size();i++) { // Linear coefficients, for beta
-    retvec.push_back(p[i]);
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      if (i<=j) {
-        retvec.push_back(p[i]*p[j]);
-      }
-    }
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        if (i<=j && i<=k && j<=k) {
-          retvec.push_back(p[i]*p[j]*p[k]);
-        }
-      }
-    }
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        for (size_t l=0;l<p.size();l++) {
-          if (i<=j && i<=k && i<=l && j<=k && j<=l && k<=l) {
-            retvec.push_back(p[i]*p[j]*p[k]*p[l]);
-          }
-        }
-      }
-    }
-  }
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        for (size_t l=0;l<p.size();l++) {
-          for (size_t m=0;m<p.size();m++) {
-            if (
-                i<=j && i<=k && i<=l && i<=m &&
-                        j<=k && j<=l && j<=m &&
-                                k<=l && k<=m &&
-                                        l<=m
-               ) {
-              retvec.push_back(p[i]*p[j]*p[k]*p[l]*p[m]);
-            }
-          }
-        }
-      }
-    }
-  }
+  vector<double> retvec = _getLongVector5D(p);
   // 6th order coefficients
-  for (size_t i=0;i<p.size();i++) {
-    for (size_t j=0;j<p.size();j++) {
-      for (size_t k=0;k<p.size();k++) {
-        for (size_t l=0;l<p.size();l++) {
-          for (size_t m=0;m<p.size();m++) {
-            for (size_t n=0;n<p.size();n++) {
-              if (
-                  i<=j && i<=k && i<=l && i<=m && i<=n &&
+  for (size_t i=0;i<p.size();i++)
+    for (size_t j=0;j<p.size();j++)
+      for (size_t k=0;k<p.size();k++)
+        for (size_t l=0;l<p.size();l++)
+          for (size_t m=0;m<p.size();m++)
+            for (size_t n=0;n<p.size();n++)
+              if (i<=j && i<=k && i<=l && i<=m && i<=n &&
                           j<=k && j<=l && j<=m && j<=n &&
                                   k<=l && k<=m && k<=n &&
                                           l<=m && l<=n &&
-                                                  m<=n
-                 ) {
+                                                  m<=n)
                 retvec.push_back(p[i]*p[j]*p[k]*p[l]*p[m]*p[n]);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  assert(retvec.size() == numCoeffs(p.size(),6));
+  assert(retvec.size() == numCoeffs(p.size(), 6));
   return retvec;
 }
