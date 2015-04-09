@@ -141,9 +141,9 @@ vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
   vector<double> retvec = _getLongVector2D(p);
   // Cubic coefficients
-  for (size_t i=0;i<p.size();i++)
-    for (size_t j=0;j<p.size();j++)
-      for (size_t k=0;k<p.size();k++)
+  for (size_t i = 0; i < p.size(); i++)
+    for (size_t j = 0; j < p.size(); j++)
+      for (size_t k = 0; k < p.size(); k++)
         if (i<=j && i<=k && j<=k)
           retvec.push_back(p[i]*p[j]*p[k]);
   assert(retvec.size() == numCoeffs(p.size(), 3));
@@ -154,10 +154,10 @@ vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
   vector<double> retvec = _getLongVector3D(p);
   // Quartic coefficients
-  for (size_t i=0;i<p.size();i++)
-    for (size_t j=0;j<p.size();j++)
-      for (size_t k=0;k<p.size();k++)
-        for (size_t l=0;l<p.size();l++)
+  for (size_t i = 0; i < p.size(); i++)
+    for (size_t j = 0; j < p.size(); j++)
+      for (size_t k = 0; k < p.size(); k++)
+        for (size_t l = 0; l < p.size(); l++)
           if (i<=j && i<=k && i<=l &&
                       j<=k && j<=l &&
                               k<=l)
@@ -170,11 +170,11 @@ vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
   vector<double> retvec = _getLongVector4D(p);
   // Quintic coefficients
-  for (size_t i=0;i<p.size();i++)
-    for (size_t j=0;j<p.size();j++)
-      for (size_t k=0;k<p.size();k++)
-        for (size_t l=0;l<p.size();l++)
-          for (size_t m=0;m<p.size();m++)
+  for (size_t i = 0; i < p.size(); i++)
+    for (size_t j = 0; j < p.size(); j++)
+      for (size_t k = 0; k < p.size(); k++)
+        for (size_t l = 0; l < p.size(); l++)
+          for (size_t m = 0; m < p.size(); m++)
             if (i<=j && i<=k && i<=l && i<=m &&
                         j<=k && j<=l && j<=m &&
                                 k<=l && k<=m &&
@@ -188,12 +188,12 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
   vector<double> retvec = _getLongVector5D(p);
   // 6th order coefficients
-  for (size_t i=0;i<p.size();i++)
-    for (size_t j=0;j<p.size();j++)
-      for (size_t k=0;k<p.size();k++)
-        for (size_t l=0;l<p.size();l++)
-          for (size_t m=0;m<p.size();m++)
-            for (size_t n=0;n<p.size();n++)
+  for (size_t i = 0; i < p.size(); i++)
+    for (size_t j = 0; j < p.size(); j++)
+      for (size_t k = 0; k < p.size(); k++)
+        for (size_t l = 0; l < p.size(); l++)
+          for (size_t m = 0; m < p.size(); m++)
+            for (size_t n = 0; n < p.size(); n++)
               if (i<=j && i<=k && i<=l && i<=m && i<=n &&
                           j<=k && j<=l && j<=m && j<=n &&
                                   k<=l && k<=m && k<=n &&
