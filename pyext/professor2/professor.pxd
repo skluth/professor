@@ -5,20 +5,22 @@ from libcpp cimport bool
 from libcpp.string cimport string
 
 
-# cdef extern from "Professor/ParamPoints.h":
-#     cdef cppclass ParamPoints:
-#         ParamPoints(vector[ vector[double] ])
+cdef extern from "Professor/ParamPoints.h":
+    cdef cppclass ParamPoints:
+        ParamPoints(const vector[ vector[double] ]&)
+        # TODO: 'dress' this Python wrapper with more functionality than the basic C++ object
 
 cdef extern from "Professor/Ipol.h":
     cdef cppclass Ipol:
-        Ipol(const vector[ vector[double] ] p, const vector[double]&, int, const string&)
+        # Ipol(const vector[ vector[double] ] p, const vector[double]&, int, const string&)
+        Ipol(const ParamPoints& p, const vector[double]&, int, const string&)
         Ipol(const string&)
         double value(const vector[double]&)
         int order()
         # TODO: add dim() and numCoeffs()
         double coeff(size_t)
         const vector[double]& coeffs()
-        const vector[ vector[double] ]& params()
+        const ParamPoints& params()
         string toString()
         string toString(const string&)
         string name()

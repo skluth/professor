@@ -1,4 +1,5 @@
 cimport professor as c
+cimport cython.operator.dereference as deref
 
 cdef class ProfMaster:
     cdef c.ProfMaster *_ptr
@@ -15,11 +16,13 @@ cdef class ProfMaster:
     def getValue(self, name, P):
         return self._ptr.getValue(name, P)
 
-# cdef class ParamPoints:
-#     cdef c.ParamPoints *_ptr
 
-#     def __cinit__(self, V):
-#         self._ptr=new c.ParamPoints(V)
+cdef class ParamPoints:
+    cdef c.ParamPoints* _ptr
+
+    def __cinit__(self, V):
+        self._ptr = new c.ParamPoints(V)
+
 
 cdef class Ipol:
     cdef c.Ipol *_ptr
@@ -29,7 +32,8 @@ cdef class Ipol:
         if V3 is None:
             self._ptr = new c.Ipol(V1)
         else:
-            self._ptr = new c.Ipol(V1, list(V2), V3, V4)
+            pp = ParamPoints(V1)
+            self._ptr = new c.Ipol(deref(pp._ptr), list(V2), V3, V4)
 
     def coeffs(self):
         return self._ptr.coeffs()

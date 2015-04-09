@@ -27,7 +27,7 @@ void Ipol::fromString(const string& s) {
     boost::algorithm::split(temp, s, boost::is_any_of(":"), boost::token_compress_on);
     _name = temp[0];
 
-    //Remove trailing and leading whitespaces
+    // Remove trailing and leading whitespaces
     boost::algorithm::trim(temp[1]);
 
     // Split string at whitespaces
@@ -57,21 +57,20 @@ double Ipol::value(const vector<double>& params) const {
 
 void Ipol::_calcCoeffs() const {
   assert(_pts != NULL);
-  cerr << _pts << ": " << _pts->size() << ", " <<  _values.size() << endl;
-  assert(_pts->size() == _values.size());
+  assert(_pts->numPoints() == _values.size());
   int ncoeff = numCoeffs(dim(), order());
-  if (ncoeff > _pts->size()) {
-    cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->size()<< ") anchor points, aborting" <<endl;
+  if (ncoeff > _pts->numPoints()) {
+    cout << "Error: not enough ("<< ncoeff <<" vs. " <<_pts->numPoints()<< ") anchor points, aborting" <<endl;
     abort();
   }
-  MatrixXd DP = MatrixXd(_pts->size(), ncoeff);
-  VectorXd MC = VectorXd(_pts->size());
+  MatrixXd DP = MatrixXd(_pts->numPoints(), ncoeff);
+  VectorXd MC = VectorXd(_pts->numPoints());
 
   vector<double> tempLV;
   vector<double> tempDP;
   // Populate the to be inversed matrix
-  for (int a = 0; a < _pts->size(); ++a) {
-    tempLV = _getLongVector(_pts->at(a), order());
+  for (int a = 0; a < _pts->numPoints(); ++a) {
+    tempLV = _getLongVector(_pts->point(a), order());
     for (int i = 0; i < tempLV.size(); ++i) {
       DP(a, i) = tempLV[i];
     }

@@ -37,4 +37,4 @@ for I in ipols[2:3]:
     ax.plot_wireframe(M_X, M_Y, M_Z,rstride=1, cstride=1)
     fig.show()
 
-raw_input("Press any key")
+#raw_input("Press any key")

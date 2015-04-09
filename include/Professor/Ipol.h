@@ -1,6 +1,7 @@
 #ifndef PROF_IPOL_H
 #define PROF_IPOL_H
 
+#include "Professor/ParamPoints.h"
 #include <string>
 #include <vector>
 #include <sstream>
@@ -38,7 +39,8 @@ public:
   /// pointer is nullified). This is for memory & CPU efficiency: lazy
   /// evaluation of coeffs is good, but we can't afford to have every bin
   /// storing the same full list of hundreds of N-dimensional parameter points!
-  Ipol(const std::vector< std::vector<double> >& pts, const std::vector<double>& values, int order, const std::string& name="") {
+  // Ipol(const std::vector< std::vector<double> >& pts, const std::vector<double>& values, int order, const std::string& name="") {
+  Ipol(const ParamPoints& pts, const std::vector<double>& values, int order, const std::string& name="") {
     _values = values;
     _pts = &pts;
     _order = order;
@@ -79,7 +81,8 @@ public:
   const std::vector<double>& coeffs() const;
 
   /// Accessor to the dimension of the param points
-  int dim() const { return _pts->front().size(); }
+  /// @todo This should be known, cf. order(), without needing to have an attached ParamPoints object
+  int dim() const { return _pts->dim(); }
 
   /// Get the order of the parametrisation
   int order() const { return _order; }
@@ -88,7 +91,7 @@ public:
   std::string name() const {return _name; }
 
   /// Get the attached params -- may be NULL after the coeffs have been computed
-  const std::vector< std::vector<double> >* params() const { return _pts; }
+  const ParamPoints* params() const { return _pts; }
 
 
 protected:
@@ -124,7 +127,7 @@ private:
   std::string _name;
   std::vector<double> _values;
   mutable std::vector<double> _coeffs;
-  mutable const std::vector< std::vector<double> >* _pts; //= 0; TODO: warning: non-static data member initializers only available with -std=c++11
+  mutable const ParamPoints* _pts; //= 0; TODO: warning: non-static data member initializers only available with -std=c++11
 
 };
 
