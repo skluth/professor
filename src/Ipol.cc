@@ -112,56 +112,49 @@ vector<double> Ipol::_getLongVector(const vector<double>& p, int order) const {
   if (order == 6) return _getLongVector6D(p);
 }
 
-vector<double> Ipol::_getLongVector1D(const vector<double>& p) const {
-  int nop = p.size();
-  vector<double> retvec;
-  retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i = 0; i < nop; ++i) { // Linear coefficients, for beta
-    retvec.push_back(p[i]);
-  }
 
-  assert(retvec.size() == numCoeffs(nop,1));
+vector<double> Ipol::_getLongVector1D(const vector<double>& p) const {
+  vector<double> retvec;
+  retvec.reserve(1 + p.size());
+  // 0th order offset
+  retvec.push_back(1.0);
+  // Linear coefficients
+  for (size_t i = 0; i < p.size(); ++i)
+    retvec.push_back(p[i]);
+  assert(retvec.size() == numCoeffs(p.size(), 1));
   return retvec;
 }
+
 
 vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
-  int nop = p.size();
-  vector<double> retvec;
-  retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i = 0; i < nop; i++) { // Linear coefficients, for beta
-    retvec.push_back(p[i]);
-  }
-  for (int i = 0; i < nop; i++) {
-    for (int j = 0; j < nop; j++) {
-      if (i <= j) {
+  vector<double> retvec = _getLongVector1D(p);
+  for (size_t i = 0; i < p.size(); i++)
+    for (size_t j = 0; j < p.size(); j++)
+      if (i <= j)
         retvec.push_back(p[i]*p[j]);
-      }
-    }
-  }
-
-  assert(retvec.size() == numCoeffs(nop,2));
+  assert(retvec.size() == numCoeffs(p.size(), 2));
   return retvec;
 }
+
 
 vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
   /// @todo Build the first terms in _getLongVector2D
 
-  int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i = 0; i < nop; i++) { // Linear coefficients, for beta
+  for (size_t i = 0; i < p.size(); i++) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
-  for (int i = 0; i < nop; i++) {
-    for (int j = 0; j < nop; j++) {
+  for (size_t i = 0; i < p.size(); i++) {
+    for (size_t j = 0; j < p.size(); j++) {
       if (i <= j) {
         retvec.push_back(p[i]*p[j]);
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
         if (i<=j && i<=k && j<=k) {
           retvec.push_back(p[i]*p[j]*p[k]);
         }
@@ -169,7 +162,7 @@ vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numCoeffs(nop,3));
+  assert(retvec.size() == numCoeffs(p.size(),3));
   return retvec;
 }
 
@@ -177,32 +170,31 @@ vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
   /// @todo Build the first terms in _getLongVector3D
 
-  int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i=0;i<nop;i++) { // Linear coefficients, for beta
+  for (size_t i=0;i<p.size();i++) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
       if (i<=j) {
         retvec.push_back(p[i]*p[j]);
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
         if (i<=j && i<=k && j<=k) {
           retvec.push_back(p[i]*p[j]*p[k]);
         }
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
-        for (int l=0;l<nop;l++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
+        for (size_t l=0;l<p.size();l++) {
           if (i<=j && i<=k && i<=l &&
                       j<=k && j<=l &&
                               k<=l) {
@@ -213,7 +205,7 @@ vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numCoeffs(nop,4));
+  assert(retvec.size() == numCoeffs(p.size(),4));
   return retvec;
 }
 
@@ -221,32 +213,31 @@ vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
   /// @todo Build the first terms in _getLongVector4D
 
-  int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i=0;i<nop;i++) { // Linear coefficients, for beta
+  for (size_t i=0;i<p.size();i++) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
       if (i<=j) {
         retvec.push_back(p[i]*p[j]);
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
         if (i<=j && i<=k && j<=k) {
           retvec.push_back(p[i]*p[j]*p[k]);
         }
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
-        for (int l=0;l<nop;l++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
+        for (size_t l=0;l<p.size();l++) {
           if (i<=j && i<=k && i<=l && j<=k && j<=l && k<=l) {
             retvec.push_back(p[i]*p[j]*p[k]*p[l]);
           }
@@ -254,11 +245,11 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
-        for (int l=0;l<nop;l++) {
-          for (int m=0;m<nop;m++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
+        for (size_t l=0;l<p.size();l++) {
+          for (size_t m=0;m<p.size();m++) {
             if (
                 i<=j && i<=k && i<=l && i<=m &&
                         j<=k && j<=l && j<=m &&
@@ -273,7 +264,7 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numCoeffs(nop,5));
+  assert(retvec.size() == numCoeffs(p.size(),5));
   return retvec;
 }
 
@@ -281,32 +272,31 @@ vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
 vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
   /// @todo Build the first terms in _getLongVector5D
 
-  int nop = p.size();
   vector<double> retvec;
   retvec.push_back(1.0);    // This is the offset, for alpha
-  for (int i=0;i<nop;i++) { // Linear coefficients, for beta
+  for (size_t i=0;i<p.size();i++) { // Linear coefficients, for beta
     retvec.push_back(p[i]);
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
       if (i<=j) {
         retvec.push_back(p[i]*p[j]);
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
         if (i<=j && i<=k && j<=k) {
           retvec.push_back(p[i]*p[j]*p[k]);
         }
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
-        for (int l=0;l<nop;l++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
+        for (size_t l=0;l<p.size();l++) {
           if (i<=j && i<=k && i<=l && j<=k && j<=l && k<=l) {
             retvec.push_back(p[i]*p[j]*p[k]*p[l]);
           }
@@ -314,11 +304,11 @@ vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
-        for (int l=0;l<nop;l++) {
-          for (int m=0;m<nop;m++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
+        for (size_t l=0;l<p.size();l++) {
+          for (size_t m=0;m<p.size();m++) {
             if (
                 i<=j && i<=k && i<=l && i<=m &&
                         j<=k && j<=l && j<=m &&
@@ -332,12 +322,12 @@ vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
       }
     }
   }
-  for (int i=0;i<nop;i++) {
-    for (int j=0;j<nop;j++) {
-      for (int k=0;k<nop;k++) {
-        for (int l=0;l<nop;l++) {
-          for (int m=0;m<nop;m++) {
-            for (int n=0;n<nop;n++) {
+  for (size_t i=0;i<p.size();i++) {
+    for (size_t j=0;j<p.size();j++) {
+      for (size_t k=0;k<p.size();k++) {
+        for (size_t l=0;l<p.size();l++) {
+          for (size_t m=0;m<p.size();m++) {
+            for (size_t n=0;n<p.size();n++) {
               if (
                   i<=j && i<=k && i<=l && i<=m && i<=n &&
                           j<=k && j<=l && j<=m && j<=n &&
@@ -354,6 +344,6 @@ vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
     }
   }
 
-  assert(retvec.size() == numCoeffs(nop,6));
+  assert(retvec.size() == numCoeffs(p.size(),6));
   return retvec;
 }
