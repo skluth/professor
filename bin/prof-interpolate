@@ -140,7 +140,7 @@ with open(args.output, "w") as f:
         num_cores = args.THREADS
 
     # Parallel execution and collection of Ipol.toString
-    results = Parallel(n_jobs=num_cores)(delayed(workerPARAMETRISE)(num) for num in xrange(len(ipols[0:13])))
+    results = Parallel(n_jobs=num_cores)(delayed(workerPARAMETRISE)(num) for num in xrange(len(ipols)))
 
     # Write to file
     for r in results:
