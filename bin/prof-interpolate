@@ -23,14 +23,17 @@ parser.add_argument('--mcdir', type=str, help='Directory with subruns')
 parser.add_argument('--order', type=int, default=3, help='Order of polynomial for parametrisation')
 parser.add_argument('--output', type=str, default="Coeffs.prof", help='Output file name')
 parser.add_argument('--pfname', default="used_params", type=str, help='Parameter file name')
+parser.add_argument("--threads", dest="THREADS", default=1, type=int, help="Number of threads to use")
 args = parser.parse_args()
 
 
 import glob, os
-yodafiles = filter(lambda x: args.pfname in os.listdir(os.path.dirname(x)), glob.glob("%s/*/*yoda*"%args.mcdir))
-goodruns = map(os.path.dirname, yodafiles)
+yodafiles = [x for x in glob.glob("%s/*/*yoda*"%args.mcdir) if args.pfname in os.listdir(os.path.dirname(x))]
+goodruns = [os.path.dirname(y) for y in yodafiles]
 print "Reading %i parameter points"%len(goodruns)
-params = map(lambda x:readParams(os.path.join(x, args.pfname)), goodruns)
+params = [readParams(os.path.join(x, args.pfname)) for x in goodruns]
+
+
 
 binids = binIds(yodafiles[0])
 
@@ -40,6 +43,8 @@ histos = map(readYODA, yodafiles)
 
 from professor2 import Ipol
 print "Preparing..."
+
+
 ipols = []
 badbins = []
 for num, b in enumerate(binids):
@@ -55,22 +60,91 @@ for num, b in enumerate(binids):
         i=Ipol(params, values, args.order, b[0]+":%i"%b[1])
         ipols.append(i)
     import sys
-    sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
-    sys.stdout.flush()
+    if ((num+1)%20 ==0):
+        sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
+        sys.stdout.flush()
 
 import time
 time1 = time.time()
 print "\nParametrising..."
-with open(args.output, "w") as f:
-    #map(lambda x:f.write("%s\n"%x.toString()), ipols)
-    for num, i in enumerate(ipols):
-        f.write("%s\n"%i.toString())
-        import sys
-        sys.stdout.write("\rObject %i/%i"%(num+1, len(binids)))
+
+
+# http://stackoverflow.com/questions/24983493/tracking-progress-of-joblib-parallel-execution
+from collections import defaultdict
+class CallBack(object):
+    completed = defaultdict(int)
+
+    def __init__(self, index, parallel):
+        self.index = index
+        self.parallel = parallel
+
+    def __call__(self, index):
+        CallBack.completed[self.parallel] += 1
+        sys.stdout.write("\rDone with object {}".format(CallBack.completed[self.parallel]))
         sys.stdout.flush()
+        if self.parallel._original_iterable:
+            self.parallel.dispatch_next()
+
+# The worker
+def workerPARAMETRISE(q):
+    return ipols[q].toString()
+
+def writeMeta(f, P):
+    """
+    Write some header info
+    P is the list of anchor points
+    """
+    # http://stackoverflow.com/questions/13890935/timestamp-python
+    import time
+    ts = time.time()
+    import datetime
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    f.write("# INFO Professor2.0 ProfDF (arXiv:0907.2973 [hep-ph])  %s \n"%st)
+    f.write("# DIM %i\n"%len(P[0]))
+
+    # Parameter edges
+    from numpy import array
+    p=array(P)
+    minp = []
+    maxp = []
+    for i in xrange(len(P[0])):
+        minp.append(min(p[:,i]))
+        maxp.append(max(p[:,i]))
+
+    f.write("# MINP")
+    for i in minp:
+        f.write(" %.10f"%i)
+    f.write("\n")
+    f.write("# MAXP")
+    for i in maxp:
+        f.write(" %.10f"%i)
+    f.write("\n")
+
+
+# Open output file name
+with open(args.output, "w") as f:
+    writeMeta(f, params)
+    # https://pypi.python.org/pypi/joblib
+    from joblib import Parallel, delayed
+
+    # For progress output
+    import joblib.parallel
+    joblib.parallel.CallBack = CallBack
+
+    # Get/set number of cpus to use
+    import multiprocessing
+    n_cpus = multiprocessing.cpu_count()
+    if args.THREADS > n_cpus:
+        num_cores = n_cpus
+    else:
+        num_cores = args.THREADS
+
+    # Parallel execution and collection of Ipol.toString
+    results = Parallel(n_jobs=num_cores)(delayed(workerPARAMETRISE)(num) for num in xrange(len(ipols[0:13])))
+
+    # Write to file
+    for r in results:
+        f.write("%s\n"%r)
 time2 = time.time()
-print 'Interpolation took %0.3f ms'%((time2-time1)*1000.0)
-#from IPython import embed
-#embed()
-
-
+print '\nInterpolation took %0.3f ms'%((time2-time1)*1000.0)
+print 'Output written to %s'%args.output
