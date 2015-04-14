@@ -7,7 +7,7 @@ LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol ProfMaster)
 TESTPROGS  := test/testParamPoints test/testIpol test/testMaster
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
-.PHONY := all lib pyext tests cxxtests pytests check clean
+.PHONY := all lib pyext tests cxxtests pytests check icheck clean
 
 
 all: lib pyext tests
