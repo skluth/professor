@@ -1,6 +1,7 @@
 cimport professor as c
 cimport cython.operator.dereference as deref
 
+
 cdef class ProfMaster:
     cdef c.ProfMaster *_ptr
 
@@ -28,12 +29,15 @@ cdef class Ipol:
     cdef c.Ipol *_ptr
 
     # Overloading workaround
-    def __cinit__(self, V1, V2=None, V3=None, V4=None):
-        if V3 is None:
-            self._ptr = new c.Ipol(V1)
+    def __cinit__(self, *args):
+        if len(args) == 1 and type(args[0]) is str:
+            self._ptr = new c.Ipol(args[0])
         else:
-            pp = ParamPoints(V1)
-            self._ptr = new c.Ipol(deref(pp._ptr), list(V2), V3, V4)
+            pp = ParamPoints(args[0])
+            vals = list(args[1])
+            order = int(args[2])
+            name = str(args[3]) if len(args) == 4 else ""
+            self._ptr = new c.Ipol(deref(pp._ptr), vals, order, name)
 
     def coeffs(self):
         return self._ptr.coeffs()
