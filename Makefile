@@ -50,6 +50,6 @@ check: cxxtests
 	@echo "testMaster\n" && test/testMaster
 
 clean:
-	rm -f obj/*.o lib/*
+	rm -rf obj/*.o lib/*
 	rm -f pyext/professor2/core.cpp pyext/professor2/core.so
 	rm -f $(TESTPROGS)
