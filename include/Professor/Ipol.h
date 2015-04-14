@@ -40,7 +40,7 @@ namespace Professor {
     /// evaluation of coeffs is good, but we can't afford to have every bin
     /// storing the same full list of hundreds of N-dimensional parameter points!
     // Ipol(const std::vector< std::vector<double> >& pts, const std::vector<double>& values, int order, const std::string& name="") {
-    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="") {
+    explicit Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="") {
       _pts = &pts;
       _dim = pts.dim();
       _values = ptvals;
