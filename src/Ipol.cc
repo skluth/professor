@@ -1,8 +1,9 @@
 #include "Professor/Ipol.h"
-#include <eigen3/Eigen/SVD>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
+#include "eigen3/Eigen/SVD"
+#include "boost/algorithm/string/split.hpp"
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/trim.hpp"
+#include "boost/lexical_cast.hpp"
 
 namespace Professor {
 
@@ -22,32 +23,29 @@ namespace Professor {
 
 
   void Ipol::fromString(const string& s) {
-    vector<string> tokens;
-    // Check if a name is given in the string
-    if (s.find(':') != std::string::npos) {
-      vector<string> temp;
-      boost::algorithm::split(temp, s, boost::is_any_of(":"), boost::token_compress_on);
-      _name = temp[0];
-
-      // Remove trailing and leading whitespaces
-      boost::algorithm::trim(temp[1]);
-
-      // Split string at whitespaces
-      boost::algorithm::split(tokens, temp[1], boost::is_any_of("\t "), boost::token_compress_on);
-    } else {
-      boost::algorithm::split(tokens, s, boost::is_any_of("\t "), boost::token_compress_on);
-      _name = "";
-      // TODO also remove whitespace from string here?
-    }
-    _order = atoi(tokens[0].c_str());
-
-    for (size_t i = 1; i < tokens.size(); ++i)
+    // Check if a name is given in the string, and append a null one if not
+    const string s2 = (s.find(":") == std::string::npos) ? (": " + s) : s;
+    // Identify the name and remainder parts
+    vector<string> tokens, temp;
+    boost::algorithm::split(temp, s, boost::is_any_of(":"), boost::token_compress_on);
+    _name = temp[0];
+    // Split the remaining string into whitespace-separated data tokens
+    boost::algorithm::trim(temp[1]);
+    boost::algorithm::split(tokens, temp[1], boost::is_any_of("\t "), boost::token_compress_on);
+    _dim = boost::lexical_cast<int>(tokens[0]);
+    _order = boost::lexical_cast<int>(tokens[1]);
+    for (size_t i = 2; i < tokens.size(); ++i)
       _coeffs.push_back(atof(tokens[i].c_str()));
   }
 
 
   double Ipol::value(const vector<double>& params) const {
-    /// @todo Check that the number of params is correct (requires storing it along with the order)
+    if (params.size() != dim()) {
+      stringstream ss;
+      ss << "Incorrect number of parameters " << params.size() << " passed to Ipol::value ("
+         << dim() << " params required)";
+      throw IpolError(ss.str());
+    }
     const vector<double> lv = _getLongVector(params, order());
     assert(lv.size() == coeffs().size());
     double v = 0.0;
@@ -96,7 +94,7 @@ namespace Professor {
   const vector<double>& Ipol::coeffs() const {
     if (_coeffs.empty()) {
       if (_pts == NULL) throw IpolError("No parameter points available when calculating ipol coeffs");
-      _calcCoeffs(); // TODO get this to work, something about constness being lost
+      _calcCoeffs();
       _pts = NULL; //< Not necessary, but ensures consistency
     }
     return _coeffs;

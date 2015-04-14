@@ -15,9 +15,9 @@ int main(int argc, char** argv) {
 
   const vector<double> val{0,1,2};
   pm.addIpol("Test1", val, 1);
-  pm.addIpol("Test2: 1 1.11022e-16 0 1");
+  pm.addIpol("Test2: 2 1 1.11022e-16 0 1");
   pmvec.addIpol("Test1", val, 1);
-  pmvec.addIpol("Test2: 1 1.11022e-16 0 1");
+  pmvec.addIpol("Test2: 2 1 1.11022e-16 0 1");
 
   for (size_t i = 0; i < 10; ++i) {
     double y = i*0.2;

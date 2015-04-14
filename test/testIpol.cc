@@ -13,7 +13,7 @@ int main() {
   const vector<double> point{0.0, 0.5};
 
   Professor::Ipol ip1(points, vals, 1);
-  cout << ip1.points().size() << " " << ip1.points().front().size() << endl;
+  cout << ip1.points()->numPoints() << " " << ip1.points()->dim() << endl;
 
   cout << ip1.value(anchor1) << endl;
   cout << ip1.value(point) << endl;
@@ -21,8 +21,8 @@ int main() {
   cout << ip1.toString() << endl;
   cout << ip1.toString("Crazy") << endl;
 
-  Professor::Ipol ip2("Test: 1 1.11022e-16 0 1");
-  Professor::Ipol ip3("1 1.11022e-16 0 1");
+  Professor::Ipol ip2("Test: 2 1 1.11022e-16 0 1");
+  Professor::Ipol ip3("2 1 1.11022e-16 0 1");
   cout << ip2.value(point) << endl;
   cout << ip3.value(point) << endl;
   cout << ip2.toString() << endl;

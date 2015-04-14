@@ -40,32 +40,37 @@ namespace Professor {
     /// evaluation of coeffs is good, but we can't afford to have every bin
     /// storing the same full list of hundreds of N-dimensional parameter points!
     // Ipol(const std::vector< std::vector<double> >& pts, const std::vector<double>& values, int order, const std::string& name="") {
-    Ipol(const ParamPoints& pts, const std::vector<double>& values, int order, const std::string& name="") {
-      _values = values;
+    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="") {
       _pts = &pts;
-      _dim = pts.numPoints();
+      _dim = pts.dim();
+      _values = ptvals;
       _order = order;
       _name = name;
     };
+
 
     /// Constructor to read ipol from file (one string for each object)
     Ipol(const std::string& s) {
       fromString(s);
     };
 
+
     /// Read and set coefficients (name), order from string
     void fromString(const std::string& s);
+
 
     /// Get string representation
     std::string toString(const std::string& name="") const {
       std::stringstream ss;
       if (!name.empty()) ss << name << ": ";
       else if (!_name.empty()) ss << _name << ": ";
+      ss << this->dim() << " ";
       ss << this->order() << " ";
       for (const double& a : coeffs())
         ss << a << " ";
       return ss.str();
     }
+
 
     /// Get the value of the parametrisation at point p
     double value(const std::vector<double>& p) const;
@@ -79,11 +84,7 @@ namespace Professor {
     const std::vector<double>& coeffs() const;
 
     /// Accessor to the dimension of the param points
-    /// @todo This should be known, cf. order(), without needing to have an attached ParamPoints object
-    int dim() const {
-      if (_pts == NULL) throw IpolError("Ipol: Attempted to get parameter dimension without an attached ParamPoints");
-      return _pts->dim();
-    }
+    int dim() const { return _dim; }
 
     /// Get the order of the parametrisation
     int order() const { return _order; }
@@ -92,7 +93,7 @@ namespace Professor {
     std::string name() const {return _name; }
 
     /// Get the attached params -- may be NULL after the coeffs have been computed
-    const ParamPoints* params() const { return _pts; }
+    const ParamPoints* points() const { return _pts; }
 
 
   protected:

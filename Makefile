@@ -35,16 +35,19 @@ pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES)
 tests: cxxtests pytests
 	@true
 
-pytests: pyext
-	@true
-
 cxxtests: test/testParamPoints test/testIpol test/testMaster
 	@true
 
-test/test%:
-	g++ -std=c++11 $(CXXFLAGS) $^.cc -Iinclude -Llib -lProfessor2 -o $@
+# test/testIpol: test/testIpol.cc $(LIBHEADERS)
+# 	g++ -std=c++11 $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
 
-check: all
+test/%: test/%.cc $(LIBHEADERS)
+	g++ -std=c++11 $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
+
+pytests: pyext
+	@true
+
+check: cxxtests
 	@echo "testParamPoints\n" && test/testParamPoints && echo "\n\n"
 	@echo "testIpol\n" && test/testIpol && echo "\n\n"
 	@echo "testMaster\n" && test/testMaster
