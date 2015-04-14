@@ -3,9 +3,11 @@
 #include "Professor/ProfMaster.h"
 #include <iostream>
 
+using namespace std;
+
 int main(int argc, char** argv) {
 
-  vector<double> anchor1{0,0}, anchor2{0,1}, anchor3{0,2}
+  vector<double> anchor1{0,0}, anchor2{0,1}, anchor3{0,2};
   vector< vector<double> > points{anchor1, anchor2, anchor3};
 
   Professor::ParamPoints pp(points);
@@ -23,11 +25,11 @@ int main(int argc, char** argv) {
 
   for (size_t i = 0; i < 10; ++i) {
     double y = i*0.2;
-    std::cout << "Value of Test1 at (x,y) = (0," << y << ") = " << pm.getValue("Test1", {0,y}) << std::endl;
+    cout << "Value of Test1 at (x,y) = (0," << y << ") = " << pm.value("Test1", {0,y}) << endl;
   }
   for (size_t i = 0; i < 10; ++i) {
     double y = i*0.2;
-    std::cout << "Value of Test1 at (x,y) = (0," << y << ") = " << pmvec.getValue("Test1", {0,y}) << std::endl;
+    cout << "Value of Test1 at (x,y) = (0," << y << ") = " << pmvec.value("Test1", {0,y}) << endl;
   }
 
   return 0;
