@@ -44,11 +44,16 @@ test/%: test/%.cc $(LIBHEADERS) lib
 pytests: pyext
 	@true
 
-check: cxxtests
+check: tests
 	@echo
 	@echo "testParamPoints" && test/testParamPoints && echo "\n\n"
 	@echo "testIpol" && test/testIpol && echo "\n\n"
 	@echo "testMaster" && test/testMaster
+
+icheck: tests
+	test/testPython
+	test/testPython1D
+	test/testPython2D
 
 clean:
 	rm -rf obj/*.o lib/*
