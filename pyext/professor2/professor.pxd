@@ -5,12 +5,12 @@ from libcpp cimport bool
 from libcpp.string cimport string
 
 
-cdef extern from "Professor/ParamPoints.h":
+cdef extern from "Professor/ParamPoints.h" namespace "Professor":
     cdef cppclass ParamPoints:
         ParamPoints(const vector[ vector[double] ]&)
         # TODO: 'dress' this Python wrapper with more functionality than the basic C++ object
 
-cdef extern from "Professor/Ipol.h":
+cdef extern from "Professor/Ipol.h" namespace "Professor":
     cdef cppclass Ipol:
         # Ipol(const vector[ vector[double] ] p, const vector[double]&, int, const string&)
         Ipol(const ParamPoints& p, const vector[double]&, int, const string&)
@@ -25,7 +25,7 @@ cdef extern from "Professor/Ipol.h":
         string toString(const string&)
         string name()
 
-cdef extern from "Professor/ProfMaster.h":
+cdef extern from "Professor/ProfMaster.h" namespace "Professor":
     cdef cppclass ProfMaster:
         ProfMaster(vector[vector[double]])
         void addIpol(string, vector[double], int)
