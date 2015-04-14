@@ -7,17 +7,13 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-  vector<double> anchor1{0,0}, anchor2{0,1}, anchor3{0,2};
-  vector< vector<double> > points{anchor1, anchor2, anchor3};
+  const vector<double> anchor1{0,0}, anchor2{0,1}, anchor3{0,2};
+  const vector< vector<double> > points{anchor1, anchor2, anchor3};
 
   Professor::ParamPoints pp(points);
   Professor::ProfMaster pm(pp), pmvec(points);
 
-  vector<double> val;
-  val.push_back(0.0);
-  val.push_back(1.0);
-  val.push_back(2.0);
-
+  const vector<double> val{0,1,2};
   pm.addIpol("Test1", val, 1);
   pm.addIpol("Test2: 1 1.11022e-16 0 1");
   pmvec.addIpol("Test1", val, 1);

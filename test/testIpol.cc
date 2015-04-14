@@ -7,16 +7,12 @@ int main() {
 
   using namespace std;
 
-  const vector<double> anchor1 = {{ 0, 0 }};
-  const vector<double> anchor2 = {{ 0, 1 }};
-  const vector<double> anchor3 = {{ 0, 2 }};
-  const vector< vector<double> > points = {{ anchor1, anchor2, anchor3 }};
+  const vector<double> anchor1{0,0}, anchor2{0,1}, anchor3{0,2};
+  const vector< vector<double> > points{anchor1, anchor2, anchor3};
+  const vector<double> vals{0, 1, 2};
+  const vector<double> point{0.0, 0.5};
 
-  const vector<double> vals = {{ 0, 1, 2 }};
-
-  const vector<double> point = {{ 0.0, 0.5 }};
-
-  Professor::Ipol ip1(points, vals, 1, "FirstTest");
+  Professor::Ipol ip1(points, vals, 1);
   cout << ip1.value(anchor1) << endl;
   cout << ip1.value(point) << endl;
 
