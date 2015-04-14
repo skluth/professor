@@ -37,8 +37,10 @@ cdef class Ipol:
     def coeffs(self):
         return self._ptr.coeffs()
 
-    def value(self, P):
-        return self._ptr.value(P)
+    def value(self, *params):
+        if len(params) == 1 and hasattr(params[0], "__iter__"):
+            params = params[0]
+        return self._ptr.value(params)
 
     def order(self):
         return self._ptr.order()
