@@ -45,9 +45,10 @@ pytests: pyext
 	@true
 
 check: cxxtests
-	@echo "testParamPoints\n" && test/testParamPoints && echo "\n\n"
-	@echo "testIpol\n" && test/testIpol && echo "\n\n"
-	@echo "testMaster\n" && test/testMaster
+	@echo
+	@echo "testParamPoints" && test/testParamPoints && echo "\n\n"
+	@echo "testIpol" && test/testIpol && echo "\n\n"
+	@echo "testMaster" && test/testMaster
 
 clean:
 	rm -rf obj/*.o lib/*
