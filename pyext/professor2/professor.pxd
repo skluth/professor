@@ -27,6 +27,6 @@ cdef extern from "Professor/Ipol.h":
 
 cdef extern from "Professor/ProfMaster.h":
     cdef cppclass ProfMaster:
-        ProfMaster(vector[ vector[double] ])
+        ProfMaster(vector[vector[double]])
         void addIpol(string, vector[double], int)
-        double getValue(string, vector[double])
+        double value(string, vector[double])

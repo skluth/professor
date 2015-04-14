@@ -21,7 +21,7 @@ ipol = Ipol(P, Y, 3)
 
 for i in xrange(M_X.shape[0]):
     for j in xrange(M_X.shape[1]):
-        M_Z[i][j] = ipol.value(np.asarray([M_X[i][j], M_Y[i][j]]))
+        M_Z[i][j] = ipol.value([M_X[i][j], M_Y[i][j]])
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
