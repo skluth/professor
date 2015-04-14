@@ -1,25 +1,40 @@
 #CXXFLAGS := -g -O3
 CXXFLAGS := -O3
 
-.PHONY := all
+LIBHEADERS := $(wildcard include/Professor/*.h)
+LIBSOURCES := $(wildcard src/*.cc)
+TESTSOURCES := $(wildcard test/*.cc)
+CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
-# TODO: Build tests against whole lib
+.PHONY := all lib tests cxxtests pytests
 
-# TODO: Split the make rule into multiple targets, with proper 'atomic' rebuild triggering
+# TODO: Split the make rule into more atomic targets, to allow parallel builds of the object files
 
-all:
-	mkdir -p obj lib bin test
+all: lib pyext test
+	@true
+
+lib/libProfessor2.so: $(LIBHEADERS) $(LIBSOURCES)
+	mkdir -p obj lib
 	g++ -std=c++11 $(CXXFLAGS) -c -fPIC src/Ipol.cc -Iinclude -o obj/Ipol.o
 	g++ -std=c++11 $(CXXFLAGS) -c -fPIC src/ParamPoints.cc -Iinclude -o obj/ParamPoints.o
 	g++ -std=c++11 $(CXXFLAGS) -c -fPIC src/ProfMaster.cc -Iinclude -o obj/ProfMaster.o
-	g++ -std=c++11 -shared -Wl,-soname,libProfessor2.so -o lib/libProfessor2.so   obj/ProfMaster.o obj/ParamPoints.o obj/Ipol.o
-	g++ -std=c++11 $(CXXFLAGS) src/testIpol.cc obj/ParamPoints.o obj/Ipol.o -Iinclude -o test/testIpol
-	g++ -std=c++11 $(CXXFLAGS) src/testParamPoints.cc obj/ParamPoints.o -Iinclude -o test/testParamPoints
-	#g++ -std=c++11 $(CXXFLAGS) src/testMaster.cc obj/ParamPoints.o obj/Ipol.o obj/ProfMaster.o -Iinclude -o test/testMaster
+	g++ -std=c++11 -shared -Wl,-soname,libProfessor2.so -o lib/libProfessor2.so $(wildcard obj/*.o)
+
+pyext/professor2/core.so: lib/libProfessor2.so $(CYTHONSOURCES)
 	cython pyext/professor2/core.pyx --cplus
 	python pyext/setup.py build_ext -i --force
 	python pyext/setup.py install --prefix=.
 
+tests: cxxtests pytests
+	@true
+
+pytests: pyext
+	@true
+
+cxxtests: lib/libProfessor2.so
+	g++ -std=c++11 $(CXXFLAGS) test/testIpol.cc -Iinclude -Llib -lProfessor2 -o test/testIpol
+	g++ -std=c++11 $(CXXFLAGS) test/testParamPoints.cc -Iinclude -Llib -lProfessor2 -o test/testParamPoints
+	g++ -std=c++11 $(CXXFLAGS) test/testMaster.cc -Iinclude -Llib -lProfessor2 -o test/testMaster
 
 clean:
-	rm -rf obj/*.o test/*
+	rm -rf obj/*.o lib/*
