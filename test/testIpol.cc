@@ -19,10 +19,11 @@ int main() {
   cout << ip1.toString("Crazy") << endl;
 
   Professor::Ipol ip2("Test: 2 1 1.11022e-16 0 1");
-  Professor::Ipol ip3("2 1 1.11022e-16 0 1");
   cout << ip2.value(point) << endl;
-  cout << ip3.value(point) << endl;
   cout << ip2.toString() << endl;
+
+  Professor::Ipol ip3("2 1 1.11022e-16 0 1");
+  cout << ip3.value(point) << endl;
   cout << ip3.toString("Awesome") << endl;
 
   return 0;

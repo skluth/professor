@@ -24,10 +24,10 @@ namespace Professor {
 
   void Ipol::fromString(const string& s) {
     // Check if a name is given in the string, and append a null one if not
-    const string s2 = (s.find(":") == std::string::npos) ? (": " + s) : s;
+    const string s2 = (s.find(":") == std::string::npos) ? (" : " + s) : s;
     // Identify the name and remainder parts
     vector<string> tokens, temp;
-    boost::algorithm::split(temp, s, boost::is_any_of(":"), boost::token_compress_on);
+    boost::algorithm::split(temp, s2, boost::is_any_of(":"), boost::token_compress_on);
     _name = temp[0];
     // Split the remaining string into whitespace-separated data tokens
     boost::algorithm::trim(temp[1]);
@@ -42,8 +42,8 @@ namespace Professor {
   double Ipol::value(const vector<double>& params) const {
     if (params.size() != dim()) {
       stringstream ss;
-      ss << "Incorrect number of parameters " << params.size() << " passed to Ipol::value ("
-         << dim() << " params required)";
+      ss << "Incorrect number of parameters passed to Ipol::value ("
+         << dim() << " params required, " << params.size() << " supplied)";
       throw IpolError(ss.str());
     }
     const vector<double> lv = _getLongVector(params, order());
@@ -59,6 +59,7 @@ namespace Professor {
   void Ipol::_calcCoeffs() const {
     /// @todo Throw rather than assert if there's a possibility of user-error
     assert(_pts != NULL);
+    // cout << _pts->numPoints() << ", " << _values.size() << endl;
     assert(_pts->numPoints() == _values.size());
     const int ncoeff = numCoeffs(dim(), order());
     if (ncoeff > _pts->numPoints()) {

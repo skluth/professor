@@ -4,7 +4,7 @@ CXXFLAGS := -O3
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
 LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol ProfMaster)
-
+TESTPROGS  := test/testParamPoints test/testIpol test/testMaster
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
 .PHONY := all lib pyext tests cxxtests pytests check clean
@@ -35,13 +35,10 @@ pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES)
 tests: cxxtests pytests
 	@true
 
-cxxtests: test/testParamPoints test/testIpol test/testMaster
+cxxtests: $(TESTPROGS)
 	@true
 
-# test/testIpol: test/testIpol.cc $(LIBHEADERS)
-# 	g++ -std=c++11 $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
-
-test/%: test/%.cc $(LIBHEADERS)
+test/%: test/%.cc $(LIBHEADERS) lib
 	g++ -std=c++11 $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
 
 pytests: pyext
@@ -53,4 +50,6 @@ check: cxxtests
 	@echo "testMaster\n" && test/testMaster
 
 clean:
-	rm -rf obj/*.o lib/* pyext/professor2/core.cpp pyext/professor2/core.so
+	rm -f obj/*.o lib/*
+	rm -f pyext/professor2/core.cpp pyext/professor2/core.so
+	rm -f $(TESTPROGS)

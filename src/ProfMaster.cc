@@ -5,8 +5,8 @@ namespace Professor {
   using namespace std;
 
 
-  void ProfMaster::addIpol(const string& name, const vector<double>& v, int order) {
-    _pdf[name] = unique_ptr<Ipol>(new Ipol(_anchors, v, order, name)); ///< @todo Should use make_unique, but that requires C++14
+  void ProfMaster::addIpol(const string& name, const vector<double>& vals, int order) {
+    _pdf[name] = unique_ptr<Ipol>(new Ipol(_anchors, vals, order, name)); ///< @todo Should use make_unique, but that requires C++14
   }
 
   void ProfMaster::addIpol(const string& ipolstr) {
