@@ -8,16 +8,13 @@ int main() {
   using namespace std;
 
   const vector<double> anchor1{0,0}, anchor2{0,1}, anchor3{0,2};
-  const vector< vector<double> > points{anchor1, anchor2, anchor3};
+  const Professor::ParamPoints points( {anchor1, anchor2, anchor3} );
   const vector<double> vals{0, 1, 2};
   const vector<double> point{0.0, 0.5};
 
   Professor::Ipol ip1(points, vals, 1);
-  cout << ip1.points()->numPoints() << " " << ip1.points()->dim() << endl;
-
   cout << ip1.value(anchor1) << endl;
   cout << ip1.value(point) << endl;
-
   cout << ip1.toString() << endl;
   cout << ip1.toString("Crazy") << endl;
 

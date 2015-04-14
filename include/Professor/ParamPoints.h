@@ -14,6 +14,8 @@ namespace Professor {
   /// Typedef for a list of parameters, defining a parameter point
   typedef std::vector<double> ParamPoint;
 
+  /// @todo I think we need to rename the more structured object
+  // typedef const std::vector< std::vector<double> > ParamPointVec;
 
   /// Class for the parametrisation hypercube, i.e. anchors
   class ParamPoints {
@@ -49,6 +51,7 @@ namespace Professor {
 
     /// Dimension of (anchor) points
     int dim() const {
+      assert(!_parampoints.empty()); //< Emptiness should not be possible
       return _parampoints.front().size();
     }
 
