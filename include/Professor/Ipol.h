@@ -43,6 +43,7 @@ namespace Professor {
     Ipol(const ParamPoints& pts, const std::vector<double>& values, int order, const std::string& name="") {
       _values = values;
       _pts = &pts;
+      _dim = pts.numPoints();
       _order = order;
       _name = name;
     };
@@ -51,9 +52,6 @@ namespace Professor {
     Ipol(const std::string& s) {
       fromString(s);
     };
-
-    /// The dtor
-    // ~Ipol() { };
 
     /// Read and set coefficients (name), order from string
     void fromString(const std::string& s);
@@ -82,7 +80,10 @@ namespace Professor {
 
     /// Accessor to the dimension of the param points
     /// @todo This should be known, cf. order(), without needing to have an attached ParamPoints object
-    int dim() const { return _pts->dim(); }
+    int dim() const {
+      if (_pts == NULL) throw IpolError("Ipol: Attempted to get parameter dimension without an attached ParamPoints");
+      return _pts->dim();
+    }
 
     /// Get the order of the parametrisation
     int order() const { return _order; }
@@ -123,7 +124,7 @@ namespace Professor {
 
   private:
 
-    int _order;
+    int _dim, _order;
     std::string _name;
     std::vector<double> _values;
     mutable std::vector<double> _coeffs;

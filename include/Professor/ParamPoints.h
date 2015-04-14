@@ -22,6 +22,7 @@ namespace Professor {
     /// @todo Also record the parameter names in this object
 
     /// Constructor, takes anchors as vector<vector<double>> = vector<ParamPoint>
+    /// @todo Also take the parameter names as an arg
     ParamPoints(const std::vector< std::vector<double> >& ppoints);
 
     /// Implicit conversion operator to vector<vector<double>> = vector<ParamPoint>
@@ -32,14 +33,15 @@ namespace Professor {
 
     /// Overly complicated push_back
     void addParamPoint(const std::vector<double>& p) {
-      if (!_locked) {
-        // This ensures that all ppoints are of the same dimension
-        if (_parampoints.size() > 0) assert(p.size() == _parampoints[0].size());
-        _parampoints.push_back(p);
-      } else {
-        std::cerr << "Adding point to locked collection not implemented, aborting" <<std::endl;
+      if (_locked) {
+        /// @todo Throw a ParamPointsError or similar rather than calling abort()
+        std::cerr << "Adding point to locked collection not implemented, aborting" << std::endl;
         abort();
       }
+      // This ensures that all ppoints are of the same dimension
+      if (_parampoints.size() > 0)
+        assert(p.size() == _parampoints[0].size()); ///< @todo Throw an exception instead of assert
+      _parampoints.push_back(p);
     }
 
     /// Number of anchor points
@@ -47,7 +49,7 @@ namespace Professor {
 
     /// Dimension of (anchor) points
     int dim() const {
-      return (numPoints() > 0) ? _parampoints.front().size() : 0;
+      return _parampoints.front().size();
     }
 
     /// Centre of the anchor hyper cube

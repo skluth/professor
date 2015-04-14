@@ -13,6 +13,8 @@ int main() {
   const vector<double> point{0.0, 0.5};
 
   Professor::Ipol ip1(points, vals, 1);
+  cout << ip1.points().size() << " " << ip1.points().front().size() << endl;
+
   cout << ip1.value(anchor1) << endl;
   cout << ip1.value(point) << endl;
 

@@ -15,7 +15,7 @@ namespace Professor {
     int ntok = 1;
     int r = min(order, dim);
     for (int i = 0; i < r; ++i) {
-      ntok=ntok*(dim+order-i)/(i+1);
+      ntok = ntok*(dim+order-i)/(i+1);
     }
     return ntok;
   }
@@ -47,6 +47,7 @@ namespace Professor {
 
 
   double Ipol::value(const vector<double>& params) const {
+    /// @todo Check that the number of params is correct (requires storing it along with the order)
     const vector<double> lv = _getLongVector(params, order());
     assert(lv.size() == coeffs().size());
     double v = 0.0;
@@ -58,12 +59,15 @@ namespace Professor {
 
 
   void Ipol::_calcCoeffs() const {
+    /// @todo Throw rather than assert if there's a possibility of user-error
     assert(_pts != NULL);
     assert(_pts->numPoints() == _values.size());
-    int ncoeff = numCoeffs(dim(), order());
+    const int ncoeff = numCoeffs(dim(), order());
     if (ncoeff > _pts->numPoints()) {
-      cout << "Error: not enough (" << ncoeff << " vs. " << _pts->numPoints() << ") anchor points, aborting" << endl;
-      abort();
+      stringstream ss;
+      ss << "Ipol: not enough (" << ncoeff << " vs. " << _pts->numPoints() << ") anchor points "
+           << "for interpolating with " << dim() << " params at order " << order();
+      throw IpolError(ss.str());
     }
     MatrixXd DP = MatrixXd(_pts->numPoints(), ncoeff);
     VectorXd MC = VectorXd(_pts->numPoints());

@@ -5,12 +5,15 @@ namespace Professor {
   using namespace std;
 
 
-  ParamPoints::ParamPoints(const vector< vector<double> >& p) {
-    _parampoints.clear();
-    _locked = false;
-    for (size_t i = 0; i < p.size(); ++i) {
-      _parampoints.push_back(p[i]);
-    }
+  ParamPoints::ParamPoints(const vector< vector<double> >& ppoints) {
+    /// @todo Throw a ParamPointsError or similar rather than this assert
+    assert(!ppoints.empty());
+    // _parampoints.clear();
+    // _locked = false;
+    // for (size_t i = 0; i < p.size(); ++i) {
+    //   _parampoints.push_back(p[i]);
+    // }
+    _parampoints = ppoints;
     _locked = true;
   }
 

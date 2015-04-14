@@ -45,9 +45,9 @@ test/test%:
 	g++ -std=c++11 $(CXXFLAGS) $^.cc -Iinclude -Llib -lProfessor2 -o $@
 
 check: all
-	echo && test/testParamPoints
-	echo && test/testIpol
-	echo && test/testMaster
+	@echo "testParamPoints\n" && test/testParamPoints && echo "\n\n"
+	@echo "testIpol\n" && test/testIpol && echo "\n\n"
+	@echo "testMaster\n" && test/testMaster
 
 clean:
 	rm -rf obj/*.o lib/* pyext/professor2/core.cpp pyext/professor2/core.so
