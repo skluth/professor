@@ -1,46 +1,140 @@
 #! /usr/bin/env python
 
-# TODO: offer hier and flat options for structuring resulting files
-# TODO: handle weighting via SymPy expresssions: solve(Eq(y, sympify("log(x+3)")), x)[0] ; f = lambdify(y, e)
-# TODO: also accept range file as input
+"""\
+%prog [-t template1.txt -t ...] PARAM1:low1:high1 PARAM2:low2:high2:'exp(x)'
+
+Sample a parameter space, creating a set of parameter files and optionally
+substituting into script templates, with either flat sampling (default) or
+sampling in a transformed space.
+
+TODO:
+ * offer an outdir, and hier and flat options for structuring resulting files
+ * also accept range file as input
+"""
 
 import optparse
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 op.add_option("-n", dest="NUMPOINTS", metavar="NUM", type=int, default=100, help="number of samples to generate [default=%default]")
 op.add_option("-t", dest="TEMPLATES", metavar="FILE", action="append", default=[], help="specify a template file to be populated for each sample point. Can be given multiple times")
+op.add_option("-p", "--pfile", dest="PARAMSFILE", metavar="FILE", default="params.dat", help="specify params file base name to be populated for each sample point")
+op.add_option("-P", "--no-pfile", dest="PARAMSFILE", action="store_const", const=None, help="do not write a params file for each sample point")
 opts, args = op.parse_args()
 
+def mkrunstr(num):
+    return "{run:04d}".format(run=num)
+
+def mkoutname(fname, run, prefix="", suffix=""):
+    if type(run) is int:
+        run = mkrunstr(run)
+    fname = os.path.basename(fname)
+    base, ext = os.path.splitext(fname)
+    rtn = prefix + base + "-" + run + suffix + ext
+    return rtn
+
+
+## Populate dict of script templates
+import os
+TEMPLATES = {}
+for tname in opts.TEMPLATES:
+    base, ext = os.path.basename(tname)
+    with open(tname, "r") as f:
+        TEMPLATES[tname] = f.read()
+
+
+## Define a sampler type
+# TODO: Move this into a utils submodule
+class Sampler(object):
+
+    def __init__(self, low, high, bias=None):
+        self.low = float(low)
+        self.high = float(high)
+        self.f, self.invf = None, None
+        if bias:
+            ## Import clever machinery
+            try:
+                import sympy as sp
+                from sympy.abc import x, y
+                import numpy as np
+            except ImportError:
+                print "Bias functions require SymPy and NumPy to be installed... exiting"
+                exit(1)
+            ## Make transformation and its inverse
+            try:
+                #print bias
+                f_expr = sp.sympify(bias)
+            except sp.SympifyError, e:
+                print "Bias function could not be parsed by SymPy:"
+                print e
+                exit(1)
+            try:
+                finv_exprs = sp.solve(sp.Eq(y, f_expr), x)
+                finv_expr = finv_exprs[0]
+                #print f_expr, finv_exprs
+                self.f = sp.lambdify(x, f_expr, "numpy")
+                self.finv = sp.lambdify(y, finv_expr, "numpy")
+                self.lowf, self.highf = self.f(self.low), self.f(self.high)
+            except Exception, e:
+                print "Bias function could not be used/inverted by SymPy:"
+                print e
+                exit(1)
+
+
+    def shoot(self):
+        import random
+        if not self.f:
+            ## Just uniform sampling between low..high
+            val = random.uniform(self.low, self.high)
+        else:
+            ## Uniform sample in transformed space, and transform the result back
+            valf = random.uniform(self.lowf, self.highf)
+            val = self.finv(valf)
+        return val
+
+    def __call__(self):
+        return self.shoot()
+
+## Test biased sampler machinery
+# s = Sampler(1, 10, "exp(x)")
+# import yoda
+# h = yoda.Histo1D(20, 0, 10)
+# for _ in xrange(10000):
+#     h.fill( s() )
+# yoda.plot(h, "foo.pdf")
+
+
+## Populate param samplers dictionary
 try:
     from collections import OrderedDict
 except:
     from ordereddict import OrderedDict
+samplers = OrderedDict()
+for a in args:
+    argparts = a.split(":")
+    # TODO: enforce arg format correctness
+    name = argparts[0]
+    sampler = Sampler(*argparts[1:])
+    samplers[name] = sampler
 
-import os
-TEMPLATES = {}
-for tname in opts.TEMPLATES:
-    base, ext = os.path.splitext(ob.path.basename(tname))
-    with open(tname, "r") as f:
-        TEMPLATES[(base,ext)] = f.read()
 
-import random
+## Do random param sampling and template instantiation
 for n in xrange(opts.NUMPOINTS):
-    npad = "{run:04d}".format(run=n)
+    npad = mkrunstr(n)
 
     ## Populate params dictionary
     params = OrderedDict()
-    for a in args:
-        name, low, high = a.split("/")
-        val = random.uniform(float(low), float(high))
-        params[name] = val
+    for name, s in samplers.iteritems():
+        params[name] = s()
 
-    ## Write params file unless told otherwise
-    with open("params-" + npad + ".dat", "w") as pf: #< TODO: or use hier scheme
-        for k, v in params.iteritems():
-            pf.write("{name} {val:e}\n".format(name=k, val=v))
+    ## Write params file if not disabled (by specifying a null filename)
+    if opts.PARAMSFILE:
+        pname = mkoutname(opts.PARAMSFILE, npad)
+        with open(pname, "w") as pf: #< TODO: or use hier scheme
+            for k, v in params.iteritems():
+                pf.write("{name} {val:e}\n".format(name=k, val=v))
 
     ## Instantiate template(s)
-    params["N"] = npad
-    for (base, ext), tmpl in TEMPLATES.iteritems():
+    params["N"] = npad #< Add the run number *after* writing out the params file
+    for tname, tmpl in TEMPLATES.iteritems():
         txt = tmpl.format(**params)
-        with open("scan-" + base + "-" + npad + ext, "w") as tf: #< TODO: or use hier scheme
+        with open(mkoutname(tname, npad, "scan-"), "w") as tf: #< TODO: or use hier scheme
             tf.write(txt)
