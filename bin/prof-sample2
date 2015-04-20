@@ -6,8 +6,8 @@
 
 import optparse
 op = optparse.OptionParser()
-op.add_option("-n", dest="NUMPOINTS", metavar="NUM", type=int)
-op.add_option("-t", dest="TEMPLATE", metavar="FILE")
+op.add_option("-n", dest="NUMPOINTS", metavar="NUM", type=int, default=100, help="number of samples to generate [default=%default]")
+op.add_option("-t", dest="TEMPLATES", metavar="FILE", action="append", default=[], help="specify a template file to be populated for each sample point. Can be given multiple times")
 opts, args = op.parse_args()
 
 try:
@@ -16,9 +16,11 @@ except:
     from ordereddict import OrderedDict
 
 import os
-BASE, EXTN = os.path.splitext(opts.TEMPLATE)
-with open(opts.TEMPLATE, "r") as f:
-    TMPL = f.read()
+TEMPLATES = {}
+for tname in opts.TEMPLATES:
+    base, ext = os.path.splitext(ob.path.basename(tname))
+    with open(tname, "r") as f:
+        TEMPLATES[(base,ext)] = f.read()
 
 import random
 for n in xrange(opts.NUMPOINTS):
@@ -38,6 +40,7 @@ for n in xrange(opts.NUMPOINTS):
 
     ## Instantiate template(s)
     params["N"] = npad
-    script = TMPL.format(**params)
-    with open("scan-" + BASE + "-" + npad + EXTN, "w") as sf: #< TODO: or use hier scheme
-        sf.write(script)
+    for (base, ext), tmpl in TEMPLATES.iteritems():
+        txt = tmpl.format(**params)
+        with open("scan-" + base + "-" + npad + ext, "w") as tf: #< TODO: or use hier scheme
+            tf.write(txt)
