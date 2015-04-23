@@ -6,25 +6,44 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <stdexcept>
 
 namespace Professor {
 
 
   /// Throwable error
-  /// @todo  What's the point in a non-silenceable exception with no state?! Assume this is a placeholder to be improved...
-  class IpolError {
-  public:
-    IpolError(const std::string& reason) {
-      std::cerr << reason << std::endl;
-    };
-    ~IpolError(){};
+  struct IpolError : public std::runtime_error {
+    IpolError(const std::string& reason) : std::runtime_error(reason) { }
   };
 
 
+  /// @name Calculator functions for parameterisation elements
+  //@{
+
   /// Calculate the number of coefficients for the given parameter space dimension and polynomial order
-  /// @todo Rename to numCoeffs() for compactness & compatibility with coeffs() function
   /// @todo Deal in uints
   int numCoeffs(int dim, int order);
+
+  /// Calculate parametrisation coefficients
+  std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order);
+
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
+  std::vector<double> mkLongVector(const std::vector<double>& p, int order);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 1st order
+  std::vector<double> mkLongVector1D(const std::vector<double>& p);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 2nd order
+  std::vector<double> mkLongVector2D(const std::vector<double>& p);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 3rd order
+  std::vector<double> mkLongVector3D(const std::vector<double>& p);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 4th order
+  std::vector<double> mkLongVector4D(const std::vector<double>& p);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 5th order
+  std::vector<double> mkLongVector5D(const std::vector<double>& p);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 6th order
+  std::vector<double> mkLongVector6D(const std::vector<double>& p);
+
+  //@}
+
 
 
   /// The heart of Professor: the interpolation of a single numerical value through the parameter space
@@ -32,20 +51,11 @@ namespace Professor {
   public:
 
     /// Constructor for calculation of coefficients
-    ///
-    /// @todo The pts nested vector passed in is stored by pointer for lazy
-    /// evaluation. The object passed as pts therefore must remain valid until the
-    /// ipol.coeffs() or ipol.value() function is called (at which stage the
-    /// pointer is nullified). This is for memory & CPU efficiency: lazy
-    /// evaluation of coeffs is good, but we can't afford to have every bin
-    /// storing the same full list of hundreds of N-dimensional parameter points!
-    // Ipol(const std::vector< std::vector<double> >& pts, const std::vector<double>& values, int order, const std::string& name="") {
-    explicit Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="") {
-      _pts = &pts;
+    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="") {
       _dim = pts.dim();
-      _values = ptvals;
       _order = order;
       _name = name;
+      _coeffs = calcCoeffs(pts, ptvals, _order);
     };
 
 
@@ -55,33 +65,22 @@ namespace Professor {
     };
 
 
+    /// Get string representation
+    std::string toString(const std::string& name="") const;
+
     /// Read and set coefficients (name), order from string
     void fromString(const std::string& s);
-
-
-    /// Get string representation
-    std::string toString(const std::string& name="") const {
-      std::stringstream ss;
-      if (!name.empty()) ss << name << ": ";
-      else if (!_name.empty()) ss << _name << ": ";
-      ss << this->dim() << " ";
-      ss << this->order() << " ";
-      for (const double& a : coeffs())
-        ss << a << " ";
-      return ss.str();
-    }
 
 
     /// Get the value of the parametrisation at point p
     double value(const std::vector<double>& p) const;
 
-    /// Get a single coefficient, calculated lazily and cached
-    double coeff(size_t i) const {
-      return coeffs()[i];
-    }
-
     /// Get the vector of coefficients, calculated lazily and cached
-    const std::vector<double>& coeffs() const;
+    const std::vector<double>& coeffs() const { return _coeffs; }
+
+    /// Get a single coefficient, calculated lazily and cached
+    double coeff(size_t i) const { return coeffs()[i]; }
+
 
     /// Accessor to the dimension of the param points
     int dim() const { return _dim; }
@@ -92,34 +91,6 @@ namespace Professor {
     /// Get the name of the parametrised object
     std::string name() const {return _name; }
 
-    /// Get the attached params -- may be NULL after the coeffs have been computed
-    const ParamPoints* points() const { return _pts; }
-
-
-  protected:
-
-    /// Calculate parametrisation coefficients
-    void _calcCoeffs() const;
-
-    /// Get the vector of
-    std::vector<double> _getLongVector(const std::vector<double>& p, int order) const;
-
-    /// @todo What is the point of this, since the passed coeffs are not used?
-    std::vector<double> _getLongVector(const std::vector<double>& p, const std::vector<double>& coeffs, int order) const {
-      /// @todo Throw an IpolError instead
-      if (coeffs.size() != numCoeffs(p.size(), order))
-        std::cout << "ERROR invalid number of coefficients: " << coeffs.size() << " supplied, " << numCoeffs(p.size(), order) << " required, exiting" << std::endl;
-      return _getLongVector(p, order);
-    }
-
-    /// @name Explicit long-vector calculators for various polynomial orders
-    //@{
-    std::vector<double> _getLongVector1D(const std::vector<double>& p) const;
-    std::vector<double> _getLongVector2D(const std::vector<double>& p) const;
-    std::vector<double> _getLongVector3D(const std::vector<double>& p) const;
-    std::vector<double> _getLongVector4D(const std::vector<double>& p) const;
-    std::vector<double> _getLongVector5D(const std::vector<double>& p) const;
-    std::vector<double> _getLongVector6D(const std::vector<double>& p) const;
     //@}
 
 
@@ -127,9 +98,7 @@ namespace Professor {
 
     int _dim, _order;
     std::string _name;
-    std::vector<double> _values;
-    mutable std::vector<double> _coeffs;
-    mutable const ParamPoints* _pts; //= 0; TODO: warning: non-static data member initializers only available with -std=c++11
+    std::vector<double> _coeffs;
 
   };
 

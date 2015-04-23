@@ -1,0 +1,9 @@
+2015-04-23  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Remove bound ParamPoints pointer from Ipol, and ditch lazy coeff evaluation in favour of simplicity and construct-time coeff calculating.
+
+	* Move long vector and coeff building into unbound functions rather than Ipol methods.
+
+	* Start of ChangeLog. Library has already iterated quite a bit.
+
+	* FILL IN EARLY HISTORY FROM HG LOG

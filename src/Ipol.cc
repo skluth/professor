@@ -22,6 +22,180 @@ namespace Professor {
   }
 
 
+  // NB. Not a member function
+  std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order) {
+    if (pts.numPoints() != vals.size())
+      throw IpolError("pts.numPoints() != vals.size() in calcCoeffs");
+    const int ncoeff = numCoeffs(pts.dim(), order);
+    if (ncoeff > pts.numPoints()) {
+      stringstream ss;
+      ss << "Ipol: not enough (" << ncoeff << " vs. " << pts.numPoints() << ") anchor points "
+           << "for interpolating with " << pts.dim() << " params at order " << order;
+      throw IpolError(ss.str());
+    }
+    MatrixXd DP = MatrixXd(pts.numPoints(), ncoeff);
+    VectorXd MC = VectorXd(pts.numPoints());
+
+    vector<double> tempLV;
+    vector<double> tempDP;
+    // Populate the matrix to be inverted
+    for (int a = 0; a < pts.numPoints(); ++a) {
+      tempLV = mkLongVector(pts.point(a), order);
+      for (size_t i = 0; i < tempLV.size(); ++i) {
+        DP(a, i) = tempLV[i];
+      }
+      // The vector of values (corresponding to anchors)
+      MC[a] = vals[a];
+    }
+    VectorXd co = DP.jacobiSvd(ComputeThinU|ComputeThinV).solve(MC);
+    vector<double> rtn;
+    for (size_t i = 0; i < ncoeff; ++i) rtn.push_back(co[i]);
+    return rtn;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector(const vector<double>& p, int order) {
+    if (order < 1 || order > 6) {
+      std::cout << "ERROR degree " << order << " not implemented, exiting" << std::endl;
+      /// @todo Never call exit() from a library function. Throw an IpolError instead
+      // exit(1);
+    }
+    if (order == 1) return mkLongVector1D(p);
+    if (order == 2) return mkLongVector2D(p);
+    if (order == 3) return mkLongVector3D(p);
+    if (order == 4) return mkLongVector4D(p);
+    if (order == 5) return mkLongVector5D(p);
+    if (order == 6) return mkLongVector6D(p);
+  }
+
+
+  // /// @todo What's the point, other than adding an optional consistency check?
+  // std::vector<double> Ipol::mkLongVector(const std::vector<double>& p, const std::vector<double>& coeffs, int order) {
+  //   if (coeffs.size() != numCoeffs(p.size(), order)) {
+  //     stringstream ss;
+  //     ss << "Invalid number of coefficients: " << coeffs.size() << " supplied, " << numCoeffs(p.size(), order) << " required";
+  //     throw IpolError(ss.str());
+  //   }
+  //   return mkLongVector(p, order);
+  // }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector1D(const vector<double>& p) {
+    vector<double> retvec;
+    retvec.reserve(1 + p.size());
+    // 0th order offset
+    retvec.push_back(1.0);
+    // Linear coefficients
+    for (size_t i = 0; i < p.size(); ++i)
+      retvec.push_back(p[i]);
+    assert(retvec.size() == numCoeffs(p.size(), 1));
+    return retvec;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector2D(const vector<double>& p) {
+    vector<double> retvec = mkLongVector1D(p);
+    // Quadratic coefficients
+    for (size_t i = 0; i < p.size(); i++)
+      for (size_t j = 0; j < p.size(); j++)
+        if (i <= j)
+          retvec.push_back(p[i]*p[j]);
+    assert(retvec.size() == numCoeffs(p.size(), 2));
+    return retvec;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector3D(const vector<double>& p) {
+    vector<double> retvec = mkLongVector2D(p);
+    // Cubic coefficients
+    for (size_t i = 0; i < p.size(); i++)
+      for (size_t j = 0; j < p.size(); j++)
+        for (size_t k = 0; k < p.size(); k++)
+          if (i<=j && i<=k && j<=k)
+            retvec.push_back(p[i]*p[j]*p[k]);
+    assert(retvec.size() == numCoeffs(p.size(), 3));
+    return retvec;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector4D(const vector<double>& p) {
+    vector<double> retvec = mkLongVector3D(p);
+    // Quartic coefficients
+    for (size_t i = 0; i < p.size(); i++)
+      for (size_t j = 0; j < p.size(); j++)
+        for (size_t k = 0; k < p.size(); k++)
+          for (size_t l = 0; l < p.size(); l++)
+            if (i<=j && i<=k && i<=l &&
+                j<=k && j<=l &&
+                k<=l)
+              retvec.push_back(p[i]*p[j]*p[k]*p[l]);
+    assert(retvec.size() == numCoeffs(p.size(), 4));
+    return retvec;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector5D(const vector<double>& p) {
+    vector<double> retvec = mkLongVector4D(p);
+    // Quintic coefficients
+    for (size_t i = 0; i < p.size(); i++)
+      for (size_t j = 0; j < p.size(); j++)
+        for (size_t k = 0; k < p.size(); k++)
+          for (size_t l = 0; l < p.size(); l++)
+            for (size_t m = 0; m < p.size(); m++)
+              if (i<=j && i<=k && i<=l && i<=m &&
+                  j<=k && j<=l && j<=m &&
+                  k<=l && k<=m &&
+                  l<=m)
+                retvec.push_back(p[i]*p[j]*p[k]*p[l]*p[m]);
+    assert(retvec.size() == numCoeffs(p.size(), 5));
+    return retvec;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector6D(const vector<double>& p) {
+    vector<double> retvec = mkLongVector5D(p);
+    // 6th order coefficients
+    for (size_t i = 0; i < p.size(); i++)
+      for (size_t j = 0; j < p.size(); j++)
+        for (size_t k = 0; k < p.size(); k++)
+          for (size_t l = 0; l < p.size(); l++)
+            for (size_t m = 0; m < p.size(); m++)
+              for (size_t n = 0; n < p.size(); n++)
+                if (i<=j && i<=k && i<=l && i<=m && i<=n &&
+                    j<=k && j<=l && j<=m && j<=n &&
+                    k<=l && k<=m && k<=n &&
+                    l<=m && l<=n &&
+                    m<=n)
+                  retvec.push_back(p[i]*p[j]*p[k]*p[l]*p[m]*p[n]);
+    assert(retvec.size() == numCoeffs(p.size(), 6));
+    return retvec;
+  }
+
+
+
+  ///////////////////////////////////////////////////////
+
+
+
+  string Ipol::toString(const string& name) const {
+    stringstream ss;
+    if (!name.empty()) ss << name << ": ";
+    else if (!_name.empty()) ss << _name << ": ";
+    ss << this->dim() << " ";
+    ss << this->order() << " ";
+    for (const double& a : coeffs())
+      ss << a << " ";
+    return ss.str();
+  }
+
+
   void Ipol::fromString(const string& s) {
     // Check if a name is given in the string, and append a null one if not
     const string s2 = (s.find(":") == std::string::npos) ? (" : " + s) : s;
@@ -46,167 +220,13 @@ namespace Professor {
          << dim() << " params required, " << params.size() << " supplied)";
       throw IpolError(ss.str());
     }
-    const vector<double> lv = _getLongVector(params, order());
+    const vector<double> lv = mkLongVector(params, order());
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 0; i < lv.size(); ++i) {
       v += lv[i] * coeff(i);
     }
     return v;
-  }
-
-
-  void Ipol::_calcCoeffs() const {
-    /// @todo Throw rather than assert if there's a possibility of user-error
-    assert(_pts != NULL);
-    // cout << _pts->numPoints() << ", " << _values.size() << endl;
-    assert(_pts->numPoints() == _values.size());
-    const int ncoeff = numCoeffs(dim(), order());
-    if (ncoeff > _pts->numPoints()) {
-      stringstream ss;
-      ss << "Ipol: not enough (" << ncoeff << " vs. " << _pts->numPoints() << ") anchor points "
-           << "for interpolating with " << dim() << " params at order " << order();
-      throw IpolError(ss.str());
-    }
-    MatrixXd DP = MatrixXd(_pts->numPoints(), ncoeff);
-    VectorXd MC = VectorXd(_pts->numPoints());
-
-    vector<double> tempLV;
-    vector<double> tempDP;
-    // Populate the to be inversed matrix
-    for (int a = 0; a < _pts->numPoints(); ++a) {
-      tempLV = _getLongVector(_pts->point(a), order());
-      for (int i = 0; i < tempLV.size(); ++i) {
-        DP(a, i) = tempLV[i];
-      }
-      // The vector of values (corresponding to anchors)
-      MC[a] = _values[a];
-    }
-    VectorXd co = DP.jacobiSvd(ComputeThinU|ComputeThinV).solve(MC);
-    vector<double> temp;
-    for (int i = 0; i < ncoeff; ++i) {
-      temp.push_back(co[i]);
-    }
-    // tuple<int, vector<double> > pb(order, temp); // TODO: do we want coeffs more multiple orders
-    _coeffs = temp;
-  }
-
-
-  const vector<double>& Ipol::coeffs() const {
-    if (_coeffs.empty()) {
-      if (_pts == NULL) throw IpolError("No parameter points available when calculating ipol coeffs");
-      _calcCoeffs();
-      _pts = NULL; //< Not necessary, but ensures consistency
-    }
-    return _coeffs;
-  }
-
-
-
-  vector<double> Ipol::_getLongVector(const vector<double>& p, int order) const {
-    if (order < 1 || order > 6) {
-      std::cout << "ERROR degree " << order << " not implemented, exiting" << std::endl;
-      /// @todo Never call exit() from a library function. Throw an IpolError instead
-      // exit(1);
-    }
-    if (order == 1) return _getLongVector1D(p);
-    if (order == 2) return _getLongVector2D(p);
-    if (order == 3) return _getLongVector3D(p);
-    if (order == 4) return _getLongVector4D(p);
-    if (order == 5) return _getLongVector5D(p);
-    if (order == 6) return _getLongVector6D(p);
-  }
-
-
-  vector<double> Ipol::_getLongVector1D(const vector<double>& p) const {
-    vector<double> retvec;
-    retvec.reserve(1 + p.size());
-    // 0th order offset
-    retvec.push_back(1.0);
-    // Linear coefficients
-    for (size_t i = 0; i < p.size(); ++i)
-      retvec.push_back(p[i]);
-    assert(retvec.size() == numCoeffs(p.size(), 1));
-    return retvec;
-  }
-
-
-  vector<double> Ipol::_getLongVector2D(const vector<double>& p) const {
-    vector<double> retvec = _getLongVector1D(p);
-    // Quadratic coefficients
-    for (size_t i = 0; i < p.size(); i++)
-      for (size_t j = 0; j < p.size(); j++)
-        if (i <= j)
-          retvec.push_back(p[i]*p[j]);
-    assert(retvec.size() == numCoeffs(p.size(), 2));
-    return retvec;
-  }
-
-
-  vector<double> Ipol::_getLongVector3D(const vector<double>& p) const {
-    vector<double> retvec = _getLongVector2D(p);
-    // Cubic coefficients
-    for (size_t i = 0; i < p.size(); i++)
-      for (size_t j = 0; j < p.size(); j++)
-        for (size_t k = 0; k < p.size(); k++)
-          if (i<=j && i<=k && j<=k)
-            retvec.push_back(p[i]*p[j]*p[k]);
-    assert(retvec.size() == numCoeffs(p.size(), 3));
-    return retvec;
-  }
-
-
-  vector<double> Ipol::_getLongVector4D(const vector<double>& p) const {
-    vector<double> retvec = _getLongVector3D(p);
-    // Quartic coefficients
-    for (size_t i = 0; i < p.size(); i++)
-      for (size_t j = 0; j < p.size(); j++)
-        for (size_t k = 0; k < p.size(); k++)
-          for (size_t l = 0; l < p.size(); l++)
-            if (i<=j && i<=k && i<=l &&
-                j<=k && j<=l &&
-                k<=l)
-              retvec.push_back(p[i]*p[j]*p[k]*p[l]);
-    assert(retvec.size() == numCoeffs(p.size(), 4));
-    return retvec;
-  }
-
-
-  vector<double> Ipol::_getLongVector5D(const vector<double>& p) const {
-    vector<double> retvec = _getLongVector4D(p);
-    // Quintic coefficients
-    for (size_t i = 0; i < p.size(); i++)
-      for (size_t j = 0; j < p.size(); j++)
-        for (size_t k = 0; k < p.size(); k++)
-          for (size_t l = 0; l < p.size(); l++)
-            for (size_t m = 0; m < p.size(); m++)
-              if (i<=j && i<=k && i<=l && i<=m &&
-                  j<=k && j<=l && j<=m &&
-                  k<=l && k<=m &&
-                  l<=m)
-                retvec.push_back(p[i]*p[j]*p[k]*p[l]*p[m]);
-    assert(retvec.size() == numCoeffs(p.size(), 5));
-    return retvec;
-  }
-
-
-  vector<double> Ipol::_getLongVector6D(const vector<double>& p) const {
-    vector<double> retvec = _getLongVector5D(p);
-    // 6th order coefficients
-    for (size_t i = 0; i < p.size(); i++)
-      for (size_t j = 0; j < p.size(); j++)
-        for (size_t k = 0; k < p.size(); k++)
-          for (size_t l = 0; l < p.size(); l++)
-            for (size_t m = 0; m < p.size(); m++)
-              for (size_t n = 0; n < p.size(); n++)
-                if (i<=j && i<=k && i<=l && i<=m && i<=n &&
-                    j<=k && j<=l && j<=m && j<=n &&
-                    k<=l && k<=m && k<=n &&
-                    l<=m && l<=n &&
-                    m<=n)
-                  retvec.push_back(p[i]*p[j]*p[k]*p[l]*p[m]*p[n]);
-    assert(retvec.size() == numCoeffs(p.size(), 6));
-    return retvec;
   }
 
 

@@ -1,9 +1,11 @@
 PROFESSOR2 TO-DO LIST
 =====================
 
-- Add Professor namespace in C++
+- Add scripts
 
-   And re-think whether we need to explicitly name the Python module 'professor2' (probably yes)
+   prof-ipol, prof-tune, prof-viz
+
+- Would a grouped Ipols object be useful to manage the Ipol to/from file/string?
 
 - Remove uncatchable calls to exit() and I/O streams
 
