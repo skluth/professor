@@ -137,7 +137,7 @@ for a in args:
     else: #< treat as a param range filename
         with open(a, "r") as prf:
             for line in prf:
-                parts = line.trim().split()
+                parts = line.strip().split()
                 name = parts[0]
                 sampler = Sampler(*parts[1:])
                 samplers[name] = sampler
