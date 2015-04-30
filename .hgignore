@@ -7,4 +7,5 @@
 ^obj/.*\.o$
 ^build$
 ^lib$
+^lib64$
 ^example.+/

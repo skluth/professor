@@ -1,5 +1,13 @@
+PREFIX := /usr/local
+
+CXXSTD := c++11
+
 #CXXFLAGS := -g -O3
-CXXFLAGS := -O3
+CXXFLAGS  := -O3
+
+CPPFLAGS  :=
+
+
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
@@ -18,11 +26,11 @@ lib: lib/libProfessor2.so
 
 lib/libProfessor2.so: $(LIBOBJECTS)
 	@true
-	g++ -std=c++11 -shared -Wl,-soname,libProfessor2.so -o $@ $(LIBOBJECTS)
+	g++ -shared -Wl,-soname,libProfessor2.so -o $@ $(LIBOBJECTS)
 
 obj/%.o: src/%.cc $(LIBHEADERS)
 	mkdir -p obj lib
-	g++ -std=c++11 $(CXXFLAGS) -c -fPIC $< -Iinclude -o $@
+	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -Iinclude -o $@
 
 pyext: pyext/professor2/core.so
 	@true
@@ -39,7 +47,7 @@ cxxtests: $(TESTPROGS)
 	@true
 
 test/%: test/%.cc $(LIBHEADERS) lib
-	g++ -std=c++11 $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
+	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
 
 pytests: pyext
 	@true
@@ -59,3 +67,9 @@ clean:
 	rm -rf obj/*.o lib/*
 	rm -f pyext/professor2/core.cpp pyext/professor2/core.so
 	rm -f $(TESTPROGS)
+
+install:
+	cp bin/* $(PREFIX)/bin/
+	cp -r include/Professor $(PREFIX)/include/
+	cp -r lib/* $(PREFIX)/lib/
+	cp -r lib64/* $(PREFIX)/lib64/
