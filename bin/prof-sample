@@ -13,6 +13,9 @@ Parameter ranges (and bias functions) can either be given inline on the command 
 with the name, low..high range, and optional bias function separated by colons (:),
 or in a parameter range file with one parameter per line and whitespace separation of
 the name, low, high, and bias terms.
+
+TODO:
+ * copy the file mode (esp. executable) from the template to each instantiation
 """
 
 import optparse
@@ -137,10 +140,12 @@ for a in args:
     else: #< treat as a param range filename
         with open(a, "r") as prf:
             for line in prf:
-                parts = line.strip().split()
-                name = parts[0]
-                sampler = Sampler(*parts[1:])
-                samplers[name] = sampler
+                line = line.split("#")[0].strip() #< strip comments and whitespace
+                if line:
+                    parts = line.split()
+                    name = parts[0]
+                    sampler = Sampler(*parts[1:])
+                    samplers[name] = sampler
 
 
 ## Do random param sampling and template instantiation
