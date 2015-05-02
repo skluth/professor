@@ -68,8 +68,8 @@ clean:
 	rm -f pyext/professor2/core.cpp pyext/professor2/core.so
 	rm -f $(TESTPROGS)
 
-install:
-	cp bin/* $(PREFIX)/bin/
-	cp -r include/Professor $(PREFIX)/include/
-	cp -r lib/* $(PREFIX)/lib/
-	cp -r lib64/* $(PREFIX)/lib64/
+install: all
+	mkdir -p $(PREFIX)/bin && cp bin/* $(PREFIX)/bin/
+	mkdir -p $(PREFIX)/include && cp -r include/Professor $(PREFIX)/include/
+	test -d lib   && mkdir -p $(PREFIX)/lib   && cp -r lib/* $(PREFIX)/lib/ || true
+	test -d lib64 && mkdir -p $(PREFIX)/lib64 && cp -r lib64/* $(PREFIX)/lib64/ || true
