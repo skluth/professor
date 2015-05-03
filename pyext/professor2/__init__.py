@@ -62,22 +62,24 @@ def read_histos(path):
         ## Try YODA (handles .yoda, .aida, and .flat)
         try:
             import yoda
-            s2s = [ao.mkScatter() for ao in yoda.read(yf, asdict=False)]
+            s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
             for s2 in s2s:
                 bins = [DataBin(p.xMin, p.xMax, p.y) for p in s2.points]
                 histos[s2.path] = Histo(bins)
         except:
-            print "Can't load histos from file " + path
+            print "Can't load histos from file '%s'" % path
+    return histos
 
 def load_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
     params, histos = {}, {}
+    import os, glob
     for d in dirs:
         run = os.path.basename(d)
         files = glob.glob(os.path.join(d, "*"))
         for f in files:
             ## Params file
             if os.path.basename(f) == pfname:
-                params[run] = read_paramsfile(pf)
+                params[run] = read_paramsfile(f)
             ## Histo file
             else:
                 ## Read as a path -> Histo dict
@@ -87,7 +89,7 @@ def load_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
                     histos.setdefault(path, {})[run] = hist
         ## Check that a params file was found and read in this dir
         if run not in params.keys():
-            raise Exception("No params file found in run dir " + d)
+            raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))
     return params, histos
 
 def mk_ipolinputs(params):
@@ -104,7 +106,7 @@ def mk_ipolhisto(histos, runs, paramslist, order, errs=None):
 
     If errs is non-null, the data histo errors will also be interpolated.
     """
-    nbins = len(histos.itervalues().next().points)
+    nbins = len(histos.itervalues().next().bins)
     ibins = []
     for n in xrange(nbins):
         ## Check that the bin edges are consistent and extract their values
@@ -114,10 +116,10 @@ def mk_ipolhisto(histos, runs, paramslist, order, errs=None):
         xmin, xmax = xmins.pop(), xmaxs.pop()
         ## Build the value interpolation
         vals = [histos[run].bins[n].val for run in runs] #< to guarantee correct order w.r.t. paramslist
-        valipol = prof.Ipol(paramslist, vals, order)
+        valipol = Ipol(paramslist, vals, order)
         ## Build the (average-only, for now) error interpolation
         errs = [histos[run].bins[n].err for run in runs] #< to guarantee correct order w.r.t. paramslist
         # TODO: what if there are (some) real zero-valued errors?
-        erripol = prof.Ipol(paramslist, errs, order) if all(errs) else None
+        erripol = Ipol(paramslist, errs, order) if all(errs) else None
         ibins.append(IpolBin(xmin, xmax, valipol, erripol))
-    return IpolHisto(bins)
+    return Histo(ibins)

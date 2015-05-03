@@ -10,7 +10,7 @@ indirs = glob.glob(os.path.join(INDIR, "mc", "*"))
 
 import professor2 as prof
 PARAMS, HISTOS = prof.load_rundata(indirs)
-RUNS, PARAMNAMES, PARAMSLIST = mk_ipolinputs(PARAMS)
+RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 # print RUNS
 # print PARAMNAMES
 # print PARAMSLIST
@@ -19,7 +19,7 @@ IHISTOS = {}
 for hn in HNAMES:
     print "Interpolating " + hn
     histos = HISTOS[hn]
-    IHISTOS[hn] = mk_ipolhisto(histos, RUNS, PARAMSLIST, 3)
+    IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, 3)
     del HISTOS[hn] #< pro-actively clear up memory
 del HISTOS #< more memory clean-up
 # print sum(len(h.bins) for h in IHISTOS.values())
@@ -28,7 +28,7 @@ del HISTOS #< more memory clean-up
 # TODO: Write this to file... how to read it back into IpolHistos again?
 for hname, ih in IHISTOS.iteritems():
     for i, ib in enumerate(ih.bins):
-        print ib.ival.toString("%s:$d" % (hname, i))
+        print ib.ival.toString("%s:%d" % (hname, i))
         if ib.ierr:
             print ib.ierr.toString("%s[err]:%d" % (hname, i))
 

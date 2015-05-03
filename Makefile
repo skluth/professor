@@ -32,13 +32,12 @@ obj/%.o: src/%.cc $(LIBHEADERS)
 	mkdir -p obj lib
 	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -Iinclude -o $@
 
-pyext: pyext/professor2/core.so
-	@true
+pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
+	python pyext/setup.py install --prefix=.
 
 pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES)
 	cython pyext/professor2/core.pyx --cplus
 	python pyext/setup.py build_ext -i --force
-	python pyext/setup.py install --prefix=.
 
 tests: cxxtests pytests
 	@true
