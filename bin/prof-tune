@@ -20,17 +20,10 @@ op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file into which
 op.add_option("--demo", dest="DEMO", action="store_true", default=False, help="temporary demo mode: plot the sum of bin values as a demo")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
-
-import os, glob
 DATADIR = args[0]
-indirs = glob.glob(os.path.join(DATADIR, "mc", "*"))
-
-import professor2 as prof
-# PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
-# RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
-# del HISTOS
 
 ## Read persisted interpolations to re-create the ipol Histos
+import professor2 as prof
 IHISTOS = {}
 with open(opts.IFILE, "r") as f:
     currentib = None
@@ -46,13 +39,22 @@ with open(opts.IFILE, "r") as f:
             currentib.ival = prof.Ipol(sline)
         elif sline.startswith("err"):
             currentib.ierr = prof.Ipol(sline)
+# print IHISTOS
 
-print IHISTOS
-
+## Read reference data histos
+import os, glob
+HISTOS = {}
+reffiles = glob.glob(os.path.join(DATADIR, "ref", "*"))
+for rf in reffiles:
+    HISTOS.update(prof.read_histos(rf))
+# print HISTOS
 
 # TODO: REMOVE!
 ## Plotting demo
 if opts.DEMO:
+    PARAMS, HISTOS = prof.load_rundata(indirs, "used_params")
+    del HISTOS
+    RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
     import numpy as np
     A_X = np.linspace(min(ps[0] for ps in PARAMSLIST), max(ps[0] for ps in PARAMSLIST), 20)
     A_Y = np.linspace(min(ps[1] for ps in PARAMSLIST), max(ps[1] for ps in PARAMSLIST), 20)
