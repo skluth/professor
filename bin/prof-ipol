@@ -8,13 +8,17 @@ from the usual data directory structure $datadir/mc/{rundirs}
 
 TODO:
  * Remove the demo plotting... maybe move it into another script?
- * Handle weight files
- * Steer (from weight files?) how to treat MC errors (mean,median,ipol x none,symm,plusminus,full)
+ * Handle weight files/args
+ * Handle run combination file/string (write a hash of the run list into the ipol filename?)
+ * User choice of MC error interpolation (mean,median,ipol x none,symm,plusminus,full)
 """
 
 import optparse
 op = optparse.OptionParser()
 # TODO: Remove demo
+op.add_option("--pfile", dest="PFILE", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
+op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file into which to write the bin interpolations (default: %default)")
+op.add_option("--ierr", dest="IERR", default="none", help="whether to interpolate MC errors (none, symm, ...)")
 op.add_option("--demo", dest="DEMO", action="store_true", default=False, help="temporary demo mode: plot the sum of bin values as a demo")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
@@ -24,7 +28,7 @@ DATADIR = args[0]
 indirs = glob.glob(os.path.join(DATADIR, "mc", "*"))
 
 import professor2 as prof
-PARAMS, HISTOS = prof.load_rundata(indirs)
+PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 # print RUNS
 # print PARAMNAMES
@@ -34,18 +38,23 @@ IHISTOS = {}
 for hn in HNAMES:
     print "Interpolating " + hn
     histos = HISTOS[hn]
-    IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, 3)
+    IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, 3, opts.IERR)
     del HISTOS[hn] #< pro-actively clear up memory
 del HISTOS #< more memory clean-up
 # print sum(len(h.bins) for h in IHISTOS.values())
 
 ## Write out interpolation persistency info
-# TODO: Write this to file... how to read it back into IpolHistos again?
+s = ""
 for hname, ih in IHISTOS.iteritems():
     for i, ib in enumerate(ih.bins):
-        print ib.ival.toString("%s:%d" % (hname, i))
+        s += "%s#%d %.5e %.5e\n" % (hname, i, ib.xmin, ib.xmax)
+        s += "  " + ib.ival.toString("val") + "\n"
         if ib.ierr:
-            print ib.ierr.toString("%s[err]:%d" % (hname, i))
+            s += "  " + ib.ierr.toString("err") + "\n"
+with open(opts.IFILE, "w") as f:
+    f.write(s)
+
+
 
 # TODO: REMOVE!
 ## Plotting demo
