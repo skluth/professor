@@ -1,5 +1,7 @@
 2015-05-04  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Adding a first version of prof-tune with ipol reading from file.
+
 	* Adding options for (average) error interpolation and ipol persistency to prof-ipol and module functions.
 
 2015-05-03  Andy Buckley  <andy.buckley@cern.ch>
