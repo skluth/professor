@@ -29,8 +29,3 @@ PROFESSOR2 TO-DO LIST
 
    Prefer to throw exceptions / return strings directly, and when a print
    function is needed, give it an optional arg to specify the target stream.
-
-- Is Boost needed?
-
-   Can't it be replaced by C++11 std:: functionality, and maybe a little bit of
-   writing our own string utils?
