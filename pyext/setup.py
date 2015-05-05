@@ -7,7 +7,8 @@ libdir=os.path.abspath("lib")
 incdir = os.path.abspath("include")
 
 curdir=os.environ["PWD"] # assume makefile is called from basedir
-
+os.environ["CC"] = "g++"
+os.environ["CXX"] = "g++"
 
 lookupdirs = [
     libdir
