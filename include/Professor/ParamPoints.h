@@ -6,7 +6,6 @@
 #include <sstream>
 #include <vector>
 #include <cassert>
-#include "boost/tuple/tuple.hpp"
 
 namespace Professor {
 
@@ -56,17 +55,16 @@ namespace Professor {
     }
 
     /// Centre of the anchor hyper cube
-    std::vector<double> center() const;
+    std::vector<double> ptcenters() const;
 
     /// Lowest edge of anchor hyper cube
-    std::vector<double> min() const;
+    std::vector<double> ptmins() const;
 
     /// Top edge of anchor hyper cube
-    std::vector<double> max() const;
+    std::vector<double> ptmaxs() const;
 
     /// Edges of the anchor hyper cube
-    /// @todo Since we're already using C++11, can we use std::tuple rather than boost::tuple? Why not just std::pair?
-    std::vector< boost::tuple<double, double> > edges() const;
+    std::vector< std::pair<double, double> > ptedges() const;
 
     /// print message: anchors
     /// @todo These non-redirectable print functions are a bad idea
@@ -86,10 +84,10 @@ namespace Professor {
       std::stringstream ss;
       if (!info.empty()) ss << "# INFO " << info << "\n";
       ss << "# MINV ";
-      for (const double& a : min()) ss << a<< " ";
+      for (const double& a : ptmins()) ss << a<< " ";
       ss << " \n";
       ss << "# MAXV ";
-      for (const double& a : max()) ss << a<< " ";
+      for (const double& a : ptmaxs()) ss << a<< " ";
       ss << " \n";
       return ss.str();
     }

@@ -1,11 +1,29 @@
 PROFESSOR2 TO-DO LIST
 =====================
 
-- Add scripts
+- Add prof-ipol, prof-tune, prof-viz
 
-   prof-ipol, prof-tune, prof-viz
+- Move ipol Histo persistency to/from functions to prof2.io package
 
-- Would a grouped Ipols object be useful to manage the Ipol to/from file/string?
+   => IHisto direct persistency functions?
+
+- Smart Bin access to y val and err(s), i.e. without necessarily exposing Ipols to user
+
+- Need to abstract types a bit more for 2D histos, unbinned histos, etc?
+
+   Need to specialise for profiles
+
+- Provide chi2(ih, dh) fuction in prof2.stats package
+
+- Provide easy plotting functions for scatters, contours, and 3D in prof2.plotting package
+
+- IHisto => DHisto function
+
+- Move Sampler => prof2.sampling?
+
+- Move Histo, etc. => prof2.data, prof2.ipol?
+
+- Add path, title, xy labels properties to Histo
 
 - Remove uncatchable calls to exit() and I/O streams
 

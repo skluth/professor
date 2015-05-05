@@ -1,4 +1,5 @@
 #include "Professor/ParamPoints.h"
+#include <algorithm>
 
 namespace Professor {
 
@@ -18,7 +19,7 @@ namespace Professor {
   }
 
 
-  vector<double> ParamPoints::center() const {
+  vector<double> ParamPoints::ptcenters() const {
     vector<double> temp_max, temp_min;
     for (size_t i = 0; i < dim(); i++) { // iteration over coordinates
       vector<double> temp;
@@ -37,7 +38,7 @@ namespace Professor {
   }
 
 
-  vector<double> ParamPoints::min() const {
+  vector<double> ParamPoints::ptmins() const {
     vector<double> temp_min;
     for (size_t i = 0; i < dim(); i++) { // iteration over coordinates
       vector<double> temp;
@@ -50,7 +51,7 @@ namespace Professor {
   }
 
 
-  vector<double> ParamPoints::max() const {
+  vector<double> ParamPoints::ptmaxs() const {
     vector<double> temp_max;
     for (size_t i = 0; i < dim(); i++) { // iteration over coordinates
       vector<double> temp;
@@ -63,16 +64,15 @@ namespace Professor {
   }
 
 
-  vector< boost::tuple<double, double> > ParamPoints::edges() const {
-    /// @todo Use conventional capitalisation
-    vector<double> MIN = min();
-    vector<double> MAX = max();
-    vector< boost::tuple<double, double> > EDGE;
-    /// @todo Reserve known size of returned vector before pushing
-    for (int i = 0; i < dim(); i++) {
-      EDGE.push_back( boost::tuple<double, double>(MIN[i], MAX[i]));
+  vector< pair<double, double> > ParamPoints::ptedges() const {
+    const vector<double> mins = ptmins();
+    const vector<double> maxs = ptmaxs();
+    vector< pair<double, double> > edge;
+    edge.reserve(dim());
+    for (size_t i = 0; i < dim(); i++) {
+      edge.push_back( pair<double, double>(mins[i], maxs[i]));
     }
-    return EDGE;
+    return edge;
   }
 
 
@@ -81,12 +81,13 @@ namespace Professor {
     cout << "Dimension:     " << dim() << endl;
     cout << "Center:       ";
     for (size_t i = 0; i < dim(); i++) {
-      cout << " " << center()[i];
+      cout << " " << ptcenters()[i];
     }
-    cout<<endl;
+    cout << endl;
     cout << "Edges:" << endl;
+    const vector< pair<double, double> > edges = ptedges();
     for (size_t i = 0; i < dim(); i++) {
-      cout << boost::get<0>(edges()[i]) << " < " << boost::get<1>(edges()[i]) << endl;
+      cout << edges[i].first << " < " << edges[i].second << endl;
     }
     cout << endl;
   }

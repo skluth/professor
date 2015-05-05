@@ -92,7 +92,7 @@ class IpolBin(object):
         return self.ival.value(params)
 
     def err(self, params):
-        return self.ierr.value(params)
+        return self.ierr.value(params) if self.ierr is not None else 0.0
 
     def __cmp__(self, other):
         return cmp(self.xmin, other.xmin)
@@ -124,8 +124,8 @@ def read_histos(path):
             import yoda
             s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
             for s2 in s2s:
-                #bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrAvg) for p in s2.points]
-                bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrs) for p in s2.points]
+                bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrAvg) for p in s2.points]
+                # bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrs) for p in s2.points]
                 histos[s2.path] = Histo(bins)
         except:
             print "Can't load histos from file '%s'" % path
