@@ -26,7 +26,8 @@ op.add_option("-o", "--outdir", dest="OUTDIR", metavar="DIR", default="scan", he
 op.add_option("-O", "--outmode", dest="OUTMODE", metavar="MODE", default="hier", help="specify the output structuring mode: either 'hier' (default) or 'flat' to respectively use run subdirs or not")
 op.add_option("-p", "--pfile", dest="PARAMSFILE", metavar="FILE", default="params.dat", help="specify params file base name to be populated for each sample point")
 op.add_option("-P", "--no-pfile", dest="PARAMSFILE", action="store_const", const=None, help="do not write a params file for each sample point")
-op.add_option("-s", "--seed", dest="SEED", metavar="VAL", help="specify a random seed for the sampler (default: use system time)")
+op.add_option("-s", "--seed", dest="SEED", metavar="VAL", default=None, help="specify a random seed for the sampler (default: use system time)")
+op.add_option("--veto", dest="VETOFN", metavar="FILE", default=None, help="specify a file from which to read the definition of a Python sample point-vetoing function, prof_sample_veto(paramsdict). Return True means 'veto point'")
 opts, args = op.parse_args()
 assert opts.OUTMODE in ("hier", "flat")
 
@@ -51,6 +52,7 @@ def mkdir(path):
     if not os.path.exists(d):
         os.makedirs(d)
 
+
 ## Populate dict of script templates
 TEMPLATES = {}
 for t in opts.TEMPLATES:
@@ -58,73 +60,13 @@ for t in opts.TEMPLATES:
     with open(tname, "r") as f:
         TEMPLATES[tname] = f.read()
 
-
 ## Initialise random number generator
 import random
 if opts.SEED:
     random.seed(opts.SEED)
 
-
-## Define a sampler type
-# TODO: Move this into a utils submodule
-class Sampler(object):
-
-    def __init__(self, low, high, bias=None):
-        self.low = float(low)
-        self.high = float(high)
-        self.f, self.invf = None, None
-        if bias:
-            ## Import clever machinery
-            try:
-                import sympy as sp
-                from sympy.abc import x, y
-                import numpy as np
-            except ImportError:
-                print "Bias functions require SymPy and NumPy to be installed... exiting"
-                exit(1) #< TODO: don't exit from inside a lib function...
-            ## Make transformation and its inverse
-            try:
-                #print bias
-                f_expr = sp.sympify(bias)
-            except sp.SympifyError, e:
-                print "Bias function could not be parsed by SymPy:"
-                print e
-                exit(1) #< TODO: don't exit from inside a lib function...
-            try:
-                finv_exprs = sp.solve(sp.Eq(y, f_expr), x)
-                finv_expr = finv_exprs[0]
-                #print f_expr, finv_exprs
-                self.f = sp.lambdify(x, f_expr, "numpy")
-                self.finv = sp.lambdify(y, finv_expr, "numpy")
-                self.lowf, self.highf = self.f(self.low), self.f(self.high)
-            except Exception, e:
-                print "Bias function could not be used/inverted by SymPy:"
-                print e
-                exit(1) #< TODO: don't exit from inside a lib function...
-
-    def shoot(self):
-        if not self.f:
-            ## Just uniform sampling between low..high
-            val = random.uniform(self.low, self.high)
-        else:
-            ## Uniform sample in transformed space, and transform the result back
-            valf = random.uniform(self.lowf, self.highf)
-            val = self.finv(valf)
-        return val
-
-    def __call__(self):
-        return self.shoot()
-
-## Test biased sampler machinery
-# s = Sampler(1, 10, "exp(x)")
-# import yoda
-# h = yoda.Histo1D(20, 0, 10)
-# for _ in xrange(10000):
-#     h.fill( s() )
-# yoda.plot(h, "foo.pdf")
-
-
 ## Populate param samplers dictionary
+from professor2 import Sampler
 try:
     from collections import OrderedDict
 except:
@@ -147,15 +89,27 @@ for a in args:
                     sampler = Sampler(*parts[1:])
                     samplers[name] = sampler
 
+## Load a point veto function if supplied by the user
+if opts.VETOFN:
+    execfile(opts.VETOFN)
+    assert "prof_sample_veto" in dir()
+    opts.VETOFN = prof_sample_veto
+
 
 ## Do random param sampling and template instantiation
 for n in xrange(opts.NUMPOINTS):
     npad = mkrunstr(n)
 
     ## Populate params dictionary
-    params = OrderedDict()
-    for name, s in samplers.iteritems():
-        params[name] = s()
+    while True:
+        params = OrderedDict()
+        ## Sample a point
+        for name, s in samplers.iteritems():
+            params[name] = s()
+        ## Allow a user function to veto the point
+        if opts.VETOFN and opts.VETOFN(params):
+            continue #< try sampling again
+        break #< successful sample: proceed
 
     ## Write params file if not disabled (by specifying a null filename)
     if opts.PARAMSFILE:

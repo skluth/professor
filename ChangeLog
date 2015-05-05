@@ -1,3 +1,9 @@
+2015-05-05  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add a --veto option to prof-sample, for a user-specified vetoing function.
+
+	* Move Sampler from prof-sample into professor2/__init__.py
+
 2015-05-04  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Adding a first version of prof-tune with ipol reading from file.
