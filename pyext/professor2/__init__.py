@@ -1,7 +1,19 @@
 from professor2.core import *
 
+## Provide a faff-free Minuit object
+# TODO: iminuit?
+Minuit = None
+try:
+    from minuit import Minuit
+except:
+    try:
+        from minuit2 import Minuit2 as Minuit
+    except:
+        pass #print "Couldn't import a minimizer"
+
 
 # TODO: move this stuff into submodules:
+
 
 ## Define a sampler type
 class Sampler(object):

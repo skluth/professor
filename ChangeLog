@@ -1,3 +1,7 @@
+2015-05-10  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add 'Minuit' class importing to the __init__.py file.
+
 2015-05-05  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Rewrite C++ ipolstring parsing using STL string functions rather than Boost: shorter! Boost dependency GONE :-)
