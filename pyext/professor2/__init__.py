@@ -4,10 +4,11 @@ from professor2.core import *
 # TODO: iminuit?
 Minuit = None
 try:
-    from minuit import Minuit
+    from minuit import Minuit, MinuitError
 except:
     try:
         from minuit2 import Minuit2 as Minuit
+        from minuit2 import MinuitError
     except:
         pass #print "Couldn't import a minimizer"
 
