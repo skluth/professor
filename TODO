@@ -12,6 +12,8 @@ FOR 2.0.0b1
 
 - Use weight and runcomb files in prof-ipol and prof-tune
 
+- Store param name info, ordering, and ranges in ParamPoints
+
 - Store param names and ranges in header of ipol file
 
    Add functions forreading/writing files to IHistos.

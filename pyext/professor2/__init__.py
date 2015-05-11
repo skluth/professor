@@ -1,16 +1,18 @@
 from professor2.core import *
 
-## Provide a faff-free Minuit object
-# TODO: iminuit?
-Minuit = None
+## Provide faff-free Minuit objects
+Minuit, MinuitError = None
 try:
-    from minuit import Minuit, MinuitError
-except:
+    from iminuit import Minuit, MinuitError
+except ImportError:
     try:
-        from minuit2 import Minuit2 as Minuit
-        from minuit2 import MinuitError
-    except:
-        pass #print "Couldn't import a minimizer"
+        from minuit import Minuit, MinuitError
+    except ImportError:
+        try:
+            from minuit2 import Minuit2 as Minuit
+            from minuit2 import MinuitError
+        except ImportError:
+            pass #print "Couldn't import a minimizer"
 
 
 # TODO: move this stuff into submodules:
