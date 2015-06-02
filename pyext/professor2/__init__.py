@@ -1,7 +1,7 @@
 from professor2.core import *
 
 ## Provide faff-free Minuit objects
-Minuit, MinuitError = None
+Minuit, MinuitError = None, None
 try:
     from iminuit import Minuit, MinuitError
 except ImportError:
@@ -91,6 +91,10 @@ class DataBin(object):
         self.val = val
         self.err = err
 
+    @property
+    def xmid(self):
+        return (self.xmin + self.xmax) / 2.0
+
     def __cmp__(self, other):
         return cmp(self.xmin, other.xmin)
 
@@ -102,6 +106,10 @@ class IpolBin(object):
         self.xmax = xmax
         self.ival = ival
         self.ierr = ierr
+
+    @property
+    def xmid(self):
+        return (self.xmin + self.xmax) / 2.0
 
     def val(self, params):
         return self.ival.value(params)
@@ -200,7 +208,8 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
         if not errmode or errmode == "none":
             erripol = None
         elif errmode == "symm":
-            errs = [sum(histos[run].bins[n].err)/2.0 for run in runs]
+            #errs = [sum(histos[run].bins[n].err)/2.0 for run in runs]
+            errs = [histos[run].bins[n].err for run in runs]
             erripol = Ipol(paramslist, errs, order)
         elif errmode == "asymm":
             raise Exception("Error interpolation mode 'asymm' not yet supported")
