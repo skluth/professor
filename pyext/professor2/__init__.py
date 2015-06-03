@@ -79,21 +79,44 @@ class Sampler(object):
 
 class Histo(object):
 
-    def __init__(self, bins=None):
+    def __init__(self, bins=None, path=None):
         self.bins = bins if bins else []
+        self.path = path
 
 
 class DataBin(object):
 
-    def __init__(self, xmin, xmax, val=None, err=None):
+    def __init__(self, xmin, xmax, val=None, errs=None):
         self.xmin = xmin
         self.xmax = xmax
         self.val = val
-        self.err = err
+        self._errs = errs
 
     @property
     def xmid(self):
         return (self.xmin + self.xmax) / 2.0
+
+    @property
+    def err(self):
+        if not self.errs:
+            return None
+        return sum(self.errs) / 2.0
+    @err.setter
+    def err(self, e):
+        self.errs = e
+
+    @property
+    def errs(self):
+        return self._errs
+    @errs.setter
+    def errs(self, e):
+        if e is None:
+            self._errs = None
+        elif hasattr(e, "__len__"):
+            assert len(e) == 2
+            self._errs = e
+        else:
+            self._errs = [e,e]
 
     def __cmp__(self, other):
         return cmp(self.xmin, other.xmin)
