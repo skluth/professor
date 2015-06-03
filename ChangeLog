@@ -1,3 +1,9 @@
+2015-06-03  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Adding a Bin base class in the Python side, and a coherent handling of multiple (interpolated) bin errors.
+
+	* Various tweaks and minor fixes.
+
 2015-05-10  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add 'Minuit' class importing to the __init__.py file.

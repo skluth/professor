@@ -78,38 +78,68 @@ class Sampler(object):
 
 
 class Histo(object):
+    "A simple histogram -- just a Bin container with an optional path name"
 
     def __init__(self, bins=None, path=None):
         self.bins = bins if bins else []
         self.path = path
 
 
-class DataBin(object):
+class Bin(object):
+    "A base class for binned data, handling the common x-edge stuff"
 
-    def __init__(self, xmin, xmax, val=None, errs=None):
+    def __init__(self, xmin, xmax):
         self.xmin = xmin
         self.xmax = xmax
-        self.val = val
-        self._errs = errs
 
     @property
     def xmid(self):
         return (self.xmin + self.xmax) / 2.0
 
     @property
+    def xedges(self):
+        return (self.xmin, self.xmax)
+
+    def __cmp__(self, other):
+        return cmp(self.xmin, other.xmin)
+
+
+class DataBin(Bin):
+    "A bin containing a data value and its error(s)"
+
+    def __init__(self, xmin, xmax, val=None, errs=None):
+        Bin.__init__(xmin, xmax)
+        self.val = val
+        self._errs = errs
+
+    # TODO: return numerical 0 if _errs is None?
+    @property
     def err(self):
-        if not self.errs:
-            return None
-        return sum(self.errs) / 2.0
+        "Get a scalar error value, by averaging if necessary"
+        if self._errs is None:
+            return 0.0
+        elif hasattr(self._errs, "__len__"):
+            assert len(self._errs) == 2
+            return sum(self._errs) / 2.0
+        return self._errs
     @err.setter
     def err(self, e):
-        self.errs = e
+        "Set a scalar error value"
+        assert not hasattr(self._errs, "__len__")
+        self._errs = e
 
     @property
     def errs(self):
-        return self._errs
+        "Get a pair of error values, by construction if necessary"
+        if self._errs is None:
+            return (0.0, 0.0)
+        elif hasattr(self._errs, "__len__"):
+            assert len(self._errs) == 2
+            return self._errs
+        return (self._errs, self._errs)
     @errs.setter
     def errs(self, e):
+        "Set a pair of error values"
         if e is None:
             self._errs = None
         elif hasattr(e, "__len__"):
@@ -118,30 +148,38 @@ class DataBin(object):
         else:
             self._errs = [e,e]
 
-    def __cmp__(self, other):
-        return cmp(self.xmin, other.xmin)
-
 
 class IpolBin(object):
+    "A bin containing a value interpolation and its error(s)"
 
-    def __init__(self, xmin, xmax, ival=None, ierr=None):
-        self.xmin = xmin
-        self.xmax = xmax
+    def __init__(self, xmin, xmax, ival=None, ierrs=None):
+        Bin.__init__(xmin, xmax)
         self.ival = ival
-        self.ierr = ierr
-
-    @property
-    def xmid(self):
-        return (self.xmin + self.xmax) / 2.0
+        self.ierrs = ierrs
 
     def val(self, params):
         return self.ival.value(params)
 
-    def err(self, params):
-        return self.ierr.value(params) if self.ierr is not None else 0.0
+    # TODO: Provide ierr and ierrss getter/setter pairs cf. err/errs on DataBin? They can't be averaged, so not sure it makes sense...
 
-    def __cmp__(self, other):
-        return cmp(self.xmin, other.xmin)
+    def err(self, params):
+        if self.ierrs is None:
+            return 0.0
+        elif hasattr(self.ierrs, "__len__"):
+            assert len(self.ierrs) == 2
+            return (self.ierrs[0].value(params) + self.ierrs[1].value(params))/2.0
+        else:
+            return self.ierrs.value(params)
+
+    def errs(self, params):
+        if self.ierrs is None:
+            return (0.0, 0.0)
+        elif hasattr(self.ierrs, "__len__"):
+            assert len(self.ierrs) == 2
+            return (self.ierrs[0].value(params), self.ierrs[1].value(params))
+        else:
+            e = self.ierrs.value(params)
+            return (e, e)
 
 
 def read_paramsfile(path):
@@ -172,7 +210,7 @@ def read_histos(path):
             for s2 in s2s:
                 bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrAvg) for p in s2.points]
                 # bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrs) for p in s2.points]
-                histos[s2.path] = Histo(bins)
+                histos[s2.path] = Histo(bins, s2.path)
         except:
             print "Can't load histos from file '%s'" % path
     return histos
@@ -229,19 +267,19 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
         valipol = Ipol(paramslist, vals, order)
         ## Build the error interpolation(s)
         if not errmode or errmode == "none":
-            erripol = None
+            erripols = None
         elif errmode == "symm":
             #errs = [sum(histos[run].bins[n].err)/2.0 for run in runs]
             errs = [histos[run].bins[n].err for run in runs]
-            erripol = Ipol(paramslist, errs, order)
+            erripols = Ipol(paramslist, errs, order)
         elif errmode == "asymm":
-            raise Exception("Error interpolation mode 'asymm' not yet supported")
-            # errs0 = [histos[run].bins[n].err[0] for run in runs]
-            # erripol0 = Ipol(paramslist, errs0, order)
-            # errs1 = [histos[run].bins[n].err[1] for run in runs]
-            # erripol1 = Ipol(paramslist, errs1, order)
-            # erripol =
+            # raise Exception("Error interpolation mode 'asymm' not yet supported")
+            errs0 = [histos[run].bins[n].err[0] for run in runs]
+            erripol0 = Ipol(paramslist, errs0, order)
+            errs1 = [histos[run].bins[n].err[1] for run in runs]
+            erripol1 = Ipol(paramslist, errs1, order)
+            erripols = [erripol0, erripol1]
         else:
             raise Exception("Unknown error interpolation mode '%s'" % errmode)
-        ibins.append(IpolBin(xmin, xmax, valipol, erripol))
-    return Histo(ibins)
+        ibins.append(IpolBin(xmin, xmax, valipol, erripols))
+    return Histo(ibins, histos.values[0].path)
