@@ -108,7 +108,7 @@ class DataBin(Bin):
     "A bin containing a data value and its error(s)"
 
     def __init__(self, xmin, xmax, val=None, errs=None):
-        Bin.__init__(xmin, xmax)
+        Bin.__init__(self, xmin, xmax)
         self.val = val
         self._errs = errs
 
@@ -149,11 +149,11 @@ class DataBin(Bin):
             self._errs = [e,e]
 
 
-class IpolBin(object):
+class IpolBin(Bin):
     "A bin containing a value interpolation and its error(s)"
 
     def __init__(self, xmin, xmax, ival=None, ierrs=None):
-        Bin.__init__(xmin, xmax)
+        Bin.__init__(self, xmin, xmax)
         self.ival = ival
         self.ierrs = ierrs
 
@@ -211,8 +211,8 @@ def read_histos(path):
                 bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrAvg) for p in s2.points]
                 # bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrs) for p in s2.points]
                 histos[s2.path] = Histo(bins, s2.path)
-        except:
-            print "Can't load histos from file '%s'" % path
+        except Exception, e:
+            print "Can't load histos from file '%s': %s" % (path, e)
     return histos
 
 
@@ -282,4 +282,4 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
         else:
             raise Exception("Unknown error interpolation mode '%s'" % errmode)
         ibins.append(IpolBin(xmin, xmax, valipol, erripols))
-    return Histo(ibins, histos.values[0].path)
+    return Histo(ibins, histos.values()[0].path)
