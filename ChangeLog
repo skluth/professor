@@ -1,3 +1,7 @@
+2015-06-16  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Adding mean and median strategies for assigning constant ipol bin errors.
+
 2015-06-03  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Adding a Bin base class in the Python side, and a coherent handling of multiple (interpolated) bin errors.

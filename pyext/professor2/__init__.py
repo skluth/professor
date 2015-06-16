@@ -268,15 +268,21 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
         ## Build the error interpolation(s)
         if not errmode or errmode == "none":
             erripols = None
+        ## Build the error interpolation(s)
+        elif errmode == "mean":
+            meanerr = sum(histos[run].bins[n].err for run in runs) / float(nbins)
+            erripols = Ipol(paramslist, [meanerr for run in runs], 1)
+        elif errmode == "median":
+            medianerr = [histos[run].bins[n].err for run in runs][nbins//2]
+            erripols = Ipol(paramslist, [medianerr for run in runs], 1)
         elif errmode == "symm":
-            #errs = [sum(histos[run].bins[n].err)/2.0 for run in runs]
             errs = [histos[run].bins[n].err for run in runs]
             erripols = Ipol(paramslist, errs, order)
         elif errmode == "asymm":
             # raise Exception("Error interpolation mode 'asymm' not yet supported")
-            errs0 = [histos[run].bins[n].err[0] for run in runs]
+            errs0 = [histos[run].bins[n].errs[0] for run in runs]
             erripol0 = Ipol(paramslist, errs0, order)
-            errs1 = [histos[run].bins[n].err[1] for run in runs]
+            errs1 = [histos[run].bins[n].errs[1] for run in runs]
             erripol1 = Ipol(paramslist, errs1, order)
             erripols = [erripol0, erripol1]
         else:
