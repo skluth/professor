@@ -126,7 +126,7 @@ for hn in sorted(hnames):
             try:
                 values = [x.mean for x in thebins]
             except:
-                badbins.append(b)
+                badbins.append(n_b)
         if values:
             ipols.append(Ipol(params, values, args.order, hn+":%i"%n_b))
     for num in xrange(len(histos)):
