@@ -1,18 +1,57 @@
-PROFESSOR2 TO-DO LIST
-=====================
+PROFESSOR TO-DO LIST
+====================
 
-- Add scripts
+FOR 2.0.0b1
+-----------
 
-   prof-ipol, prof-tune, prof-viz
+- Smart Bin access to y val and err(s), i.e. without necessarily exposing Ipols to user
 
-- Would a grouped Ipols object be useful to manage the Ipol to/from file/string?
+- Add minimising + eigentunes to prof-tune
+
+   And writing out the resulting params files
+
+- Use weight and runcomb files in prof-ipol and prof-tune
+
+- Store param name info, ordering, and ranges in ParamPoints
+
+- Store param names and ranges in header of ipol file
+
+   Add functions forreading/writing files to IHistos.
+   Store/load via ipol-$(hashofruncombsandorders).dat
+
+- Add path, title, xy labels properties to Histo
+
+- Provide chi2(ih, dh) fuction in prof2.stats package
+
+
+FOR 2.0.0b2
+-----------
+
+- Add building Histo[DataBin] from .root files
 
 - Remove uncatchable calls to exit() and I/O streams
 
    Prefer to throw exceptions / return strings directly, and when a print
    function is needed, give it an optional arg to specify the target stream.
 
-- Is Boost needed?
+- IHisto => DHisto function
 
-   Can't it be replaced by C++11 std:: functionality, and maybe a little bit of
-   writing our own string utils?
+- Move Sampler => prof2.sampling?
+
+- Move Histo, etc. => prof2.data, prof2.ipol?
+
+- Move ipol Histo persistency to/from functions to prof2.io package
+
+
+FOR 2.0.0
+---------
+
+- Provide easy plotting functions for scatters, contours, and 3D in prof2.plotting package
+
+- Add prof-viz
+
+
+FOR LATER
+---------
+
+- Need to abstract data types a bit more for 2D histos, unbinned histos, profiles, etc?

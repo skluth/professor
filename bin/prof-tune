@@ -52,7 +52,8 @@ for rf in reffiles:
 # TODO: REMOVE!
 ## Plotting demo
 if opts.DEMO:
-    PARAMS, HISTOS = prof.load_rundata(indirs, "used_params")
+    rundirs = glob.glob(os.path.join(DATADIR, "mc", "*"))
+    PARAMS, HISTOS = prof.load_rundata(rundirs, "used_params")
     del HISTOS
     RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
     import numpy as np

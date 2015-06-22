@@ -1,4 +1,22 @@
+2015-06-16  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Adding mean and median strategies for assigning constant ipol bin errors.
+
+2015-06-03  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Adding a Bin base class in the Python side, and a coherent handling of multiple (interpolated) bin errors.
+
+	* Various tweaks and minor fixes.
+
+2015-05-10  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add 'Minuit' class importing to the __init__.py file.
+
 2015-05-05  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Rewrite C++ ipolstring parsing using STL string functions rather than Boost: shorter! Boost dependency GONE :-)
+
+	* Replace boost::tuple with std::pair and clean up ParamPoints interface a bit.
 
 	* Add a --veto option to prof-sample, for a user-specified vetoing function.
 

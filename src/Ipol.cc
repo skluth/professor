@@ -1,9 +1,7 @@
 #include "Professor/Ipol.h"
 #include "eigen3/Eigen/SVD"
-#include "boost/algorithm/string/split.hpp"
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/trim.hpp"
-#include "boost/lexical_cast.hpp"
+#include <sstream>
+#include <cassert>
 
 namespace Professor {
 
@@ -30,7 +28,7 @@ namespace Professor {
     if (ncoeff > pts.numPoints()) {
       stringstream ss;
       ss << "Ipol: not enough (" << ncoeff << " vs. " << pts.numPoints() << ") anchor points "
-           << "for interpolating with " << pts.dim() << " params at order " << order;
+         << "for interpolating with " << pts.dim() << " params at order " << order;
       throw IpolError(ss.str());
     }
     MatrixXd DP = MatrixXd(pts.numPoints(), ncoeff);
@@ -197,19 +195,18 @@ namespace Professor {
 
 
   void Ipol::fromString(const string& s) {
-    // Check if a name is given in the string, and append a null one if not
-    const string s2 = (s.find(":") == std::string::npos) ? (" : " + s) : s;
-    // Identify the name and remainder parts
-    vector<string> tokens, temp;
-    boost::algorithm::split(temp, s2, boost::is_any_of(":"), boost::token_compress_on);
-    _name = temp[0];
-    // Split the remaining string into whitespace-separated data tokens
-    boost::algorithm::trim(temp[1]);
-    boost::algorithm::split(tokens, temp[1], boost::is_any_of("\t "), boost::token_compress_on);
-    _dim = boost::lexical_cast<int>(tokens[0]);
-    _order = boost::lexical_cast<int>(tokens[1]);
-    for (size_t i = 2; i < tokens.size(); ++i)
-      _coeffs.push_back(atof(tokens[i].c_str()));
+    // Extract a name if given at the start of the string
+    _name = (s.find(":") != std::string::npos) ? s.substr(0, s.find(":")) : "";
+    // Load the rest of the string into a stringstream and load into numerical variables
+    istringstream numss( (s.find(":") != std::string::npos) ? s.substr(s.find(":")+1) : s );
+    numss >> _dim;
+    numss >> _order;
+    double tmp; int ncoeffs = 0;
+    while (numss >> tmp) {
+      _coeffs.push_back(tmp);
+      ncoeffs += 1;
+    }
+    assert(ncoeffs == numCoeffs(dim(),order()));
   }
 
 
