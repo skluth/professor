@@ -6,9 +6,14 @@
 #include <sstream>
 #include <vector>
 #include <cassert>
+#include <stdexcept>
 
 namespace Professor {
 
+  /// Throwable error
+  struct ParamPointsError : public std::runtime_error {
+    ParamPointsError(const std::string& reason) : std::runtime_error(reason) { }
+  };
 
   /// Typedef for a list of parameters, defining a parameter point
   typedef std::vector<double> ParamPoint;
@@ -89,11 +94,27 @@ namespace Professor {
       ss << "# MAXV ";
       for (const double& a : ptmaxs()) ss << a<< " ";
       ss << " \n";
+      // Slightly redundant but nice to have as consistency check
+      ss << "# DIM ";
+      ss << dim();
+      ss << "\n";
+      // Write out parameter names if defined
+      if (names().size()>0) {
+        ss << "# PARAMS ";
+        for (const std::string& s : names()) ss << s<< " ";
+        ss << "\n";
+      }
+
       return ss.str();
     }
 
     /// Get all anchor points
     const std::vector< std::vector<double> >& points() const { return _parampoints; }
+
+    /// Get parameter names if set
+    const std::vector< std::string >& names() const { return _names; }
+
+    void setNames(std::vector<std::string >);
 
     /// Get one anchor point
     /// @todo Generalise to other sorts of key lookup? Needed? Bounds checking / checking key existence
@@ -103,6 +124,8 @@ namespace Professor {
   private:
 
     std::vector< std::vector<double> > _parampoints;
+
+    std::vector< std::string > _names;
 
     bool _locked;
 

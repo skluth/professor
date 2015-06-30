@@ -75,6 +75,25 @@ namespace Professor {
     return edge;
   }
 
+  void ParamPoints::setNames(std::vector<std::string > names) {
+    if (_names.size() == 0) { // No names set so far
+      if (dim() == names.size()) { // Sanity check
+        for (size_t i = 0; i < names.size(); i++) {
+          _names.push_back(names[i]);
+        }
+      }
+      else {
+        stringstream ss;
+        ss << "ParamPoints::setNames: dimension mismatch (" << dim() << "dimensions vs. " << names.size() << " names)  ";
+        throw ParamPointsError(ss.str());
+      }
+    }
+    else { // Names already set
+      stringstream ss;
+      ss << "ParamPoints::setNames: Names already set!";
+      throw ParamPointsError(ss.str());
+    }
+  }
 
   void ParamPoints::printMeta() const {
     cout << "Nr. of points: " << numPoints() << endl;
