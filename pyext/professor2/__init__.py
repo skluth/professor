@@ -349,6 +349,18 @@ def mk_versionstring():
     import pkg_resources  # part of setuptools
     return pkg_resources.require("professor2")[0].version
 
+def mk_minvals(anchors):
+    from numpy import array
+    A=array(anchors)
+    mins = [A[:,i].min() for i in xrange(len(A[0]))]
+    return mins
+
+def mk_maxvals(anchors):
+    from numpy import array
+    A=array(anchors)
+    maxs = [A[:,i].max() for i in xrange(len(A[0]))]
+    return maxs
+
 sequels = [
 """
                     Interpolation day

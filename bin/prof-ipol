@@ -82,12 +82,12 @@ with open(opts.IFILE, "w") as f:
     f.write("Dimension: %i\n"%len(PARAMNAMES))
     # Interpolation validity (hypercube edges)
     minstring = "MinV:"
-    for v in min(PARAMSLIST):
+    for v in prof.mk_minvals(PARAMSLIST):
         minstring+=" %f"%v
-    maxstring = "MaxV:"
-    for v in max(PARAMSLIST):
-        maxstring+=" %f"%v
     f.write(minstring+"\n")
+    maxstring = "MaxV:"
+    for v in prof.mk_maxvals(PARAMSLIST):
+        maxstring+=" %f"%v
     f.write(maxstring+"\n")
     # Number of inputs per bin
     f.write("NInputs: %i\n"%len(PARAMSLIST))
