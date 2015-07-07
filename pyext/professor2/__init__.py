@@ -392,6 +392,18 @@ sequels = [
 """
                      The Bin Supremacy
 """,
+"""
+                         The Sequel
+""",
+"""
+                        The New Patch
+""",
+"""
+                      The Wrath Of Bins
+""",
+"""
+                     Silence of the Bins
+""",
 ]
 
 logo = \
