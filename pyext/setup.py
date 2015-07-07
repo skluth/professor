@@ -31,7 +31,7 @@ header_files = glob("../include/*.h")
 extns = [ext("core", header_files)]
 
 setup(name = "professor2",
-      version="1.0.0",
+      version="2.0.0a",
       ext_modules = extns,
       packages = ["professor2"],
       package_dir = {"": "pyext"},

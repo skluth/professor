@@ -20,28 +20,78 @@ op.add_option("--pfile", dest="PFILE", default="params.dat", help="name of the p
 op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file into which to write the bin interpolations (default: %default)")
 op.add_option("--ierr", dest="IERR", default="none", help="whether to interpolate MC errors (none, symm, ...)")
 op.add_option("--demo", dest="DEMO", action="store_true", default=False, help="temporary demo mode: plot the sum of bin values as a demo")
+op.add_option("--info", dest="INFO", default=None, help="Info string to be written to output file")
+op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
+op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
 import os, glob
-DATADIR = args[0]
-indirs = glob.glob(os.path.join(DATADIR, "mc", "*"))
+if len(args)==1:
+    DATADIR = args[0]
+elif len(args)==2:
+    DATADIR = os.path.join(args[0], args[1])
+indirs = glob.glob(os.path.join(DATADIR, "*"))
+
 
 import professor2 as prof
-PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
+
+if not opts.QUIET:
+    print prof.logo
+
+PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 # print RUNS
 # print PARAMNAMES
 # print PARAMSLIST
 HNAMES = HISTOS.keys()
 IHISTOS = {}
-for hn in HNAMES:
-    print "Interpolating " + hn
+
+
+
+for num, hn in enumerate(HNAMES):
+    if opts.DEBUG:
+        print "Interpolating " + hn
+    else:
+        print "\r%.1f per cent interpolated"%((float(num+1)/len(HNAMES))*100),
     histos = HISTOS[hn]
-    IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, 3, opts.IERR)
+    IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
     del HISTOS[hn] #< pro-actively clear up memory
 del HISTOS #< more memory clean-up
 # print sum(len(h.bins) for h in IHISTOS.values())
+
+
+
+# Add chi2 (simple, same file)
+# import minuit
+
+with open(opts.IFILE, "w") as f:
+    if opts.INFO is not None:
+        f.write("Info: %s\n"%opts.INFO)
+    f.write("DataDir: %s\n"%DATADIR)
+    f.write("ProfVersion: %s\n"%prof.mk_versionstring())
+    f.write("Date: %s\n"%prof.mk_timestamp())
+    f.write("DataFormat: binned\n") # That tells the reader how to treat the coefficients that follow
+    # Format and write out parameter names
+    pstring = "Params:"
+    for p in PARAMNAMES:
+        pstring+=" %s"%p
+    f.write(pstring+"\n")
+    # Dimension (consistency check)
+    f.write("Dimension: %i\n"%len(PARAMNAMES))
+    # Interpolation validity (hypercube edges)
+    minstring = "MinV: "
+    for v in min(PARAMSLIST):
+        minstring+=" %f"%v
+    maxstring = "MinV: "
+    for v in max(PARAMSLIST):
+        maxstring+=" %f"%v
+    f.write(minstring+"\n")
+    f.write(maxstring+"\n")
+    # Number of inputs per bin
+    f.write("NInputs: %i\n"%len(PARAMSLIST))
+
 
 ## Write out interpolation persistency info
 s = ""
@@ -49,11 +99,13 @@ for hname, ih in IHISTOS.iteritems():
     for i, ib in enumerate(ih.bins):
         s += "%s#%d %.5e %.5e\n" % (hname, i, ib.xmin, ib.xmax)
         s += "  " + ib.ival.toString("val") + "\n"
-        if ib.ierr:
-            s += "  " + ib.ierr.toString("err") + "\n"
-with open(opts.IFILE, "w") as f:
+        if ib.ierrs:
+            s += "  " + ib.ierrs.toString("err") + "\n"
+# Open file for write/append
+with open(opts.IFILE, "a") as f:
     f.write(s)
 
+print "\nOutput written to %s"%opts.IFILE
 
 
 # TODO: REMOVE!

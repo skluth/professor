@@ -1,5 +1,6 @@
 from professor2.core import *
 
+
 ## Provide faff-free Minuit objects
 Minuit, MinuitError = None, None
 try:
@@ -216,12 +217,16 @@ def read_histos(path):
     return histos
 
 
-def load_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
+def load_rundata(dirs, pfname="params.dat", debug=False): #, formats="yoda,root,aida,flat"):
     params, histos = {}, {}
     import os, glob
-    for d in dirs:
+    for num, d in enumerate(dirs):
         run = os.path.basename(d)
         files = glob.glob(os.path.join(d, "*"))
+        if debug:
+            print "Reading from %s"%run
+        else:
+            print "\r%.1f per cent read"%((float(num+1)/len(dirs))*100),
         for f in files:
             ## Params file
             if os.path.basename(f) == pfname:
@@ -289,3 +294,78 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
             raise Exception("Unknown error interpolation mode '%s'" % errmode)
         ibins.append(IpolBin(xmin, xmax, valipol, erripols))
     return Histo(ibins, histos.values()[0].path)
+
+
+def mk_timestamp():
+    """
+    Time stamp, taken from http://stackoverflow.com/questions/13890935/timestamp-python
+    """
+    import time
+    ts = time.time()
+    import datetime
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    return st
+
+def mk_versionstring():
+    """
+    Get version from setup.py, courtesy of
+    http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package
+    """
+    import pkg_resources  # part of setuptools
+    return pkg_resources.require("professor2")[0].version
+
+sequels = [
+"""
+                    Interpolation day
+""",
+"""
+                    Professor Rebinned
+""",
+"""
+                      2 Pro 2 Fessor
+""",
+"""
+                      Interpolations
+""",
+"""
+                    Professor Returns
+""",
+"""
+                       The Dark Bin
+""",
+"""
+                   Some Code has Survived
+""",
+"""
+              Professor and the chi-2 of doom
+""",
+"""
+              The Minimisation strikes back
+""",
+"""
+                  The Bin Supremacy
+""",
+]
+
+logo = \
+"""
+ ______           __                             _____ _____
+ | ___ \         / _|                           |_   _|_   _|
+ | |_/ / __ ___ | |_ ___  ___ ___  ___  _ __      | |   | |
+ |  __/ '__/ _ \|  _/ _ \/ __/ __|/ _ \| '__|     | |   | |
+ | |  | | | (_) | ||  __/\__ \__ \ (_) | |       _| |_ _| |_
+ \_|  |_|  \___/|_| \___||___/___/\___/|_|       \___/ \___/
+
+"""
+
+from random import randint
+logo+=sequels[randint(0,len(sequels)-1)]
+
+logo+="""
+
+Andy Yaml Buckley
+Holger Schulz
+Copyright MMXV
+
+"""
+
