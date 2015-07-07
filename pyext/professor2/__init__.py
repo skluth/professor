@@ -337,13 +337,13 @@ sequels = [
                    Some Code has Survived
 """,
 """
-              Professor and the chi-2 of doom
+               Professor and the chi-2 of doom
 """,
 """
-              The Minimisation strikes back
+                The Minimisation strikes back
 """,
 """
-                  The Bin Supremacy
+                     The Bin Supremacy
 """,
 ]
 
