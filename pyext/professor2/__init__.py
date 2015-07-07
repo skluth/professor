@@ -296,6 +296,41 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
     return Histo(ibins, histos.values()[0].path)
 
 
+def read_meta(ifile):
+    """
+    Read in meta data from prof-ipol output 'ifile'
+    """
+    meta={}
+    with open(ifile) as f:
+        for l in f:
+            if l.startswith("---"): # End of header indicator
+                break
+            if not l.startswith("#"): # Ignore comments
+                key, value=map(str.strip, l.split(":",1))
+                meta[key] = value
+    return meta
+
+def read_binnedipol(ifile):
+    """
+    Read binned ipol data back in from ifile
+    """
+    IHISTOS = {}
+    with open(ifile, "r") as f:
+        currentib = None
+        for line in f:
+            sline = line.strip()
+            if sline.startswith("/"):
+                fullpath, sxmin, sxmax = sline.split()
+                hpath, nbin = fullpath.split("#")
+                if currentib:
+                    IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
+                currentib = IpolBin(float(sxmin), float(sxmax))
+            elif sline.startswith("val"):
+                currentib.ival = Ipol(sline)
+            elif sline.startswith("err"):
+                currentib.ierr = Ipol(sline)
+    return IHISTOS
+
 def mk_timestamp():
     """
     Time stamp, taken from http://stackoverflow.com/questions/13890935/timestamp-python

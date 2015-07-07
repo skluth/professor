@@ -81,16 +81,17 @@ with open(opts.IFILE, "w") as f:
     # Dimension (consistency check)
     f.write("Dimension: %i\n"%len(PARAMNAMES))
     # Interpolation validity (hypercube edges)
-    minstring = "MinV: "
+    minstring = "MinV:"
     for v in min(PARAMSLIST):
         minstring+=" %f"%v
-    maxstring = "MinV: "
+    maxstring = "MaxV:"
     for v in max(PARAMSLIST):
         maxstring+=" %f"%v
     f.write(minstring+"\n")
     f.write(maxstring+"\n")
     # Number of inputs per bin
     f.write("NInputs: %i\n"%len(PARAMSLIST))
+    f.write("# End of header\n---\n")
 
 
 ## Write out interpolation persistency info

@@ -24,21 +24,31 @@ DATADIR = args[0]
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
-IHISTOS = {}
-with open(opts.IFILE, "r") as f:
-    currentib = None
-    for line in f:
-        sline = line.strip()
-        if sline.startswith("/"):
-            fullpath, sxmin, sxmax = sline.split()
-            hpath, nbin = fullpath.split("#")
-            if currentib:
-                IHISTOS.setdefault(hpath, prof.Histo()).bins.append(currentib)
-            currentib = prof.IpolBin(float(sxmin), float(sxmax))
-        elif sline.startswith("val"):
-            currentib.ival = prof.Ipol(sline)
-        elif sline.startswith("err"):
-            currentib.ierr = prof.Ipol(sline)
+
+M = prof.read_meta(opts.IFILE)
+if not M["DataFormat"] == 'binned':
+    print "Error, DataFormat of tuning input is not binned, exiting"
+    import sys
+    sys.exit(1)
+
+
+IHISTOS = prof.read_binnedipol(opts.IFILE)
+from IPython import embed
+embed()
+#with open(opts.IFILE, "r") as f:
+    #currentib = None
+    #for line in f:
+        #sline = line.strip()
+        #if sline.startswith("/"):
+            #fullpath, sxmin, sxmax = sline.split()
+            #hpath, nbin = fullpath.split("#")
+            #if currentib:
+                #IHISTOS.setdefault(hpath, prof.Histo()).bins.append(currentib)
+            #currentib = prof.IpolBin(float(sxmin), float(sxmax))
+        #elif sline.startswith("val"):
+            #currentib.ival = prof.Ipol(sline)
+        #elif sline.startswith("err"):
+            #currentib.ierr = prof.Ipol(sline)
 # print IHISTOS
 
 ## Read reference data histos
