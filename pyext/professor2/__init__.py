@@ -336,15 +336,17 @@ def read_binnedipol(ifile):
     """
     IHISTOS = {}
     with open(ifile, "r") as f:
-        currentib = None
+        #currentib = None
         for line in f:
             sline = line.strip()
             if sline.startswith("/"):
                 fullpath, sxmin, sxmax = sline.split()
                 hpath, nbin = fullpath.split("#")
-                if currentib:
-                    IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
+                #if currentib:
+                    #IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
+                #currentib = IpolBin(float(sxmin), float(sxmax))
                 currentib = IpolBin(float(sxmin), float(sxmax))
+                IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
             elif sline.startswith("val"):
                 currentib.ival = Ipol(sline)
             elif sline.startswith("err"):
@@ -392,6 +394,15 @@ def mk_center(anchors):
     for num, m in enumerate(mins):
         center.append(m+0.5*(maxs[num]-m))
     return center
+
+def is_inrange(ppoint, minv, maxv):
+    dec=True
+    notinrange=[]
+    for i in xrange(len(ppoint)):
+        if ppoint[i] < minv[i] or ppoint[i] > maxv[i]:
+            dec=False
+            notinrange.append(i)
+    return dec, notinrange
 
 def mk_fitfunc(fname, pnames):
     """

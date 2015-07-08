@@ -125,16 +125,27 @@ for num, name in enumerate(mpnames):
 # TODO:
 # * fixed parameters
 # * limits
-# * write out params, ipolhistos
+# * steer/check write out of params and ipolhistos
 
 ## Lift off
 minuit.migrad()
 
-for p in mpnames:
+result = [minuit.values[p] for p in mpnames]
+rng_low = map(float, M["MinV"].split())
+rng_high = map(float, M["MaxV"].split())
+rok, rng = prof.is_inrange(result, rng_low, rng_high)
+
+
+
+for num, p in enumerate(mpnames):
     if opts.QUIET:
         print "%s\t%f"%(p, minuit.values[p])
     else:
-        print "%s\t%f\t%f\t%f per cent"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]))
+        if rok or not num in rng:
+            print "%s\t%f\t%f\t%f per cent   inside  (%f --- %f)"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num])
+        else:
+            print "%s\t%f\t%f\t%f per cent   OUTSIDE (%f --- %f)"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num])
+
 
 with open("results.dat","w") as f:
     for p in mpnames:
@@ -147,8 +158,5 @@ with open("ipolhistos.yoda", "w") as f:
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
 
-
-
 from IPython import embed
 embed()
-
