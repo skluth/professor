@@ -33,8 +33,6 @@ if not M["DataFormat"] == 'binned':
 
 
 IHISTOS = prof.read_binnedipol(opts.IFILE)
-from IPython import embed
-embed()
 #with open(opts.IFILE, "r") as f:
     #currentib = None
     #for line in f:
@@ -51,34 +49,99 @@ embed()
             #currentib.ierr = prof.Ipol(sline)
 # print IHISTOS
 
+
+## Rivet analyses in IHISTOS
+ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS.keys()]))
+
+
 ## Read reference data histos
 import os, glob
 HISTOS = {}
-reffiles = glob.glob(os.path.join(DATADIR, "ref", "*"))
+reffiles = glob.glob(os.path.join(DATADIR,  "*"))
 for rf in reffiles:
     HISTOS.update(prof.read_histos(rf))
-# print HISTOS
 
-# TODO: REMOVE!
-## Plotting demo
-if opts.DEMO:
-    rundirs = glob.glob(os.path.join(DATADIR, "mc", "*"))
-    PARAMS, HISTOS = prof.load_rundata(rundirs, "used_params")
-    del HISTOS
-    RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
-    import numpy as np
-    A_X = np.linspace(min(ps[0] for ps in PARAMSLIST), max(ps[0] for ps in PARAMSLIST), 20)
-    A_Y = np.linspace(min(ps[1] for ps in PARAMSLIST), max(ps[1] for ps in PARAMSLIST), 20)
-    M_X, M_Y = np.meshgrid(A_X, A_Y)
-    M_Z = np.zeros(M_X.shape)
-    for i in xrange(M_X.shape[0]):
-        for j in xrange(M_X.shape[1]):
-            for ih in IHISTOS.values():
-                for ib in ih.bins:
-                    M_Z[i,j] += ib.val([M_X[i,j], M_Y[i,j]]) #< TODO: something better, e.g. a simple chi2
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_wireframe(M_X, M_Y, M_Z, rstride=1, cstride=1)
-    plt.show()
+# Find things available in both
+available=[]
+for i in IHISTOS.keys():
+    for r in HISTOS.keys():
+        if i in r:
+            available.append([i,r])
+
+
+ibins = []
+databins = []
+for a in available:
+    ibins.extend(  IHISTOS[a[0]].bins)
+    databins.extend(HISTOS[a[1]].bins)
+
+assert(len(ibins) == len(databins))
+
+def fitfunc(params, weights=None):
+    chi2 = 0.0
+    for num, ibin in enumerate(ibins):
+        ival = ibin.val(params)
+        dval = databins[num].val
+        if ibin.ierrs is None:
+            err2 = databins[num].err**2
+        else:
+            err2 = sum([e**2 for e in ibin.ierrs])
+        if err2 == 0.0:
+            err2=1.
+            #continue
+        w=1
+        if weights is not None:
+            w=weights[num]
+            pass # do stuff
+        diff = dval - ival
+        chi2 += w * diff**2 / err2
+    return chi2
+
+from minuit2 import Minuit2 as Minuit
+mpnames = ["MP%02i"%(i) for i in xrange(int(M["Dimension"]))]
+# helper to translate minuit parameter names back to realnames
+namemap = dict(zip(mpnames, M["Params"].split()))
+funcargs = ", ".join(mpnames)
+funcdef = "def hackGoFWrapper("
+funcdef += funcargs
+funcdef += "): "
+funcdef += "return fitfunc(["
+funcdef += funcargs
+funcdef += "])"
+exec funcdef in locals()
+print "Built GoF wrapper from:\n  '%s'" % funcdef
+
+# TODO:
+# * fixed parameters
+# * limits
+# * translation
+# ...
+minuit = Minuit(hackGoFWrapper, strategy=2)
+minuit.migrad()
+
+from IPython import embed
+embed()
+
+## TODO: REMOVE!
+### Plotting demo
+#if opts.DEMO:
+    #rundirs = glob.glob(os.path.join(DATADIR, "mc", "*"))
+    #PARAMS, HISTOS = prof.load_rundata(rundirs, "used_params")
+    #del HISTOS
+    #RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
+    #import numpy as np
+    #A_X = np.linspace(min(ps[0] for ps in PARAMSLIST), max(ps[0] for ps in PARAMSLIST), 20)
+    #A_Y = np.linspace(min(ps[1] for ps in PARAMSLIST), max(ps[1] for ps in PARAMSLIST), 20)
+    #M_X, M_Y = np.meshgrid(A_X, A_Y)
+    #M_Z = np.zeros(M_X.shape)
+    #for i in xrange(M_X.shape[0]):
+        #for j in xrange(M_X.shape[1]):
+            #for ih in IHISTOS.values():
+                #for ib in ih.bins:
+                    #M_Z[i,j] += ib.val([M_X[i,j], M_Y[i,j]]) #< TODO: something better, e.g. a simple chi2
+    #import matplotlib.pyplot as plt
+    #from mpl_toolkits.mplot3d import Axes3D
+    #fig = plt.figure()
+    #ax = fig.add_subplot(111, projection='3d')
+    #ax.plot_wireframe(M_X, M_Y, M_Z, rstride=1, cstride=1)
+    #plt.show()
