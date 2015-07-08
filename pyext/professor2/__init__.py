@@ -85,6 +85,27 @@ class Histo(object):
         self.bins = bins if bins else []
         self.path = path
 
+    def toYODA(self, ppoint, manpath=None):
+        if self.path is None and not manpath is None:
+            P=manpath
+        elif self.path is not None and manpath is None:
+            P=self.path
+        elif self.path is not None and manpath is not None:
+            P=manpath
+        else:
+            print "No path given!"
+            return ""
+        s="# BEGIN YODA_SCATTER2D %s\n"%P
+        s+="Path=%s\n"%P
+        s+="Type=Scatter2D\n"
+        s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
+        for b in self.bins:
+            s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+        s+="# END YODA_SCATTER2D\n"
+        return s
+
+
+
 
 class Bin(object):
     "A base class for binned data, handling the common x-edge stuff"
@@ -251,7 +272,6 @@ def mk_ipolinputs(params):
     paramslist = [[params[pn] for pn in paramnames] for (run, params) in sorted(params.iteritems())]
     return runs, paramnames, paramslist
 
-
 def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
     """\
     Make a prof.Histo filled with prof.IpolBins, from a dict of prof.DataBin
@@ -362,6 +382,10 @@ def mk_maxvals(anchors):
     return maxs
 
 def mk_center(anchors):
+    """
+    Calculate center from all anchor points --- needed?
+    Requires knowledge of all anchor points, hmm
+    """
     mins = mk_minvals(anchors)
     maxs = mk_maxvals(anchors)
     center = []
@@ -370,6 +394,9 @@ def mk_center(anchors):
     return center
 
 def mk_fitfunc(fname, pnames):
+    """
+    Minimal wrapper
+    """
     funcargs = ", ".join(pnames)
     funcdef = "def profGoF("
     funcdef += funcargs

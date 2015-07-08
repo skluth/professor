@@ -7,7 +7,6 @@ Interpolate histo bin values as a function of the parameter space by loading
 from the usual data directory structure $datadir/mc/{rundirs}
 
 TODO:
- * Remove the demo plotting... maybe move it into another script?
  * Handle weight files/args
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
  * User choice of MC error interpolation (mean,median,ipol x none,symm,plusminus,full)
@@ -24,6 +23,7 @@ op.add_option("--info", dest="INFO", default=None, help="Info string to be writt
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
@@ -36,36 +36,78 @@ indirs = glob.glob(os.path.join(DATADIR, "*"))
 
 
 import professor2 as prof
-
 if not opts.QUIET:
     print prof.logo
 
 PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
-# print RUNS
-# print PARAMNAMES
-# print PARAMSLIST
+
 HNAMES = HISTOS.keys()
 IHISTOS = {}
 
 
+import time, zlib
+# The worker
+#from memory_profiler import profile
+#@profile
+def worker(q, rdict):
+    while True:
+        if q.empty():
+            break
+        hn=q.get()
+        histos = HISTOS[hn]
+        ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
+        del HISTOS[hn] #< pro-actively clear up memory
+        s=""
+        for i, ib in enumerate(ih.bins):
+            s += "%s#%d %.5e %.5e\n" % (hn, i, ib.xmin, ib.xmax)
+            s += "  " + ib.ival.toString("val") + "\n"
+            if ib.ierrs:
+                s += "  " + ib.ierrs.toString("err") + "\n"
+        del ih #< pro-actively clear up memory
+        rdict[hn]=zlib.compress(s,9) # Save some memory
+        del s
+        del histos
 
-for num, hn in enumerate(HNAMES):
-    if opts.DEBUG:
-        print "Interpolating " + hn
-    else:
-        print "\r%.1f per cent interpolated"%((float(num+1)/len(HNAMES))*100),
-    histos = HISTOS[hn]
-    IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
-    del HISTOS[hn] #< pro-actively clear up memory
+time1 = time.time()
+
+import multiprocessing
+num_cores = multiprocessing.cpu_count()
+if num_cores > 1 and opts.MULTI:
+    ## A shared memory object is required for retrieval coefficients
+    from multiprocessing import Manager
+    manager = Manager()
+    tempDict = manager.dict()
+
+    ## The job queue
+    q=multiprocessing.Queue()
+    map(lambda x:q.put(x), HNAMES)
+
+    ## Fire away
+    workers = [multiprocessing.Process(target=worker, args=(q, tempDict)) for i in range(num_cores)]
+    map(lambda x:x.start(), workers)
+    map(lambda x:x.join(),  workers)
+
+    ## Finally copy the result dictionary into the object itself
+    for k in tempDict.keys():
+        IHISTOS[k] = tempDict[k]
+else:
+    for num, hn in enumerate(HNAMES):
+        if opts.DEBUG:
+            print "Interpolating " + hn
+        else:
+            print "\r%.1f per cent interpolated"%((float(num+1)/len(HNAMES))*100),
+        histos = HISTOS[hn]
+        IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
+        del HISTOS[hn] #< pro-actively clear up memory
 del HISTOS #< more memory clean-up
-# print sum(len(h.bins) for h in IHISTOS.values())
 
 
+time2 = time.time()
+print '\nInterpolation took %0.2f s'%((time2-time1))
 
-# Add chi2 (simple, same file)
-# import minuit
 
+## Write out meta info
 with open(opts.IFILE, "w") as f:
     if opts.INFO is not None:
         f.write("Info: %s\n"%opts.INFO)
@@ -96,35 +138,21 @@ with open(opts.IFILE, "w") as f:
 
 ## Write out interpolation persistency info
 s = ""
-for hname, ih in IHISTOS.iteritems():
-    for i, ib in enumerate(ih.bins):
-        s += "%s#%d %.5e %.5e\n" % (hname, i, ib.xmin, ib.xmax)
-        s += "  " + ib.ival.toString("val") + "\n"
-        if ib.ierrs:
-            s += "  " + ib.ierrs.toString("err") + "\n"
+for hname in sorted(IHISTOS.keys()):
+    ih = IHISTOS[hname]
+    if type(ih)==str: ## detect results from multiprocessing
+        s+=zlib.decompress(ih)
+    else:
+        for i, ib in enumerate(ih.bins):
+            s += "%s#%d %.5e %.5e\n" % (hname, i, ib.xmin, ib.xmax)
+            s += "  " + ib.ival.toString("val") + "\n"
+            if ib.ierrs:
+                s += "  " + ib.ierrs.toString("err") + "\n"
 # Open file for write/append
 with open(opts.IFILE, "a") as f:
     f.write(s)
 
 print "\nOutput written to %s"%opts.IFILE
 
-
-# TODO: REMOVE!
-## Plotting demo
-if opts.DEMO:
-    import numpy as np
-    A_X = np.linspace(min(ps[0] for ps in PARAMSLIST), max(ps[0] for ps in PARAMSLIST), 20)
-    A_Y = np.linspace(min(ps[1] for ps in PARAMSLIST), max(ps[1] for ps in PARAMSLIST), 20)
-    M_X, M_Y = np.meshgrid(A_X, A_Y)
-    M_Z = np.zeros(M_X.shape)
-    for i in xrange(M_X.shape[0]):
-        for j in xrange(M_X.shape[1]):
-            for ih in IHISTOS.values():
-                for ib in ih.bins:
-                    M_Z[i,j] += ib.val([M_X[i,j], M_Y[i,j]]) #< TODO: something better, e.g. a simple chi2
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_wireframe(M_X, M_Y, M_Z, rstride=1, cstride=1)
-    plt.show()
+import sys
+sys.exit(0)

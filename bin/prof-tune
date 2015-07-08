@@ -30,34 +30,18 @@ import professor2 as prof
 if not opts.QUIET:
     print prof.logo
 
+## Read in meta data
 M = prof.read_meta(opts.IFILE)
 if not M["DataFormat"] == 'binned':
     print "Error, DataFormat of tuning input is not binned, exiting"
     import sys
     sys.exit(1)
 
-
+## Read in ipol histos
 IHISTOS = prof.read_binnedipol(opts.IFILE)
-#with open(opts.IFILE, "r") as f:
-    #currentib = None
-    #for line in f:
-        #sline = line.strip()
-        #if sline.startswith("/"):
-            #fullpath, sxmin, sxmax = sline.split()
-            #hpath, nbin = fullpath.split("#")
-            #if currentib:
-                #IHISTOS.setdefault(hpath, prof.Histo()).bins.append(currentib)
-            #currentib = prof.IpolBin(float(sxmin), float(sxmax))
-        #elif sline.startswith("val"):
-            #currentib.ival = prof.Ipol(sline)
-        #elif sline.startswith("err"):
-            #currentib.ierr = prof.Ipol(sline)
-# print IHISTOS
 
-
-## Rivet analyses in IHISTOS
+## List of rivet analysis paths in IHISTOS
 ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS.keys()]))
-
 
 ## Read reference data histos
 import os, glob
@@ -66,20 +50,21 @@ reffiles = glob.glob(os.path.join(DATADIR,  "*"))
 for rf in reffiles:
     HISTOS.update(prof.read_histos(rf))
 
-# Find things available in both
+## Find things available in both
 available=[]
 for i in IHISTOS.keys():
     for r in HISTOS.keys():
         if i in r:
             available.append([i,r])
 
-
+## Prepare list of ibins and databins --- order should be ok
 ibins = []
 databins = []
 for a in available:
     ibins.extend(  IHISTOS[a[0]].bins)
     databins.extend(HISTOS[a[1]].bins)
 
+## Sanity checks
 assert(len(ibins) == len(databins))
 
 if len(ibins)==0:
@@ -87,7 +72,11 @@ if len(ibins)==0:
     import sys
     sys,exit(1)
 
-def simplechi2(params, weights=None):
+weights=None
+def simpleGOF(params):
+    """
+    Very straight forward gof
+    """
     chi2 = 0.0
     for num, ibin in enumerate(ibins):
         ival = ibin.val(params)
@@ -107,51 +96,59 @@ def simplechi2(params, weights=None):
         chi2 += w * diff**2 / err2
     return chi2
 
-from minuit2 import Minuit2 as Minuit
 
-# Take parameter names directly from ifile
+## Take parameter names directly from ifile
 mpnames = M["Params"].split()
-# Fall back if empty
+
+## Fall back solution if empty
 if len(mpnames)==0:
     mpnames = ["MP%03i"%(i) for i in xrange(int(M["Dimension"]))]
 
-# Function definition wrapper
-funcdef = prof.mk_fitfunc("simplechi2", mpnames)
+## Function definition wrapper
+funcdef = prof.mk_fitfunc("simpleGOF", mpnames)
 exec funcdef in locals()
 if opts.DEBUG:
     print "Built GoF wrapper from:\n  '%s'" % funcdef
 
 
-
+## Ignition
+from minuit2 import Minuit2 as Minuit
 minuit = Minuit(profGoF, strategy=2)
-# TODO:
-# * fixed parameters
-# * limits
 
-# Starting point --- use center
+## Starting point --- use center
 C= []
 for num, m in enumerate(map(float, M["MinV"].split())):
     C.append(m+0.5*(float(M["MinV"].split()[num])-m))
 for num, name in enumerate(mpnames):
     minuit.values[name] = C[num]
 
-## Fixed
-#minuit.fixed["CSS_IS_AS_FAC"] = True
-#minuit.fixed["CSS_FS_AS_FAC"] = True
-#minuit.fixed["CSS_FS_PT2MIN"] = True
-#minuit.fixed["CSS_IS_PT2MIN"] = True
-#minuit.fixed["PROFILE_1"] = True
-#minuit.fixed["PROFILE_2"] = True
-#minuit.fixed["SCALE_MIN"] = True
-#minuit.fixed["SIGMA_ND_FACTOR"] = True
-#minuit.fixed["TURNOFF"] = True
+# TODO:
+# * fixed parameters
+# * limits
+# * write out params, ipolhistos
 
-# Ignition
+## Lift off
 minuit.migrad()
 
 for p in mpnames:
-    print "%s\t%f\t%f\t%f per cent"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]))
+    if opts.QUIET:
+        print "%s\t%f"%(p, minuit.values[p])
+    else:
+        print "%s\t%f\t%f\t%f per cent"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]))
 
-#from IPython import embed
-#embed()
+with open("results.dat","w") as f:
+    for p in mpnames:
+        f.write("%s\t%f\n"%(p, minuit.values[p]))
+
+result = [minuit.values[name] for name in mpnames]
+with open("ipolhistos.yoda", "w") as f:
+    for num, k in enumerate(sorted(IHISTOS.keys())):
+        f.write(IHISTOS[k].toYODA(result, k))
+        if num+1 < len(IHISTOS.keys()):
+            f.write("\n")
+
+
+
+from IPython import embed
+embed()
 
