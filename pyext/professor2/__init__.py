@@ -361,6 +361,24 @@ def mk_maxvals(anchors):
     maxs = [A[:,i].max() for i in xrange(len(A[0]))]
     return maxs
 
+def mk_center(anchors):
+    mins = mk_minvals(anchors)
+    maxs = mk_maxvals(anchors)
+    center = []
+    for num, m in enumerate(mins):
+        center.append(m+0.5*(maxs[num]-m))
+    return center
+
+def mk_fitfunc(fname, pnames):
+    funcargs = ", ".join(pnames)
+    funcdef = "def profGoF("
+    funcdef += funcargs
+    funcdef += "): "
+    funcdef += "return %s(["%fname
+    funcdef += funcargs
+    funcdef += "])"
+    return funcdef
+
 sequels = [
 """
                     Interpolation day
