@@ -157,6 +157,3 @@ with open("ipolhistos.yoda", "w") as f:
         f.write(IHISTOS[k].toYODA(result, k))
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
-
-from IPython import embed
-embed()
