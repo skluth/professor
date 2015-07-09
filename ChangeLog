@@ -1,3 +1,16 @@
+2015-08-08  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Calculate and print G.o.f.
+	
+	* Write some meta info to results
+
+	* Read limits, fixed params from single textfile --limits
+
+	* Output files steered by --output
+	
+	* Remove now obsolete bin/prof-interpolate
+	
+
 2015-07-08  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* First working version of prof-tune (pyminuit, simpleGOF)
