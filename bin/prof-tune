@@ -16,6 +16,7 @@ TODO:
 import optparse
 op = optparse.OptionParser()
 op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
+op.add_option("--output", dest="OUTPUT", default="tuned", help="Prefix for outputs (default: %default)")
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with paramter limits and fixed parameters")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -136,17 +137,21 @@ for mp in mpnames:
 ## Lift off
 minuit.migrad()
 
+## Goodness of fit
+if not opts.QUIET:
+    chi2 = minuit.fval
+    ndof = len(databins) - len(mpnames) + len(fixed.keys())
+    print "'chi2': %.2f"%chi2
+    print "Ndof  : %i"%ndof
+    print "G.o.f.: %.2f \n"%(chi2/ndof)
+
+## Check if result is in validity range
 result = [minuit.values[p] for p in mpnames]
 rng_low = map(float, M["MinV"].split())
 rng_high = map(float, M["MaxV"].split())
 rok, rng = prof.is_inrange(result, rng_low, rng_high)
 
-chi2 = minuit.fval
-ndof = len(databins) - len(mpnames) + len(fixed.keys())
-print "'chi2': %.2f"%chi2
-print "Ndof  : %i"%ndof
-print "G.o.f.: %.2f \n"%(chi2/ndof)
-
+## Print results to screen
 for num, p in enumerate(mpnames):
     isl, isf = " ", " "
     if opts.QUIET:
@@ -162,12 +167,34 @@ for num, p in enumerate(mpnames):
             print "%s\t%f\t%f\t%.2f %%  OUTSIDE (%f --- %f) %s %s"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num], isf, isl)
 
 
-with open("results.dat","w") as f:
+## Write out result
+with open("%s_results.txt"%opts.OUTPUT,"w") as f:
+    ## Meta info
+    f.write("# ProfVersion: %s\n"%prof.mk_versionstring())
+    f.write("# Date: %s\n"%prof.mk_timestamp())
+    f.write("# InterpolationFile: %s\n"%os.path.abspath(opts.IFILE))
+    f.write("# DataDir: %s\n"%os.path.abspath(DATADIR))
+    # TODO: weights --- dump them all or just the file name? for consitency, probably better to dump them all at the end
+    # Limits
+    lstring = ""
+    for p in mpnames:
+        if limits.has_key(p):
+            lstring+= "#\t%s\t%f %f\n"%(p, limits[p][0], limits[p][1])
+    f.write("# Limits: \n%s"%lstring)
+    # Fixed parameters
+    fstring = ""
+    for p in mpnames:
+        if fixed.has_key(p):
+            fstring+= "#\t%s\t%f\n"%(p, fixed[p])
+    f.write("# Fixed: \n%s"%fstring)
+
+    ## The tuned parameter values
     for p in mpnames:
         f.write("%s\t%f\n"%(p, minuit.values[p]))
 
+## Write out ipolhistos
 result = [minuit.values[name] for name in mpnames]
-with open("ipolhistos.yoda", "w") as f:
+with open("%s_ipolhistos.yoda"%opts.OUTPUT, "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
         f.write(IHISTOS[k].toYODA(result, k))
         if num+1 < len(IHISTOS.keys()):
