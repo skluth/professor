@@ -417,6 +417,26 @@ def mk_fitfunc(fname, pnames):
     funcdef += "])"
     return funcdef
 
+def read_limitsandfixed(fname):
+    """
+    Read a text file e.g.
+    PARAM1  0.54444       # interpreted as limits
+    PARAM2  0         1   # interpreted as fixed param
+    """
+    limits, fixed = {}, {}
+    if fname is not None:
+        with open(fname) as f:
+            for l in f:
+                if not l.startswith("#"):
+                    temp = l.split()
+                    if len(temp)==2:
+                        fixed[temp[0]] = float(temp[1])
+                    elif len(temp)==3:
+                        limits[temp[0]] = (float(temp[1]), float(temp[2]))
+    return limits, fixed
+
+
+
 sequels = [
 """
                     Interpolation day

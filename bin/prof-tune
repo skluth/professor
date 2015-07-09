@@ -15,9 +15,8 @@ TODO:
 
 import optparse
 op = optparse.OptionParser()
-# TODO: Remove demo
-op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file into which to write the bin interpolations (default: %default)")
-op.add_option("--demo", dest="DEMO", action="store_true", default=False, help="temporary demo mode: plot the sum of bin values as a demo")
+op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
+op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with paramter limits and fixed parameters")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
@@ -122,9 +121,16 @@ for num, m in enumerate(map(float, M["MinV"].split())):
 for num, name in enumerate(mpnames):
     minuit.values[name] = C[num]
 
-# TODO:
-# * fixed parameters
-# * limits
+
+## Fix parameters, set limits
+limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
+for mp in mpnames:
+    if mp in limits.keys():
+        minuit.limits[mp] = limits[mp]
+    if mp in fixed.keys():
+        minuit.values[mp] = fixed[mp]
+        minuit.fixed[mp] = True
+
 # * steer/check write out of params and ipolhistos
 
 ## Lift off
@@ -141,10 +147,20 @@ for num, p in enumerate(mpnames):
     if opts.QUIET:
         print "%s\t%f"%(p, minuit.values[p])
     else:
-        if rok or not num in rng:
-            print "%s\t%f\t%f\t%f per cent   inside  (%f --- %f)"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num])
+        if p in fixed.keys():
+            isf="F"
         else:
-            print "%s\t%f\t%f\t%f per cent   OUTSIDE (%f --- %f)"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num])
+            isf=" "
+        if p in limits.keys():
+            isl="L"
+        else:
+            isl=" "
+
+
+        if rok or not num in rng:
+            print "%s\t%f\t%f\t%.2f %%   inside  (%f --- %f) %s %s"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num], isf, isl)
+        else:
+            print "%s\t%f\t%f\t%.2f %%  OUTSIDE (%f --- %f) %s %s"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num], isf, isl)
 
 
 with open("results.dat","w") as f:
