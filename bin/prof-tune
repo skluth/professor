@@ -118,7 +118,7 @@ minuit = Minuit(profGoF, strategy=2)
 ## Starting point --- use center
 C= []
 for num, m in enumerate(map(float, M["MinV"].split())):
-    C.append(m+0.5*(float(M["MinV"].split()[num])-m))
+    C.append(m+0.5*(float(M["MaxV"].split()[num])-m))
 for num, name in enumerate(mpnames):
     minuit.values[name] = C[num]
 
