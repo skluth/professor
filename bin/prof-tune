@@ -132,8 +132,6 @@ for mp in mpnames:
         minuit.values[mp] = fixed[mp]
         minuit.fixed[mp] = True
 
-# * steer/check write out of params and ipolhistos
-
 ## Lift off
 minuit.migrad()
 
