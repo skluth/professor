@@ -119,7 +119,6 @@ def mk_line(obs, ppoint):
     return X, Y
 
 def mk_data(obs, prefix="/REF"):
-    print obs
     X, Y, dY = [], [], []
     try:
         for b in HISTOS[prefix+obs].bins:
