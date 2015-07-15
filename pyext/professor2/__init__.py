@@ -85,7 +85,7 @@ class Histo(object):
         self.bins = bins if bins else []
         self.path = path
 
-    def toYODA(self, ppoint, manpath=None):
+    def toYODA(self, ppoint=None, manpath=None):
         if self.path is None and not manpath is None:
             P=manpath
         elif self.path is not None and manpath is None:
@@ -100,7 +100,10 @@ class Histo(object):
         s+="Type=Scatter2D\n"
         s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
         for b in self.bins:
-            s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+            if ppoint is not None:
+                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+            else:
+                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
         s+="# END YODA_SCATTER2D\n"
         return s
 
@@ -434,6 +437,20 @@ def read_limitsandfixed(fname):
                     elif len(temp)==3:
                         limits[temp[0]] = (float(temp[1]), float(temp[2]))
     return limits, fixed
+
+
+def pull(dbin, cbin, ppoint=None):
+    """
+    Pull between databin dbin and comparison bin (cbin).
+    If ppoint is None, assume mc bins, otherwise assume ipol bin.
+    """
+    if dbin.err>0:
+        if ppoint is not None:
+            return (dbin.val - cbin.val(ppoint))/dbin.err
+        else:
+            return (dbin.val - cbin.val)/dbin.err
+    else:
+        return 0
 
 
 
