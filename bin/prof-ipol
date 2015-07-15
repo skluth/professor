@@ -153,9 +153,3 @@ with open(opts.IFILE, "a") as f:
     f.write(s)
 
 print "\nOutput written to %s"%opts.IFILE
-
-from IPython import embed
-embed()
-
-import sys
-sys.exit(0)
