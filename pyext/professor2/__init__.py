@@ -453,6 +453,19 @@ def pull(dbin, cbin, ppoint=None):
         return 0
 
 
+def min_runs(order, pDim):
+    """
+    Calculate min number of runs (number of coefficients)
+    for Polynomial of order in pDim dimensions.
+    """
+    import numpy
+    Nc = 1
+    for i in xrange(1,order+1):
+        t=1./numpy.math.factorial(i)
+        for j in xrange(i):
+            t*=(pDim+j)
+        Nc += t
+    return int(Nc)
 
 sequels = [
 """
