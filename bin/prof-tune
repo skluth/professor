@@ -20,6 +20,7 @@ op.add_option("--output", dest="OUTPUT", default="tuned", help="Prefix for outpu
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with paramter limits and fixed parameters")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--pulls", dest="PULLS", action="store_true", default=False, help="Output pull histograms after minimisation")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 DATADIR = args[0]
@@ -197,3 +198,20 @@ with open("%s_ipolhistos.yoda"%opts.OUTPUT, "w") as f:
         f.write(IHISTOS[k].toYODA(result, k))
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
+
+## Pull histograms
+if opts.PULLS:
+    pulls = []
+    for a in available:
+        ikey=a[0]
+        dkey=a[1]
+        ib = IHISTOS[ikey].bins
+        db =  HISTOS[dkey].bins
+        pb = []
+        for i in xrange(len(ib)):
+            py = prof.pull(db[i], ib[i], result)
+            pb.append(prof.DataBin(db[i].xmin, db[i].xmax, py, 0))
+        pulls.append(prof.Histo(pb, ikey))
+
+    with open("%s_pulls.yoda"%opts.OUTPUT, "w") as f:
+        [f.write(h.toYODA()) for h in pulls]
