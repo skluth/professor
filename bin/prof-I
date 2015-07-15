@@ -129,6 +129,18 @@ def mk_data(obs, prefix="/REF"):
         print "No data available for %s"%obs
     return X, Y, dY
 
+def mk_pull(obs, ppoint, prefix="/REF"):
+    """
+    Prepare points for matplotlib step
+    """
+    X, Y = [], []
+    for num, b in enumerate(IHISTOS[obs].bins):
+        X.append(b.xmin)
+        X.append(b.xmax)
+        p=prof.pull(HISTOS[prefix+obs].bins[num], b, ppoint)
+        Y.append(p)
+        Y.append(p)
+    return X, Y
 
 
 class ParamFrame(wx.Frame):
@@ -176,6 +188,7 @@ class ProfIFrame(wx.Frame):
         self.histos = {}
         self.refhistos = {"left" : None, "right" : None}
         self.logy = {"left" : False, "right" : False}
+        self.pull = {"left" : False, "right" : False}
         self.limits = {}
         self.drawobs = { "left"  : sorted(observables)[0],
                          "right" : sorted(observables)[1 if len(observables) > 1 else 0] }
@@ -212,19 +225,27 @@ class ProfIFrame(wx.Frame):
         self.obschoice1.SetSelection(sorted(observables).index(self.drawobs["left"]))
         self.hbox.Add(self.obschoice1, pos=(0,1))
         self.logy1chkbx = wx.CheckBox(self.panel, -1, "logy")
-        self.hbox.Add(self.logy1chkbx, pos=(0,3))
+        self.hbox.Add(self.logy1chkbx, pos=(0,2))
         self.Bind(wx.EVT_CHOICE, functools.partial(self.updateObs, which="left"), self.obschoice1)
         self.Bind(wx.EVT_CHECKBOX, self.setLogy, self.logy1chkbx)
+        self.pull1chkbx = wx.CheckBox(self.panel, -1, "pull")
+        self.hbox.Add(self.pull1chkbx, pos=(0,3))
+        self.Bind(wx.EVT_CHOICE, functools.partial(self.updateObs, which="left"), self.obschoice1)
+        self.Bind(wx.EVT_CHECKBOX, self.setPull, self.pull1chkbx)
 
         ## Choice of observable 2
-        self.hbox.Add(wx.StaticText(self.panel, -1, "Obs 2:"), pos=(0,4))
+        self.hbox.Add(wx.StaticText(self.panel, -1, "Obs 2:"), pos=(0,5))
         self.obschoice2 = wx.Choice(self.panel, -1, (85, 18), choices=sorted(observables))
         self.obschoice2.SetSelection(sorted(observables).index(self.drawobs["right"]))
-        self.hbox.Add(self.obschoice2, pos=(0,5))
+        self.hbox.Add(self.obschoice2, pos=(0,6))
         self.logy2chkbx = wx.CheckBox(self.panel, -1, "logy")
         self.hbox.Add(self.logy2chkbx, pos=(0,7))
         self.Bind(wx.EVT_CHOICE, functools.partial(self.updateObs, which="right"), self.obschoice2)
         self.Bind(wx.EVT_CHECKBOX, self.setLogy, self.logy2chkbx)
+        self.pull2chkbx = wx.CheckBox(self.panel, -1, "pull")
+        self.hbox.Add(self.pull2chkbx, pos=(0,8))
+        self.Bind(wx.EVT_CHOICE, functools.partial(self.updateObs, which="right"), self.obschoice2)
+        self.Bind(wx.EVT_CHECKBOX, self.setPull, self.pull2chkbx)
         self.hbox.Fit(self)
 
         self.vbox.Add(self.hbox)
@@ -288,6 +309,15 @@ class ProfIFrame(wx.Frame):
                 i[2].set_yscale('linear')
         self.sliderUpdate(None)
 
+    def setPull(self, event):
+        """ See if the checkboxes are checked and switch to pull mode """
+        for i in [(self.pull1chkbx, "left", self.axes), (self.pull2chkbx, "right", self.axes2)]:
+            if i[0].IsChecked():
+                self.pull[i[1]]=True
+            else:
+                self.pull[i[1]]=False
+        self.sliderUpdate(None)
+
     def sliderUpdate(self, event, redraw=True):
         ppoint = self.getCurrentParamValues()
         self.plotHistos(ppoint, redraw=redraw)
@@ -339,8 +369,10 @@ class ProfIFrame(wx.Frame):
         self.axes.set_title(obs1)
         self.axes2.set_title(obs2)
 
-        self.plotDataHisto(self.axes, 'left')
-        self.plotDataHisto(self.axes2, 'right')
+        if not self.pull['left']:
+            self.plotDataHisto(self.axes, 'left')
+        if not self.pull['right']:
+            self.plotDataHisto(self.axes2, 'right')
         #
         self.sliderUpdate(None, redraw=False)
 
@@ -358,7 +390,10 @@ class ProfIFrame(wx.Frame):
                   ['right',self.axes2, self.drawobs["right"]]):
 
             # Get the coordinates for the ipol histos step draw
-            X, Y = mk_line(i[2], ppoint)#, self.logy[i[0]])
+            if self.pull[i[0]]:
+                X, Y = mk_pull(i[2], ppoint)#, self.logy[i[0]])
+            else:
+                X, Y = mk_line(i[2], ppoint)#, self.logy[i[0]])
             if redraw is False:
                 self.histos[i[0]] = i[1].step(X, Y, color="r", where="post")
             else:
