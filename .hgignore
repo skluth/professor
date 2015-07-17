@@ -7,6 +7,10 @@
 ^obj/.*\.o$
 ^build$
 ^lib$
+^doxy$
 ^lib64$
 ^example.+/
 ^tmp$
+^.*\.swp$
+^.*\.yoda$
+^.*\.pdf$
