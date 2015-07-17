@@ -208,12 +208,22 @@ class IpolBin(Bin):
 
 
 def read_paramsfile(path):
+    """
+    Read a file with parameters
+    """
     rtn = {}
     with open(path, "r") as f:
-        for line in f:
-            parts = line.split("#")[0].strip().split()
-            assert len(parts) == 2
-            rtn[parts[0]] = float(parts[1])
+        L = [l.strip() for l in f if not l.startswith("#")]
+        for num, line in enumerate(L):
+            parts = line.split()
+            if len(parts) == 2:
+                rtn[parts[0]] = float(parts[1])
+            elif len(parts) == 1:
+                rtn["PARAM%i"] = float(parts[0])
+            else:
+                print "Error in parameter input format"
+                import sys
+                sys.exit(1)
     return rtn
 
 
