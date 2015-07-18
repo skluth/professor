@@ -219,7 +219,7 @@ def read_paramsfile(path):
             if len(parts) == 2:
                 rtn[parts[0]] = float(parts[1])
             elif len(parts) == 1:
-                rtn["PARAM%i"] = float(parts[0])
+                rtn["PARAM%i"%num] = float(parts[0])
             else:
                 print "Error in parameter input format"
                 import sys

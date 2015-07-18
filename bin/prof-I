@@ -58,6 +58,7 @@ for a in available:
     databins.extend(HISTOS[a[1]].bins)
 
 ## Sanity checks
+print len(ibins), len(databins)
 assert(len(ibins) == len(databins))
 
 if len(ibins)==0:
