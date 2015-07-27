@@ -4,7 +4,7 @@ PROFESSOR TO-DO LIST
 FOR 2.0.0b1
 -----------
 
-- Smart Bin access to y val and err(s), i.e. without necessarily exposing Ipols to user
+- Allow 0-param Ipols (currently blocked by Eigen assertions)
 
 - Add minimising + eigentunes to prof-tune
 
