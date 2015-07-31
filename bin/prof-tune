@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """\
-%prog datadir
+%prog <datadir>
 
 Interpolate histo bin values as a function of the parameter space by loading
 from the usual data directory structure $datadir/mc/{rundirs}
@@ -20,6 +20,7 @@ op.add_option("--output", dest="OUTPUT", default="tuned", help="Prefix for outpu
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with paramter limits and fixed parameters")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+# TODO: Generalise to --mode=pulls etc. rather than a separate flag for each display type
 op.add_option("--pulls", dest="PULLS", action="store_true", default=False, help="Output pull histograms after minimisation")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
@@ -67,16 +68,18 @@ for a in available:
 
 ## Sanity checks
 assert(len(ibins) == len(databins))
-
-if len(ibins)==0:
+if not ibins:
     print "No bins ..., exiting"
     import sys
     sys.exit(1)
 
-weights=None
+
+# TODO: allow pluggable user GoF definition
+
+weights = None
 def simpleGOF(params):
     """
-    Very straight forward gof
+    Very straightforward gof
     """
     chi2 = 0.0
     for num, ibin in enumerate(ibins):
@@ -102,7 +105,7 @@ def simpleGOF(params):
 mpnames = M["Params"].split()
 
 ## Fall back solution if empty
-if len(mpnames)==0:
+if not mpnames:
     mpnames = ["MP%03i"%(i) for i in xrange(int(M["Dimension"]))]
 
 ## Function definition wrapper
@@ -133,7 +136,7 @@ for mp in mpnames:
         minuit.values[mp] = fixed[mp]
         minuit.fixed[mp] = True
 
-## Lift off
+## Lift-off
 minuit.migrad()
 
 ## Goodness of fit
