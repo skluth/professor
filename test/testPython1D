@@ -10,7 +10,7 @@ Y = f(A)
 
 import professor2 as prof
 X = np.array([[a] for a in A])
-ipols = [prof.Ipol(X, Y, i, "order%i" % i) for i in xrange(1,7)]
+ipols = [prof.Ipol(X, Y, i, "order%i" % i) for i in xrange(0,7)]
 Z = [[i.value(x) for x in X] for i in ipols]
 
 import pylab

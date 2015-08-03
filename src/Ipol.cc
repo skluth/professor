@@ -22,6 +22,12 @@ namespace Professor {
 
   // NB. Not a member function
   std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order) {
+    vector<double> rtn;
+    if (order==0) {
+      rtn.push_back(vals[0]);
+      return rtn;
+    }
+
     if (pts.numPoints() != vals.size())
       throw IpolError("pts.numPoints() != vals.size() in calcCoeffs");
     const int ncoeff = numCoeffs(pts.dim(), order);
@@ -46,7 +52,6 @@ namespace Professor {
       MC[a] = vals[a];
     }
     VectorXd co = DP.jacobiSvd(ComputeThinU|ComputeThinV).solve(MC);
-    vector<double> rtn;
     for (size_t i = 0; i < ncoeff; ++i) rtn.push_back(co[i]);
     return rtn;
   }
@@ -54,11 +59,12 @@ namespace Professor {
 
   // NB. Not a member function
   vector<double> mkLongVector(const vector<double>& p, int order) {
-    if (order < 1 || order > 6) {
+    if (order < 0 || order > 6) {
       std::cout << "ERROR degree " << order << " not implemented, exiting" << std::endl;
       /// @todo Never call exit() from a library function. Throw an IpolError instead
       // exit(1);
     }
+    if (order == 0) return mkLongVector0D(p);
     if (order == 1) return mkLongVector1D(p);
     if (order == 2) return mkLongVector2D(p);
     if (order == 3) return mkLongVector3D(p);
@@ -78,6 +84,13 @@ namespace Professor {
   //   return mkLongVector(p, order);
   // }
 
+  // NB. Not a member function --- for constant values
+  vector<double> mkLongVector0D(const vector<double>& p) {
+    vector<double> retvec;
+    // 0th order offset
+    retvec.push_back(1.0);
+    return retvec;
+  }
 
   // NB. Not a member function
   vector<double> mkLongVector1D(const vector<double>& p) {

@@ -1,3 +1,9 @@
+2015-08-03  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Added 0-order polynomials, i.e. constant values.
+	Currently, the coefficent is simply the value of
+	the first anochorpoint.
+
 2015-07-15  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Some pull plotting functionality

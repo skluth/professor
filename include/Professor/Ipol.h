@@ -29,6 +29,8 @@ namespace Professor {
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
   std::vector<double> mkLongVector(const std::vector<double>& p, int order);
+  /// Make the vector of polynomial terms to which the coeffs are to be applied --- constant values
+  std::vector<double> mkLongVector0D(const std::vector<double>& p);
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at 1st order
   std::vector<double> mkLongVector1D(const std::vector<double>& p);
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at 2nd order
