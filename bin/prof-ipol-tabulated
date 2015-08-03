@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """\
-%prog datadir
+%prog PARAMETERFILE  DATAFILE
 
 Interpolate histo bin values as a function of the parameter space by loading
 from the usual data directory structure $datadir/mc/{rundirs}
@@ -21,6 +21,7 @@ op.add_option("--info", dest="INFO", default=None, help="Info string to be writt
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--exclude", dest="EXCLUDE", default=None, help="exclude these lines, comma separated string")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
@@ -33,9 +34,16 @@ if not opts.QUIET:
 
 
 # Load anchors (A) and BR data (D)
-from numpy import loadtxt
+from numpy import loadtxt, array
 A = loadtxt(args[0])#, usecols = (0,1,2,4,5,6,7))
-D = loadtxt(args[1])
+D = loadtxt(args[1])# [0:len(A)]
+if opts.EXCLUDE is not None:
+    excl = map(float, opts.EXCLUDE.split(","))
+    A_mod = [a for num, a in enumerate(A) if not num in excl]
+    D_mod = [d for num, d in enumerate(D) if not num in excl]
+    A=array(A_mod)
+    D=array(D_mod)
+print len(A), len(D)
 assert(len(A) == len(D))
 
 # Column titles
@@ -48,11 +56,10 @@ for num, l in enumerate(labels):
         print "Interpolating " + l
     else:
         print "\r%.1f per cent interpolated"%((float(num+1)/len(labels))*100),
+
     ipol = prof.Ipol(A, D[:,num], opts.ORDER)
     IPOLS[l] = ipol
 
-#from IPython import embed
-#embed()
 
 with open(opts.IFILE, "w") as f:
     if opts.INFO is not None:
