@@ -36,7 +36,7 @@ obj/%.o: src/%.cc $(LIBHEADERS)
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	python pyext/setup.py install --prefix=.
 
-pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES)
+pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	cython pyext/professor2/core.pyx --cplus
 	python pyext/setup.py build_ext -i --force
 
