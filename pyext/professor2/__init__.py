@@ -227,7 +227,7 @@ def read_paramsfile(path):
     return rtn
 
 
-def read_histos(path):
+def read_histos(path, rebin=None):
     "Load histograms from file, into a dict of path -> yoda.Histo[DataBin]"
     histos = {}
     if path.endswith(".root"):
@@ -241,9 +241,15 @@ def read_histos(path):
         ## Try YODA (handles .yoda, .aida, and .flat)
         try:
             import yoda
-            s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
+            s2s = []
+            for ao in yoda.read(path, asdict=False):
+                if type(ao) == yoda.core.Histo1D and rebin is not None:
+                    ao.rebin(rebin)
+                s2s.append(ao.mkScatter())
+            #s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
             for s2 in s2s:
                 bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrAvg) for p in s2.points]
+                #bins = [DataBin(p.xMin, p.xMax, p.y*(p.xMax-p.xMin), p.yErrAvg) for p in s2.points]
                 # bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrs) for p in s2.points]
                 histos[s2.path] = Histo(bins, s2.path)
         except Exception, e:
@@ -251,16 +257,16 @@ def read_histos(path):
     return histos
 
 
-def load_rundata(dirs, pfname="params.dat", debug=False): #, formats="yoda,root,aida,flat"):
+def load_rundata(dirs, pfname="params.dat", debug=False, rebin=None): #, formats="yoda,root,aida,flat"):
     params, histos = {}, {}
     import os, glob
     for num, d in enumerate(dirs):
         run = os.path.basename(d)
         files = glob.glob(os.path.join(d, "*"))
-        if debug:
-            print "Reading from %s" % run
-        elif num % 2 == 0 or (num+1) == len(dirs): #< slow the printout and ensure that 100% point is written
-            print "\r%.1f%% of data read" % ((float(num+1)/len(dirs))*100),
+        #if debug:
+            #print "Reading from %s"%run
+        #else:
+            #print "\r%.1f per cent read"%((float(num+1)/len(dirs))*100),
         for f in files:
             ## Params file
             if os.path.basename(f) == pfname:
@@ -268,15 +274,13 @@ def load_rundata(dirs, pfname="params.dat", debug=False): #, formats="yoda,root,
             ## Histo file
             else:
                 ## Read as a path -> Histo dict
-                hs = read_histos(f)
+                hs = read_histos(f, rebin=rebin)
                 ## Restructure into the path -> run -> Histo return dict
                 for path, hist in hs.iteritems():
                     histos.setdefault(path, {})[run] = hist
         ## Check that a params file was found and read in this dir
         if run not in params.keys():
             raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))
-    if not debug:
-        print #< newline after CR-updated read progress report
     return params, histos
 
 
@@ -310,19 +314,11 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
             erripols = None
         ## Build the error interpolation(s)
         elif errmode == "mean":
-            meanerr = sum(histos[run].bins[n].err for run in runs) / float(len(runs))
-            erripols = Ipol(paramslist, [meanerr for run in runs], 1) #0) #< TODO: allow const interpolations
-            # if histos.values()[0].path == "/TOTAL_XSECS/ATLAS_7TEV/xsec":
-            #     print sorted([histos[run].bins[n].err for run in runs]), "=>", meanerr
-            #     print erripols.coeffs() #< verified to be flat to a very good approx (~e-17, but not perfect)
-            #     print
+            meanerr = sum(histos[run].bins[n].err for run in runs) / float(nbins)
+            erripols = Ipol(paramslist, [meanerr for run in runs], 1)
         elif errmode == "median":
-            medianerr = [histos[run].bins[n].err for run in runs][len(runs)//2]
-            erripols = Ipol(paramslist, [medianerr for run in runs], 1) #0) #< TODO: allow const interpolations
-            # if histos.values()[0].path == "/TOTAL_XSECS/ATLAS_7TEV/xsec":
-            #     print sorted([histos[run].bins[n].err for run in runs]), "=>", medianerr
-            #     print erripols.coeffs() #< verified to be flat to a very good approx (~e-17, but not perfect)
-            #     print
+            medianerr = [histos[run].bins[n].err for run in runs][nbins//2]
+            erripols = Ipol(paramslist, [medianerr for run in runs], 1)
         elif errmode == "symm":
             errs = [histos[run].bins[n].err for run in runs]
             erripols = Ipol(paramslist, errs, order)
@@ -353,7 +349,6 @@ def read_meta(ifile):
                 meta[key] = value
     return meta
 
-
 def read_binnedipol(ifile):
     """
     Read binned ipol data back in from ifile
@@ -377,9 +372,20 @@ def read_binnedipol(ifile):
                 currentib.ierr = Ipol(sline)
     return IHISTOS
 
-
-
-
+def read_simpleipol(ifile):
+    """
+    Read ipol data back in from ifile
+    """
+    IOBJECTS = {}
+    with open(ifile, "r") as f:
+        name = ""
+        for line in f:
+            sline = line.strip()
+            if sline.startswith("/"):
+                name = sline.split()[0]
+            elif sline.startswith("val"):
+                IOBJECTS[name]= Ipol(sline)
+    return IOBJECTS
 
 def mk_timestamp():
     """
@@ -492,11 +498,6 @@ def min_runs(order, pDim):
         Nc += t
     return int(Nc)
 
-
-##########
-
-
-# TODO: move to a banner.py or similar... and do better terminal centering & newlines etc. for sequels, IF WE KEEP IT!!!
 sequels = [
 """
                     Interpolation day
@@ -553,15 +554,16 @@ Please cite arXiv:0907.2973 [hep-ph]
  |  __/ '__/ _ \|  _/ _ \/ __/ __|/ _ \| '__|     | |   | |
  | |  | | | (_) | ||  __/\__ \__ \ (_) | |       _| |_ _| |_
  \_|  |_|  \___/|_| \___||___/___/\___/|_|       \___/ \___/
-""" % mk_timestamp()
+"""%mk_timestamp()
 
 from random import randint
-logo += sequels[randint(0,len(sequels)-1)]
-logo += """
+logo+=sequels[randint(0,len(sequels)-1)]
 
-Andy Buckley
+logo+="""
+
+Andy Yaml Buckley
 Holger Schulz
-
 Copyright MMXV
 
 """
+

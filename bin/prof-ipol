@@ -24,6 +24,7 @@ op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order o
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
+op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
@@ -39,12 +40,53 @@ import professor2 as prof
 if not opts.QUIET:
     print prof.logo
 
-PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG)
+PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG, rebin=opts.REBIN)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 
+## HS mod for SPanowsky
+PARAMNAMES.pop(4)
+[x.pop(4) for x in PARAMSLIST]
+## ENd hack
+
 HNAMES = HISTOS.keys()
+
+#temp = filter(lambda x: "pTH1" in x or "pTH2" in x, HNAMES)
+#HNAMES=["/MC_XS/XS"]
+#HNAMES.extend(temp)
+
+# Robustness
+bad = []
+badnum = []
+for num, run in enumerate(RUNS):
+    for h in HNAMES:
+        if not HISTOS[h].has_key(run):
+            bad.append(run)
+            badnum.append(num)
+            break
+
+if len(bad)>0:
+    print "Found %i bad runs in %i total"%(len(bad), len(RUNS))
+    print "Cleansing"
+    goodr, goodp = [], []
+    for num, run in enumerate(RUNS):
+        if not num in badnum:
+            goodr.append(run)
+            goodp.append(PARAMSLIST[num])
+
+    RUNS = goodr
+    PARAMSLIST = goodp
+    print "Cleansed"
+
+
+
 IHISTOS = {}
 
+
+
+#from IPython import embed
+#embed()
+#import sys
+#sys.exit(1)
 
 import time, zlib
 # The worker
@@ -71,6 +113,7 @@ def worker(q, rdict):
 
 time1 = time.time()
 
+print "\n\nInterpolating\n"
 import multiprocessing
 num_cores = multiprocessing.cpu_count()
 if num_cores > 1 and opts.MULTI:
@@ -94,10 +137,11 @@ if num_cores > 1 and opts.MULTI:
 else:
     for num, hn in enumerate(HNAMES):
         if opts.DEBUG:
-            print "Interpolating " + hn
+            print "\n\nInterpolating " + hn
         else:
             print "\r%.1f per cent interpolated"%((float(num+1)/len(HNAMES))*100),
         histos = HISTOS[hn]
+        print hn
         IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
 del HISTOS #< more memory clean-up
@@ -153,3 +197,8 @@ with open(opts.IFILE, "a") as f:
     f.write(s)
 
 print "\nOutput written to %s"%opts.IFILE
+
+
+with open("bad", "w") as f:
+    for b in bad:
+        f.write("%s\n"%b)

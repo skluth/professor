@@ -59,7 +59,7 @@ for a in available:
 
 ## Sanity checks
 print len(ibins), len(databins)
-assert(len(ibins) == len(databins))
+#assert(len(ibins) == len(databins))
 
 if len(ibins)==0:
     print "No bins ..., exiting"
