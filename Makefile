@@ -52,9 +52,6 @@ test/%: test/%.cc $(LIBHEADERS) lib
 root: src/testRoot.cc  $(LIBHEADERS) lib
 	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude -I$(ROOTINC) -L$(ROOTLIB) -lHist -lCore -Llib -lProfessor2 -o test/test$@
 
-driver: prof-driver/ProfDriver.cc  $(LIBHEADERS) lib
-	g++ -fPIC -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude -Iprof-driver -Llib -lProfessor2 -c -o prof-driver/ProfDriver.o
-	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) prof-driver/testDriver.cc prof-driver/ProfDriver.o -Iinclude -Iprof-driver -Llib -lProfessor2 -o prof-driver/test
 
 pytests: pyext
 	@true
