@@ -1,0 +1,30 @@
+help_message = """
+Professor driver build system
+
+Usage: scons [options]
+
+"""
+VariantDir('obj', 'src')
+
+import os, subprocess
+
+
+AddOption('--prefix', dest='prefix', type='string', nargs=1, action='store', metavar='DIR', help='installation prefix')
+AddOption('--with-professor', dest='profdir', type='string', nargs=1, action='store', metavar='PROFDIR', help='location of professor installation')
+
+incdirs=["include", os.path.join(GetOption("profdir"), "include")]
+libdirs=["include", os.path.join(GetOption("profdir"), "lib")]
+
+env=Environment(ENV=os.environ, CXXFLAGS=["-std=c++11", "-pedantic", "-O3"], CPPPATH=incdirs, PREFIX = GetOption('prefix'))
+
+env.SharedLibrary(
+    os.path.join(GetOption("prefix"), "lib/libProfDriver"),
+    ['src/ProfDriver.cc'], LIBS=["Professor2"], LIBPATH=libdirs)
+
+env.Program(
+    os.path.join(GetOption("prefix"), "bin/testDriver"),
+    ["src/testDriver.cc"],
+    LIBS=["ProfDriver"],
+    LIBPATH=[os.path.join(GetOption("prefix"), "lib")]
+)
+
