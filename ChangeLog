@@ -1,3 +1,9 @@
+2015-08-12  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Added prof-prediction which reads in a ifile and a point in
+	parameter space (either a text file, a comma separated list or just
+	the args) and writes out an ipolhisto. Tested to work.
+
 2015-08-03  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Added 0-order polynomials, i.e. constant values.
