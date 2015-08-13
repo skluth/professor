@@ -43,16 +43,9 @@ if not opts.QUIET:
 PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG, rebin=opts.REBIN)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 
-## HS mod for SPanowsky
-PARAMNAMES.pop(4)
-[x.pop(4) for x in PARAMSLIST]
-## ENd hack
 
 HNAMES = HISTOS.keys()
 
-#temp = filter(lambda x: "pTH1" in x or "pTH2" in x, HNAMES)
-#HNAMES=["/MC_XS/XS"]
-#HNAMES.extend(temp)
 
 # Robustness
 bad = []
@@ -81,12 +74,6 @@ if len(bad)>0:
 
 IHISTOS = {}
 
-
-
-#from IPython import embed
-#embed()
-#import sys
-#sys.exit(1)
 
 import time, zlib
 # The worker
