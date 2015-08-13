@@ -1,3 +1,11 @@
+2015-08-13  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Reverted unintended commit of hack.
+
+	* Added very basic prof-config script to bin
+	
+	* Update PATH when sourcing setup.sh
+
 2015-08-12  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Added prof-prediction which reads in a ifile and a point in
