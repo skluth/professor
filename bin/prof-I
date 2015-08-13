@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 """\
-%prog datadir
+%prog <datadir>
 
-Interactive parametrisation explorer
+Interactive parameterisation explorer
 
 TODO:
     *
 """
 
-import optparse
+import optparse, sys
 op = optparse.OptionParser()
 op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
@@ -20,14 +20,12 @@ DATADIR = args[0]
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
-
 print prof.logo
 
 ## Read in meta data
 M = prof.read_meta(opts.IFILE)
 if not M["DataFormat"] == 'binned':
     print "Error, DataFormat of tuning input is not binned, exiting"
-    import sys
     sys.exit(1)
 
 ## Read in ipol histos
@@ -36,15 +34,19 @@ IHISTOS = prof.read_binnedipol(opts.IFILE)
 ## List of rivet analysis paths in IHISTOS
 ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS.keys()]))
 
+# TODO: need to allow no-ref visualisation
+
 ## Read reference data histos
 import os, glob
 HISTOS = {}
-reffiles = glob.glob(os.path.join(DATADIR,  "*"))
-for rf in reffiles:
-    HISTOS.update(prof.read_histos(rf))
+# TODO: consistent directory convention and protect against invalid structures
+if DATADIR:
+    reffiles = glob.glob(os.path.join(DATADIR, "*"))
+    for rf in reffiles:
+        HISTOS.update(prof.read_histos(rf))
 
 ## Find things available in both
-available=[]
+available = []
 for i in IHISTOS.keys():
     for r in HISTOS.keys():
         if i in r:
@@ -61,7 +63,7 @@ for a in available:
 print len(ibins), len(databins)
 #assert(len(ibins) == len(databins))
 
-if len(ibins)==0:
+if not ibins:
     print "No bins ..., exiting"
     import sys
     sys.exit(1)
@@ -87,9 +89,9 @@ try:
         'figure.dpi' : 50,
         'lines.markersize' : 10,
         'lines.linewidth' : 2,
-        'lines.elinewidth' : 3,
+        #'lines.elinewidth' : 3,
         'lines.antialiased' : False,
-        'patches.antialiased' : False,
+        #'patches.antialiased' : False,
         'figure.subplot.left' : 0.05,
         'figure.subplot.right' : 0.995,
         'figure.subplot.bottom' : 0.1,
@@ -98,8 +100,8 @@ try:
         }
     matplotlib.rcParams.update(params)
 except Exception, e:
-    prof.log.error("Problem with getting & configuring matplotlib/WX interface method: %s" % e)
-    prof.log.error("Exiting!")
+    print "Problem with getting & configuring matplotlib/WX interface method: %s" % e
+    print "Exiting!"
     sys.exit(1)
 
 observables=sorted([a[0] for a in available]) # When interested in comparison with data
