@@ -15,7 +15,6 @@ op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
-DATADIR = args[0]
 
 
 ## Read persisted interpolations to re-create the ipol Histos
@@ -33,33 +32,36 @@ if not M["DataFormat"] == 'binned':
 ## Read in ipol histos
 IHISTOS = prof.read_binnedipol(opts.IFILE)
 
-## List of rivet analysis paths in IHISTOS
-ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS.keys()]))
-
-## Read reference data histos
-import os, glob
-HISTOS = {}
-reffiles = glob.glob(os.path.join(DATADIR,  "*"))
-for rf in reffiles:
-    HISTOS.update(prof.read_histos(rf))
-
-## Find things available in both
-available=[]
-for i in IHISTOS.keys():
-    for r in HISTOS.keys():
-        if i in r:
-            available.append([i,r])
-
 ## Prepare list of ibins and databins --- order should be ok
 ibins = []
-databins = []
-for a in available:
-    ibins.extend(  IHISTOS[a[0]].bins)
-    databins.extend(HISTOS[a[1]].bins)
+## Read reference data histos
+HISTOS = {}
+if len(args)>0:
+    import os, glob
+    reffiles = glob.glob(os.path.join(args[0],  "*"))
+    for rf in reffiles:
+        HISTOS.update(prof.read_histos(rf))
 
-## Sanity checks
-print len(ibins), len(databins)
-#assert(len(ibins) == len(databins))
+    ## Find things available in both
+    available=[]
+    for i in IHISTOS.keys():
+        for r in HISTOS.keys():
+            if i in r:
+                available.append([i,r])
+
+    ## Sanity check
+    databins = []
+    for a in available:
+        ibins.extend(  IHISTOS[a[0]].bins)
+        databins.extend(HISTOS[a[1]].bins)
+    assert(len(ibins) == len(databins))
+    observables=sorted([a[0] for a in available]) # When interested in comparison with data
+
+# No data directory, pure parametrisationelse
+else:
+    [ibins.extend(IHISTOS[x].bins) for x in IHISTOS.keys()]
+    observables=sorted(IHISTOS.keys())
+
 
 if len(ibins)==0:
     print "No bins ..., exiting"
@@ -102,8 +104,6 @@ except Exception, e:
     prof.log.error("Exiting!")
     sys.exit(1)
 
-observables=sorted([a[0] for a in available]) # When interested in comparison with data
-#observables=sorted(IHISTOS.keys())            # all ipols, not neccessary data available
 
 
 def mk_line(obs, ppoint):
@@ -127,7 +127,8 @@ def mk_data(obs, prefix="/REF"):
             Y.append(b.val)
             dY.append(b.err)
     except Exception, e:
-        print "No data available for %s"%obs
+        if opts.DEBUG:
+            print "No data available for %s"%obs
     return X, Y, dY
 
 def mk_pull(obs, ppoint, prefix="/REF"):
@@ -370,10 +371,19 @@ class ProfIFrame(wx.Frame):
         self.axes.set_title(obs1)
         self.axes2.set_title(obs2)
 
-        if not self.pull['left']:
-            self.plotDataHisto(self.axes, 'left')
-        if not self.pull['right']:
-            self.plotDataHisto(self.axes2, 'right')
+        if len(args)>0:
+            if not self.pull['left']:
+                try:
+                    self.plotDataHisto(self.axes, 'left')
+                except Exception, e:
+                    print e
+                    pass
+            if not self.pull['right']:
+                try:
+                    self.plotDataHisto(self.axes2, 'right')
+                except Exception, e:
+                    print e
+                    pass
         #
         self.sliderUpdate(None, redraw=False)
 
