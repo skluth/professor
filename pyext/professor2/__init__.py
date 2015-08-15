@@ -498,50 +498,6 @@ def min_runs(order, pDim):
         Nc += t
     return int(Nc)
 
-sequels = [
-"""
-                    Interpolation day
-""",
-"""
-                    Professor Rebinned
-""",
-"""
-                      2 Pro 2 Fessor
-""",
-"""
-                      Interpolations
-""",
-"""
-                    Professor Returns
-""",
-"""
-                       The Dark Bin
-""",
-"""
-                   Some Code has Survived
-""",
-"""
-               Professor and the chi-2 of doom
-""",
-"""
-                The Minimisation strikes back
-""",
-"""
-                     The Bin Supremacy
-""",
-"""
-                         The Sequel
-""",
-"""
-                        The New Patch
-""",
-"""
-                      The Wrath Of Bins
-""",
-"""
-                     Silence of the Bins
-""",
-]
 
 logo = \
 """
@@ -556,12 +512,10 @@ Please cite arXiv:0907.2973 [hep-ph]
  \_|  |_|  \___/|_| \___||___/___/\___/|_|       \___/ \___/
 """%mk_timestamp()
 
-from random import randint
-logo+=sequels[randint(0,len(sequels)-1)]
 
 logo+="""
 
-Andy Yaml Buckley
+Andy Buckley
 Holger Schulz
 Copyright MMXV
 
