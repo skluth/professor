@@ -85,6 +85,11 @@ class Histo(object):
         self.bins = bins if bins else []
         self.path = path
 
+    @property
+    def nbins(self):
+        return len(self.bins)
+
+    # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
     def toYODA(self, ppoint=None, manpath=None):
         if self.path is None and not manpath is None:
             P=manpath
@@ -520,4 +525,3 @@ Holger Schulz
 Copyright MMXV
 
 """
-

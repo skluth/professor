@@ -7,6 +7,7 @@ CXXFLAGS  := -O3
 
 CPPFLAGS  :=
 
+# TODO: This needs protection against there being no ROOT installation (which can be fine)
 ROOTINC := $(wildcard $(shell root-config --incdir) )
 ROOTLIB := $(wildcard $(shell root-config --libdir) )
 

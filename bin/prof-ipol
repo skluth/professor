@@ -23,6 +23,7 @@ op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order o
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
+# TODO: What is this???
 op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
@@ -43,6 +44,7 @@ import professor2 as prof
 if not opts.QUIET:
     print prof.logo
 
+# TODO: What happened to the arg list? The new last two args look odd -- should at least be switched
 PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG, rebin=opts.REBIN)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 

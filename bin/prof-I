@@ -20,6 +20,7 @@ DATADIR = args[0]
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
+# if not opts.QUIET:
 print prof.logo
 
 ## Read in meta data
