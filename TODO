@@ -4,6 +4,10 @@ PROFESSOR TO-DO LIST
 FOR 2.0.0b1
 -----------
 
+- Add weight file / format handling (AB)
+
+- Work with wxgtk3.0 (seems to fail on Ubuntu 15.04)
+
 - Allow 0-param Ipols (currently blocked by Eigen assertions)
 
 - Add minimising + eigentunes to prof-tune
