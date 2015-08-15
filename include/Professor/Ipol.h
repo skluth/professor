@@ -25,7 +25,7 @@ namespace Professor {
   int numCoeffs(int dim, int order);
 
   /// Calculate parametrisation coefficients
-  std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order);
+  std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order, double threshold);
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
   std::vector<double> mkLongVector(const std::vector<double>& p, int order);
@@ -53,11 +53,11 @@ namespace Professor {
   public:
 
     /// Constructor for calculation of coefficients
-    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="") {
+    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="", double threshold=1.1e-10) {
       _dim = pts.dim();
       _order = order;
       _name = name;
-      _coeffs = calcCoeffs(pts, ptvals, _order);
+      _coeffs = calcCoeffs(pts, ptvals, _order, threshold);
     };
 
 
