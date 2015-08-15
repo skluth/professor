@@ -13,7 +13,8 @@ cdef extern from "Professor/ParamPoints.h" namespace "Professor":
 cdef extern from "Professor/Ipol.h" namespace "Professor":
     cdef cppclass Ipol:
         # Ipol(const vector[ vector[double] ] p, const vector[double]&, int, const string&)
-        Ipol(const ParamPoints& p, const vector[double]&, int, const string&)
+        #Ipol(const ParamPoints& p, const vector[double]&, int, const string&)
+        Ipol(const ParamPoints& p, const vector[double]&, int, const string&, const double&)
         Ipol(const string&)
         double value(const vector[double]&)
         int order()

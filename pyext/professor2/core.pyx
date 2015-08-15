@@ -28,8 +28,18 @@ cdef class Ipol:
             pp = ParamPoints(args[0])
             vals = list(args[1])
             order = int(args[2])
-            name = str(args[3]) if len(args) == 4 else ""
-            self._ptr = new c.Ipol(deref(pp._ptr), vals, order, name)
+            name = ""
+            threshold = 1.e-10
+            if len(args) == 4:
+                try:
+                    threshold = float(args[3])
+                except:
+                    name = str(args[3])
+            if len(args) == 5:
+                    name = str(args[3])
+                    threshold = float(args[4])
+
+            self._ptr = new c.Ipol(deref(pp._ptr), vals, order, name, threshold)
 
     def __del__(self):
         del self._ptr
