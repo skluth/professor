@@ -21,7 +21,7 @@ namespace Professor {
 
 
   // NB. Not a member function
-  std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order) {
+  std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order, double threshold) {
     vector<double> rtn;
     if (order==0) {
       rtn.push_back(vals[0]);
@@ -51,7 +51,20 @@ namespace Professor {
       // The vector of values (corresponding to anchors)
       MC[a] = vals[a];
     }
-    VectorXd co = DP.jacobiSvd(ComputeThinU|ComputeThinV).solve(MC);
+    JacobiSVD<MatrixXd> svd = DP.jacobiSvd(ComputeThinU|ComputeThinV);
+
+    // Check for singular values, i.e. fully correlated parameters
+    // TODO maybe figure out how to use Eigen's setTreshold 
+    VectorXd svals = svd.singularValues();
+    for (unsigned int i=0;i<svd.nonzeroSingularValues();++i) {
+      if (fabs(svals[i]) < threshold) {
+        std::cout << "Singular value encountered, aborting" << std::endl;
+        abort();
+      }
+    }
+    
+    VectorXd co = svd.solve(MC);
+
     for (size_t i = 0; i < ncoeff; ++i) rtn.push_back(co[i]);
     return rtn;
   }
