@@ -7,6 +7,10 @@
 	
 	* Going 2 Pro 2 Fessional
 
+	* Some startup checks of prof- scripts
+
+	* remove bin/prof-sampling, rename prof-prediction -> prof-predict
+
 2015-08-13  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Reverted unintended commit of hack.

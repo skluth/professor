@@ -22,6 +22,11 @@ import professor2 as prof
 
 print prof.logo
 
+import os, sys
+if not os.path.exists(opts.IFILE):
+    print "Error: specified interpolation file %s not found, exiting."%opts.IFILE
+    sys.exit(1)
+
 ## Read in meta data
 M = prof.read_meta(opts.IFILE)
 if not M["DataFormat"] == 'binned':

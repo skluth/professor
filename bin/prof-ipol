@@ -17,9 +17,8 @@ op = optparse.OptionParser()
 # TODO: Remove demo
 op.add_option("--pfile", dest="PFILE", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
 op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file into which to write the bin interpolations (default: %default)")
-op.add_option("--ierr", dest="IERR", default="none", help="whether to interpolate MC errors (none, symm, ...)")
-op.add_option("--demo", dest="DEMO", action="store_true", default=False, help="temporary demo mode: plot the sum of bin values as a demo")
-op.add_option("--info", dest="INFO", default=None, help="Info string to be written to output file")
+op.add_option("--ierr",  dest="IERR", default="none", help="whether to interpolate MC errors (none, symm, ...)")
+op.add_option("--info",  dest="INFO", default=None, help="Info string to be written to output file")
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -28,11 +27,15 @@ op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
-import os, glob
+import os, glob, sys
 if len(args)==1:
     DATADIR = args[0]
 elif len(args)==2:
     DATADIR = os.path.join(args[0], args[1])
+else:
+    print "Error: invalid command line, exiting."
+    sys.exit(1)
+
 indirs = glob.glob(os.path.join(DATADIR, "*"))
 
 
