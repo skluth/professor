@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """\
-%prog datadir
+%prog <runsdir>
 
 Interpolate histo bin values as a function of the parameter space by loading
 from the usual data directory structure $datadir/mc/{rundirs}
@@ -28,59 +28,68 @@ op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
+
+## Obtain run data dir path from the command line
 import os, glob, sys
-if len(args)==1:
+if len(args) == 1:
     DATADIR = args[0]
-elif len(args)==2:
+elif len(args) == 2:
     DATADIR = os.path.join(args[0], args[1])
 else:
     print "Error: invalid command line, exiting."
     sys.exit(1)
 
-indirs = glob.glob(os.path.join(DATADIR, "*"))
 
-
+## Use the Professor machinery to load the data into standard objects
 import professor2 as prof
 if not opts.QUIET:
     print prof.logo
 
-# TODO: What happened to the arg list? The new last two args look odd -- should at least be switched
+# TODO: add runcomb file parsing to select a runs subset
+indirs = glob.glob(os.path.join(DATADIR, "*"))
+# TODO: The new last two args look out of place... and what does REBIN *do*? Rebinning is a transformation -- should be a different function
 PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG, rebin=opts.REBIN)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
-
-
 HNAMES = HISTOS.keys()
 
 
-# Robustness
-bad = []
-badnum = []
-for num, run in enumerate(RUNS):
+## Announce number of raw runs loaded
+# TODO: suppress this if QUIET
+print "Loaded %d distinct observables from %d runs" % (len(HNAMES), len(RUNS))
+
+
+# TODO: add weight file parsing to select a histos subset
+
+
+## Robustness tests and cleaning: only retain runs that contain every histo
+# TODO: combine with weights histo vetoing -- should we explicitly unload unused run data, or keep it for the next combination to use? Or do we now leave runcombs to the user?
+bad, badnum = [], []
+for irun, run in enumerate(RUNS):
     for h in HNAMES:
         if not HISTOS[h].has_key(run):
             bad.append(run)
-            badnum.append(num)
+            badnum.append(irun)
             break
-
-if len(bad)>0:
-    print "Found %i bad runs in %i total"%(len(bad), len(RUNS))
-    print "Cleansing"
+if bad:
+    print "Found %d bad runs in %d total... removing" % (len(bad), len(RUNS))
     goodr, goodp = [], []
-    for num, run in enumerate(RUNS):
-        if not num in badnum:
+    for irun, run in enumerate(RUNS):
+        if not irun in badnum:
             goodr.append(run)
-            goodp.append(PARAMSLIST[num])
-
+            goodp.append(PARAMSLIST[irun])
     RUNS = goodr
     PARAMSLIST = goodp
-    print "Cleansed"
 
 
+## If there's nothing left to interpolate, exit!
+if not RUNS:
+    print "No valid runs remaining... exiting"
+    sys.exit(1)
 
 IHISTOS = {}
 
 
-import time, zlib
+# TODO: EXPLAIN THIS!!!!!!
 # The worker
 #from memory_profiler import profile
 #@profile
@@ -88,26 +97,27 @@ def worker(q, rdict):
     while True:
         if q.empty():
             break
-        hn=q.get()
+        hn = q.get()
         histos = HISTOS[hn]
         ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
-        s=""
+        s = ""
         for i, ib in enumerate(ih.bins):
             s += "%s#%d %.5e %.5e\n" % (hn, i, ib.xmin, ib.xmax)
             s += "  " + ib.ival.toString("val") + "\n"
             if ib.ierrs:
                 s += "  " + ib.ierrs.toString("err") + "\n"
         del ih #< pro-actively clear up memory
-        rdict[hn]=zlib.compress(s,9) # Save some memory
+        import zlib
+        rdict[hn] = zlib.compress(s, 9) #< save some memory
         del s
         del histos
 
-time1 = time.time()
 
 print "\n\nInterpolating\n"
-import multiprocessing
+import time, multiprocessing
 num_cores = multiprocessing.cpu_count()
+time1 = time.time()
 if num_cores > 1 and opts.MULTI:
     ## A shared memory object is required for retrieval coefficients
     from multiprocessing import Manager
@@ -115,7 +125,7 @@ if num_cores > 1 and opts.MULTI:
     tempDict = manager.dict()
 
     ## The job queue
-    q=multiprocessing.Queue()
+    q = multiprocessing.Queue()
     map(lambda x:q.put(x), HNAMES)
 
     ## Fire away
@@ -131,53 +141,56 @@ else:
         if opts.DEBUG:
             print "\n\nInterpolating " + hn
         else:
-            print "\r%.1f per cent interpolated"%((float(num+1)/len(HNAMES))*100),
+            print "\r%.1f per cent interpolated" % ((float(num+1)/len(HNAMES))*100),
         histos = HISTOS[hn]
         print hn
         IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
-del HISTOS #< more memory clean-up
-
 
 time2 = time.time()
 print '\nInterpolation took %0.2f s'%((time2-time1))
 
 
+## Active memory clean-up
+del HISTOS
+
+
 ## Write out meta info
 with open(opts.IFILE, "w") as f:
     if opts.INFO is not None:
-        f.write("Info: %s\n"%opts.INFO)
-    f.write("DataDir: %s\n"%DATADIR)
-    f.write("ProfVersion: %s\n"%prof.mk_versionstring())
-    f.write("Date: %s\n"%prof.mk_timestamp())
-    f.write("DataFormat: binned\n") # That tells the reader how to treat the coefficients that follow
+        f.write("Info: %s\n" % opts.INFO) #< TODO: What is this? Need a more descriptive name
+    f.write("DataDir: %s\n" % DATADIR) #< TODO: make abs path?
+    f.write("ProfVersion: %s\n" % prof.mk_versionstring())
+    f.write("Date: %s\n" % prof.mk_timestamp())
+    f.write("DataFormat: binned\n") # This tells the reader how to treat the coefficients that follow
     # Format and write out parameter names
-    pstring = "Params:"
+    pstring = "ParamNames:"
     for p in PARAMNAMES:
-        pstring+=" %s"%p
-    f.write(pstring+"\n")
+        pstring += " %s" % p
+    f.write(pstring + "\n")
     # Dimension (consistency check)
-    f.write("Dimension: %i\n"%len(PARAMNAMES))
+    f.write("Dimension: %i\n" % len(PARAMNAMES))
     # Interpolation validity (hypercube edges)
-    minstring = "MinV:"
+    minstring = "MinParamVals:"
     for v in prof.mk_minvals(PARAMSLIST):
-        minstring+=" %f"%v
-    f.write(minstring+"\n")
-    maxstring = "MaxV:"
+        minstring += " %f" % v
+    f.write(minstring + "\n")
+    maxstring = "MaxParamVals:"
     for v in prof.mk_maxvals(PARAMSLIST):
-        maxstring+=" %f"%v
-    f.write(maxstring+"\n")
+        maxstring += " %f" % v
+    f.write(maxstring + "\n")
     # Number of inputs per bin
-    f.write("NInputs: %i\n"%len(PARAMSLIST))
-    f.write("# End of header\n---\n")
+    f.write("NumInputs: %i\n" % len(PARAMSLIST))
+    f.write("\n---\n")
 
 
 ## Write out interpolation persistency info
 s = ""
 for hname in sorted(IHISTOS.keys()):
     ih = IHISTOS[hname]
-    if type(ih)==str: ## detect results from multiprocessing
-        s+=zlib.decompress(ih)
+    if type(ih) is str: ## detect results from multiprocessing
+        import zlib
+        s += zlib.decompress(ih)
     else:
         for i, ib in enumerate(ih.bins):
             s += "%s#%d %.5e %.5e\n" % (hname, i, ib.xmin, ib.xmax)
@@ -187,10 +200,11 @@ for hname in sorted(IHISTOS.keys()):
 # Open file for write/append
 with open(opts.IFILE, "a") as f:
     f.write(s)
+print "\nOutput written to %s" % opts.IFILE
 
-print "\nOutput written to %s"%opts.IFILE
 
-
-with open("bad", "w") as f:
-    for b in bad:
-        f.write("%s\n"%b)
+# ## Store a record of bad runs?
+# TODO: do this is in debug mode only... and write out to a more considered filename / give user control (but let's avoid adding opts for everything)
+# with open("bad", "w") as f:
+#     for b in bad:
+#         f.write("%s\n"%b)

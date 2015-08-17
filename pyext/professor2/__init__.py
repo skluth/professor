@@ -1,7 +1,11 @@
+## Import Cython wrappings on the C++ core library
 from professor2.core import *
 
 
+# Move this into prof2.optimize or similar... Minuit import should only be needed for prof-tune (and for writing custom apps)
+
 ## Provide faff-free Minuit objects
+# TODO: Wrap this in a function somehow, so it can be used on demand rather than on import... or its own prof2.minuit module?
 Minuit, MinuitError = None, None
 try:
     from iminuit import Minuit, MinuitError
@@ -16,8 +20,7 @@ except ImportError:
             pass #print "Couldn't import a minimizer"
 
 
-# TODO: move this stuff into submodules:
-
+# TODO: move this into prof2.sampling or similar
 
 ## Define a sampler type
 class Sampler(object):
@@ -78,6 +81,8 @@ class Sampler(object):
 # yoda.plot(h, "foo.pdf")
 
 
+# TODO: move these class definitions to prof2.histos
+
 class Histo(object):
     "A simple histogram -- just a Bin container with an optional path name"
 
@@ -91,6 +96,7 @@ class Histo(object):
 
     # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
     def toYODA(self, ppoint=None, manpath=None):
+        # TODO: follow var naming convention
         if self.path is None and not manpath is None:
             P=manpath
         elif self.path is not None and manpath is None:
@@ -111,7 +117,6 @@ class Histo(object):
                 s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
         s+="# END YODA_SCATTER2D\n"
         return s
-
 
 
 
@@ -292,6 +297,8 @@ def load_rundata(dirs, pfname="params.dat", debug=False, rebin=None): #, formats
 def mk_ipolinputs(params):
     "Make sorted run and parameter lists suitable for passing to prof.Ipol"
     runs = sorted(params.keys())
+    if not runs:
+        return runs, [], [[]]
     paramnames = sorted(params[runs[0]].keys())
     paramslist = [[params[pn] for pn in paramnames] for (run, params) in sorted(params.iteritems())]
     return runs, paramnames, paramslist
@@ -392,24 +399,6 @@ def read_simpleipol(ifile):
                 IOBJECTS[name]= Ipol(sline)
     return IOBJECTS
 
-def mk_timestamp():
-    """
-    Time stamp, taken from http://stackoverflow.com/questions/13890935/timestamp-python
-    """
-    import time
-    ts = time.time()
-    import datetime
-    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    return st
-
-def mk_versionstring():
-    """
-    Get version from setup.py, courtesy of
-    http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package
-    """
-    import pkg_resources  # part of setuptools
-    return pkg_resources.require("professor2")[0].version
-
 def mk_minvals(anchors):
     from numpy import array
     A=array(anchors)
@@ -435,8 +424,8 @@ def mk_center(anchors):
     return center
 
 def is_inrange(ppoint, minv, maxv):
-    dec=True
-    notinrange=[]
+    dec = True
+    notinrange = []
     for i in xrange(len(ppoint)):
         if ppoint[i] < minv[i] or ppoint[i] > maxv[i]:
             dec=False
@@ -475,12 +464,15 @@ def read_limitsandfixed(fname):
     return limits, fixed
 
 
+# TODO: move to a stats submodule, or similar
 def pull(dbin, cbin, ppoint=None):
     """
     Pull between databin dbin and comparison bin (cbin).
     If ppoint is None, assume mc bins, otherwise assume ipol bin.
+
+    TODO: "assume XXXX bins" is a nasty design: it would be better to compute the pull on the results list from the val calls
     """
-    if dbin.err>0:
+    if dbin.err > 0:
         if ppoint is not None:
             return (dbin.val - cbin.val(ppoint))/dbin.err
         else:
@@ -489,39 +481,59 @@ def pull(dbin, cbin, ppoint=None):
         return 0
 
 
-def min_runs(order, pDim):
+# TODO: don't we already have this in the C++ library? We should move it there & map it if not
+def min_runs(order, dim):
     """
     Calculate min number of runs (number of coefficients)
-    for Polynomial of order in pDim dimensions.
+    for polynomial of order in dim dimensions.
     """
+    # TODO: do we *need* numpy?
     import numpy
     Nc = 1
-    for i in xrange(1,order+1):
-        t=1./numpy.math.factorial(i)
+    for i in xrange(1, order+1):
+        t = 1./numpy.math.factorial(i)
         for j in xrange(i):
-            t*=(pDim+j)
+            t *= (dim+j)
         Nc += t
     return int(Nc)
 
+
+
+
+
+# TODO: move the functions below to prof2.ui or similar?
+
+def mk_timestamp():
+    """
+    Time stamp, taken from http://stackoverflow.com/questions/13890935/timestamp-python
+    """
+    import time
+    ts = time.time()
+    import datetime
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    return st
+
+def mk_versionstring():
+    """
+    Get version from setup.py, courtesy of
+    http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package
+    """
+    import pkg_resources  # part of setuptools
+    return pkg_resources.require("professor2")[0].version
 
 logo = \
 """
 Visit us on http://professor.hepforge.org/
 Please cite arXiv:0907.2973 [hep-ph]
                                           %s
- ______           __                             _____ _____
- | ___ \         / _|                           |_   _|_   _|
- | |_/ / __ ___ | |_ ___  ___ ___  ___  _ __      | |   | |
- |  __/ '__/ _ \|  _/ _ \/ __/ __|/ _ \| '__|     | |   | |
- | |  | | | (_) | ||  __/\__ \__ \ (_) | |       _| |_ _| |_
- \_|  |_|  \___/|_| \___||___/___/\___/|_|       \___/ \___/
-"""%mk_timestamp()
+ ______           __                            _____ _____
+ | ___ \         / _|                          |_   _|_   _|
+ | |_/ / __ ___ | |_ ___  ___ ___  ___  _ __     | |   | |
+ |  __/ '__/ _ \|  _/ _ \/ __/ __|/ _ \| '__|    | |   | |
+ | |  | | | (_) | ||  __/\__ \__ \ (_) | |      _| |_ _| |_
+ |_|  |_|  \___/|_| \___||___/___/\___/|_|     |_____|_____|
 
+Andy Buckley, Holger Schulz
+Copyright 2015
 
-logo+="""
-
-Andy Buckley
-Holger Schulz
-Copyright MMXV
-
-"""
+""" % mk_timestamp()
