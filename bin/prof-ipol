@@ -53,8 +53,10 @@ RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 HNAMES = HISTOS.keys()
 
 
-## Announce number of raw runs loaded
+## Some useful announcements about the data loaded and the interpolation planned
 # TODO: suppress this if QUIET
+print "Building %dD interpolations in %d params: require at least %d runs" % \
+    (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
 print "Loaded %d distinct observables from %d runs" % (len(HNAMES), len(RUNS))
 
 
@@ -156,6 +158,7 @@ del HISTOS
 
 
 ## Write out meta info
+# TODO: Move the format writing into the prof2 Python library
 with open(opts.IFILE, "w") as f:
     if opts.INFO is not None:
         f.write("Info: %s\n" % opts.INFO) #< TODO: What is this? Need a more descriptive name
@@ -181,7 +184,7 @@ with open(opts.IFILE, "w") as f:
     f.write(maxstring + "\n")
     # Number of inputs per bin
     f.write("NumInputs: %i\n" % len(PARAMSLIST))
-    f.write("\n---\n")
+    f.write("---\n")
 
 
 ## Write out interpolation persistency info

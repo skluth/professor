@@ -351,14 +351,25 @@ def read_meta(ifile):
     """
     Read in meta data from prof-ipol output 'ifile'
     """
-    meta={}
+    meta = {}
     with open(ifile) as f:
         for l in f:
-            if l.startswith("---"): # End of header indicator
+            ## Strip out comments
+            if "#" in l:
+                l = l[l.find("#")+1:]
+            ## Ignore blank / pure whitespace lines
+            l = l.strip()
+            if not l:
+                continue
+            ## Exit if we see the end-of-header indicator
+            if l == "---":
                 break
-            if not l.startswith("#"): # Ignore comments
-                key, value=map(str.strip, l.split(":",1))
+            ## Extract the key-value pair from the line
+            try:
+                key, value = map(str.strip, l.split(":",1))
                 meta[key] = value
+            except:
+                print "Couldn't extract key-value pair from '%s'" % l
     return meta
 
 def read_binnedipol(ifile):
