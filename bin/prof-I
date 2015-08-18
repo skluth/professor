@@ -109,6 +109,9 @@ observables=sorted([a[0] for a in available]) # When interested in comparison wi
 #observables=sorted(IHISTOS.keys())            # all ipols, not neccessary data available
 
 
+# TODO: add error bar plotting option (with errs from ipol)
+
+
 def mk_line(obs, ppoint):
     """
     Prepare points for matplotlib step
@@ -117,7 +120,7 @@ def mk_line(obs, ppoint):
     for b in IHISTOS[obs].bins:
         X.append(b.xmin)
         X.append(b.xmax)
-        y=b.val(ppoint)
+        y = b.val(ppoint)
         Y.append(y)
         Y.append(y)
     return X, Y
@@ -157,7 +160,7 @@ class ParamFrame(wx.Frame):
         self.params = M["Params"].split()
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour('#eeefff')
-        self.parent=parent
+        self.parent = parent
         self.sliders = {}
 
         ## Parameter sliders and buttons
@@ -173,12 +176,13 @@ class ParamFrame(wx.Frame):
             pmin = float(M["MinV"].split()[i])
             pmax = float(M["MaxV"].split()[i])
             slider = FloatSpin(self.panel, -3, style=0, value=pmin + 0.5*(pmax-pmin),
-                                min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50)
+                               min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50)
             controlgrid.Add(slider, pos=(i,2))
             self.sliders[param] = slider
         controlgrid.Fit(self)
         self.Bind(EVT_FLOATSPIN, self.parent.sliderUpdate)
         self.panel.SetSizer(controlgrid)
+
 
 class ProfIFrame(wx.Frame):
 

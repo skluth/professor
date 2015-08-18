@@ -185,7 +185,14 @@ class DataBin(Bin):
 
 
 class IpolBin(Bin):
-    "A bin containing a value interpolation and its error(s)"
+    """
+    A bin containing a value interpolation and its error(s)
+
+    TODO:
+     * Implement optional limits on the range of return values... for val and errs?
+     * Provide ierr and ierrs getter/setter pairs cf. err/errs on DataBin? They can't be averaged, so not sure it makes sense...
+     * Allow ipol'd error handling, with wrapped relative error parameterisation as an option?
+    """
 
     def __init__(self, xmin, xmax, ival=None, ierrs=None):
         Bin.__init__(self, xmin, xmax)
@@ -194,8 +201,6 @@ class IpolBin(Bin):
 
     def val(self, params):
         return self.ival.value(params)
-
-    # TODO: Provide ierr and ierrss getter/setter pairs cf. err/errs on DataBin? They can't be averaged, so not sure it makes sense...
 
     def err(self, params):
         if self.ierrs is None:
@@ -309,6 +314,8 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
     histos and the corresponding runs and params lists, at the given polynomial order.
 
     If errs is non-null, the data histo errors will also be interpolated.
+
+    TODO: add relative versions of the error interpolation
     """
     nbins = len(histos.itervalues().next().bins)
     ibins = []
@@ -327,27 +334,28 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
         ## Build the error interpolation(s)
         elif errmode == "mean":
             meanerr = sum(histos[run].bins[n].err for run in runs) / float(nbins)
-            erripols = Ipol(paramslist, [meanerr for run in runs], 1)
+            erripols = Ipol(paramslist, [meanerr], 0) #< const 0th order interpolation
         elif errmode == "median":
             medianerr = [histos[run].bins[n].err for run in runs][nbins//2]
-            erripols = Ipol(paramslist, [medianerr for run in runs], 1)
+            erripols = Ipol(paramslist, [medianerr], 0) #< const 0th order interpolation
         elif errmode == "symm":
             errs = [histos[run].bins[n].err for run in runs]
             erripols = Ipol(paramslist, errs, order)
         elif errmode == "asymm":
-            # raise Exception("Error interpolation mode 'asymm' not yet supported")
-            errs0 = [histos[run].bins[n].errs[0] for run in runs]
-            erripol0 = Ipol(paramslist, errs0, order)
-            errs1 = [histos[run].bins[n].errs[1] for run in runs]
-            erripol1 = Ipol(paramslist, errs1, order)
-            erripols = [erripol0, erripol1]
+            raise Exception("Error interpolation mode 'asymm' not yet supported")
+            # errs0 = [histos[run].bins[n].errs[0] for run in runs]
+            # erripol0 = Ipol(paramslist, errs0, order)
+            # errs1 = [histos[run].bins[n].errs[1] for run in runs]
+            # erripol1 = Ipol(paramslist, errs1, order)
+            # erripols = [erripol0, erripol1]
         else:
             raise Exception("Unknown error interpolation mode '%s'" % errmode)
         ibins.append(IpolBin(xmin, xmax, valipol, erripols))
     return Histo(ibins, histos.values()[0].path)
 
 
-def read_meta(ifile):
+# TODO: improve the name to clarify that this is the meta part of an ipol file
+def read_ipolmeta(ifile):
     """
     Read in meta data from prof-ipol output 'ifile'
     """
@@ -372,28 +380,35 @@ def read_meta(ifile):
                 print "Couldn't extract key-value pair from '%s'" % l
     return meta
 
-def read_binnedipol(ifile):
+# TODO: remove this alias
+read_meta = read_ipolmeta
+
+
+def read_ipolhistos(ifile):
     """
     Read binned ipol data back in from ifile
     """
     IHISTOS = {}
     with open(ifile, "r") as f:
-        #currentib = None
         for line in f:
             sline = line.strip()
             if sline.startswith("/"):
                 fullpath, sxmin, sxmax = sline.split()
                 hpath, nbin = fullpath.split("#")
-                #if currentib:
-                    #IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
-                #currentib = IpolBin(float(sxmin), float(sxmax))
                 currentib = IpolBin(float(sxmin), float(sxmax))
                 IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
             elif sline.startswith("val"):
                 currentib.ival = Ipol(sline)
+                #print currentib.ival.coeffs()
             elif sline.startswith("err"):
-                currentib.ierr = Ipol(sline)
+                currentib.ierrs = Ipol(sline)
+                #print currentib.ierrs.coeffs()
+            # TODO: read back asymm errs as two ipols
     return IHISTOS
+
+# TODO: remove this alias
+read_binnedipol = read_ipolhistos
+
 
 def read_simpleipol(ifile):
     """

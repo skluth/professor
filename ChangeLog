@@ -1,10 +1,18 @@
+2015-08-18  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Tweaks to ipol file parsing functions.
+
+	* Fix a bug in IpolBin's use of interpolated errors.
+
+	* Convert mean and median error parameterisation to use new 0th order ipols.
+
 2015-08-15  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* A first version of catching singular matrices in the SVD
-	
+
 	* Ipol has 1 additional argument, "threshold", that determines what
 	singular values are considered 0, fully propagated to pyext
-	
+
 	* Going 2 Pro 2 Fessional
 
 	* Some startup checks of prof- scripts
@@ -16,7 +24,7 @@
 	* Reverted unintended commit of hack.
 
 	* Added very basic prof-config script to bin
-	
+
 	* Update PATH when sourcing setup.sh
 
 2015-08-12  Holger Schulz  <holger.schulz@durham.ac.uk>
@@ -38,15 +46,15 @@
 2015-07-08  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Calculate and print G.o.f.
-	
+
 	* Write some meta info to results
 
 	* Read limits, fixed params from single textfile --limits
 
 	* Output files steered by --output
-	
+
 	* Remove now obsolete bin/prof-interpolate
-	
+
 
 2015-07-08  Holger Schulz  <holger.schulz@durham.ac.uk>
 
@@ -55,7 +63,7 @@
 	* Multiprocessing to speed up prof-ipol (--multi)
 
 	* prof-ipol-tabulated to write out interpolation of tabulated data
-	
+
 	* Minor bugfixes
 
 
