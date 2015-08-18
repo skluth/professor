@@ -6,7 +6,7 @@ from professor2.core import *
 
 ## Provide faff-free Minuit objects
 # TODO: Wrap this in a function somehow, so it can be used on demand rather than on import... or its own prof2.minuit module?
-Minuit, MinuitError = None, None
+Minuit, MinuitError = None, Exception
 try:
     from iminuit import Minuit, MinuitError
 except ImportError:
