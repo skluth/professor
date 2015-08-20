@@ -161,8 +161,8 @@ del HISTOS
 ## Write out meta info
 # TODO: Move the format writing into the prof2 Python library
 with open(opts.IFILE, "w") as f:
-    if opts.INFO is not None:
-        f.write("Info: %s\n" % opts.INFO) #< TODO: What is this? Need a more descriptive name
+    if opts.SUMM is not None:
+        f.write("Summary: %s\n" % opts.SUMM)
     f.write("DataDir: %s\n" % DATADIR) #< TODO: make abs path?
     f.write("ProfVersion: %s\n" % prof.mk_versionstring())
     f.write("Date: %s\n" % prof.mk_timestamp())
