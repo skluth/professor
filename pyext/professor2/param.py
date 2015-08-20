@@ -1,3 +1,5 @@
+# TODO: defunct???
+
 import re
 from operator import indexOf
 import numpy
@@ -313,4 +315,3 @@ class ParamBase(numpy.ndarray):
         """ Return a list containing the corner points of the hypercube """
         import itertools
         return list(itertools.product(*zip(self[:,0], self[:,1])))
-
