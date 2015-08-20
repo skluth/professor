@@ -1,6 +1,8 @@
 # -*- python -*-
 
 from professor2.errors import *
+from professor2.ipol import *
+from professor2.histos import *
 
 
 def read_ipolmeta(ifile):

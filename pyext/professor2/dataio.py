@@ -1,6 +1,7 @@
 # -*- python -*-
 
 from professor2.histos import *
+from professor2.paramsio import *
 
 
 def read_histos(path, rebin=None):
