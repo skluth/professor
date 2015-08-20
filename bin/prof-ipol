@@ -15,13 +15,14 @@ TODO:
 import optparse
 op = optparse.OptionParser()
 # TODO: Remove demo
-op.add_option("--pfile", dest="PFILE", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
-op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file into which to write the bin interpolations (default: %default)")
-op.add_option("--ierr",  dest="IERR", default="median", help="whether to interpolate MC errors (none, mean, median symm, asymm)") #< add rel
-op.add_option("--info",  dest="INFO", default=None, help="Info string to be written to output file")
+op.add_option("--pfile", dest="PFILE", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")
+op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File into which to write the bin interpolations (default: %default)")
+op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median symm, or asymm (default: %default)") #< add rel
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
+op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description of this fit to be written to the ipol output file")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+# TODO: Change to instead (optionally) specify the max number of parallel threads/procs
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
 # TODO: What is this???
 op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
