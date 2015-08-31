@@ -1,3 +1,7 @@
+2015-08-30  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add recursive scangrid generator function, and other tweaks.
+
 2015-08-18  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Tweaks to ipol file parsing functions.
