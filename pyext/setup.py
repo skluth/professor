@@ -3,16 +3,15 @@ from distutils.extension import Extension
 from glob import glob
 
 import os
-libdir=os.path.abspath("lib")
-incdir = os.path.abspath("include")
+srcdir = os.environ["PWD"] #< assume makefile is called from base dir  TODO: use cwd()?
+libdir = os.path.abspath("lib") #< assume makefile is called from base dir  TODO: use srcdir var?
+incdir = os.path.abspath("include") #< assume makefile is called from base dir  TODO: use srcdir var?
+os.environ.setdefault("CC", "g++")
+os.environ.setdefault("CXX", "g++")
 
-curdir=os.environ["PWD"] # assume makefile is called from basedir
-os.environ["CC"] = "g++"
-os.environ["CXX"] = "g++"
+# TODO: simplify!! The ext function isn't actually needed
 
-lookupdirs = [
-    libdir
-    ]
+lookupdirs = [libdir]
 
 def ext(name, depends=[], statics=[]):
     return Extension(
@@ -20,8 +19,8 @@ def ext(name, depends=[], statics=[]):
         ["pyext/professor2/%s.cpp" % name] + statics,
         language="C++",
         depends=depends,
-        include_dirs=[incdir, "pyext/professor2"],
-        extra_compile_args= str("-I%s/include -Wno-unused-but-set-variable -Wno-sign-compare -std=c++11"%(curdir)).split(),
+        include_dirs=[incdir, os.path.join(srcdir, "pyext", "professor2")],
+        extra_compile_args="-std=c++11 -Wno-unused-but-set-variable -Wno-sign-compare".split(),
         library_dirs=lookupdirs,
         runtime_library_dirs=lookupdirs[1:],
         libraries=["Professor2"])

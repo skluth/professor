@@ -32,7 +32,7 @@ lib/libProfessor2.so: $(LIBOBJECTS)
 
 obj/%.o: src/%.cc $(LIBHEADERS)
 	mkdir -p obj lib
-	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -Iinclude -o $@
+	g++ -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -o $@
 
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	python pyext/setup.py install --prefix=.
@@ -48,7 +48,7 @@ cxxtests: $(TESTPROGS)
 	@true
 
 test/%: test/%.cc $(LIBHEADERS) lib
-	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude -Llib -lProfessor2 -o $@
+	g++ -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) $< -Llib -lProfessor2 -o $@
 
 root: src/testRoot.cc  $(LIBHEADERS) lib
 	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude -I$(ROOTINC) -L$(ROOTLIB) -lHist -lCore -Llib -lProfessor2 -o test/test$@
