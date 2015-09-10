@@ -7,21 +7,20 @@ Interpolate histo bin values as a function of the parameter space by loading
 from the usual data directory structure $datadir/mc/{rundirs}
 
 TODO:
- * Handle weight files/args
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
 """
 
 import optparse
 op = optparse.OptionParser()
 op.add_option("--pfile", dest="PFILE", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")
+op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict ipol building to a subset of bins (default: %default)")
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
-# TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median symm, or asymm (default: %default)") #< add rel
+# TODO: Change to instead (optionally) specify the max number of parallel threads/procs
+op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description of this fit to be written to the ipol output file")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
-# TODO: Change to instead (optionally) specify the max number of parallel threads/procs
-op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
 opts, args = op.parse_args()
 
 ## Use the Professor machinery to load the data into standard objects
@@ -42,25 +41,39 @@ import os, glob, sys
 indirs = glob.glob(os.path.join(RUNSDIR, "*"))
 PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
-HNAMES = HISTOS.keys()
 
 
 ## Some useful announcements about the data loaded and the interpolation planned
-# TODO: suppress this if QUIET
-print "Building %dD interpolations in %d params: require at least %d runs" % \
-    (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
-print "Loaded %d distinct observables from %d runs" % (len(HNAMES), len(RUNS))
+if not opts.QUIET:
+    print "Building %dD interpolations in %d params: require at least %d runs" % \
+        (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
+    print "Loaded %d distinct observables from %d runs" % (len(HISTOS), len(RUNS))
 
 
-# TODO: add weight file parsing to select a histos subset
+## Weight file parsing to select a histos subset
+if opts.WFILE:
+    # TODO: Abstract as a read_pointmatchers() function, returning (matcher, string2) pairs
+    matchers = prof.read_pointmatchers(opts.WFILE)
+    for hn in HISTOS.keys():
+        if not any(m.match_path(hn) for m in matchers.keys()):
+            del HISTOS[hn]
+        elif opts.DEBUG:
+            print "Observable %s passed weight file path filter" % hn
+    print "Filtered observables by path, %d remaining" % len(HISTOS)
+HNAMES = HISTOS.keys()
+
+## If there's nothing left to interpolate, exit!
+if not HNAMES:
+    print "No observables remaining... exiting"
+    sys.exit(1)
 
 
 ## Robustness tests and cleaning: only retain runs that contain every histo
 # TODO: combine with weights histo vetoing -- should we explicitly unload unused run data, or keep it for the next combination to use? Or do we now leave runcombs to the user?
 bad, badnum = [], []
 for irun, run in enumerate(RUNS):
-    for h in HNAMES:
-        if not HISTOS[h].has_key(run):
+    for hn in HNAMES:
+        if not HISTOS[hn].has_key(run):
             bad.append(run)
             badnum.append(irun)
             break
@@ -74,20 +87,18 @@ if bad:
     RUNS = goodr
     PARAMSLIST = goodp
 
-
 ## If there's nothing left to interpolate, exit!
 if not RUNS:
     print "No valid runs remaining... exiting"
     sys.exit(1)
 
+
 IHISTOS = {}
 
-
-# TODO: EXPLAIN THIS!!!!!!
-# The worker
 #from memory_profiler import profile
 #@profile
 def worker(q, rdict):
+    "Function to make bin ipols and store ipol persistency strings for each histo"
     while True:
         if q.empty():
             break
@@ -130,6 +141,7 @@ if num_cores > 1 and opts.MULTI:
     ## Finally copy the result dictionary into the object itself
     for k in tempDict.keys():
         IHISTOS[k] = tempDict[k]
+
 else:
     for num, hn in enumerate(HNAMES):
         if opts.DEBUG:
@@ -141,8 +153,10 @@ else:
         IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
 
+
+## Timing
 time2 = time.time()
-print '\nInterpolation took %0.2f s'%((time2-time1))
+print '\nInterpolation took %0.2f s' % ((time2-time1))
 
 
 ## Active memory clean-up

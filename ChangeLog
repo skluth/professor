@@ -1,5 +1,10 @@
 2015-09-10  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Use weight file parsing in prof-ipol.
+
+	* Add prof.weights submodule, with a copy of PointMatcher and a
+	new read_pointmatchers function for handling weight files.
+
 	* Provide __version__attribute in the Python module.
 
 	* User script CLI consistency, simplification, general smoothing...
