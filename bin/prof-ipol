@@ -23,8 +23,6 @@ op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help=
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 # TODO: Change to instead (optionally) specify the max number of parallel threads/procs
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
-# TODO: What is this???
-op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
@@ -45,8 +43,7 @@ if len(args) == 2:
 import os, glob, sys
 # TODO: add runcomb file parsing to select a runs subset
 indirs = glob.glob(os.path.join(DATADIR, "*"))
-# TODO: The new last two args look out of place... and what does REBIN *do*? Rebinning is a transformation -- should be a different function
-PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE, opts.DEBUG, rebin=opts.REBIN)
+PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 HNAMES = HISTOS.keys()
 
