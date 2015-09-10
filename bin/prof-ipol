@@ -7,6 +7,7 @@ Interpolate histo bin values as a function of the parameter space by loading
 from the usual data directory structure $datadir/mc/{rundirs}
 
 TODO:
+ * Use weight file position matches to exclude some bins, as well as path matching
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
 """
 
@@ -52,7 +53,6 @@ if not opts.QUIET:
 
 ## Weight file parsing to select a histos subset
 if opts.WFILE:
-    # TODO: Abstract as a read_pointmatchers() function, returning (matcher, string2) pairs
     matchers = prof.read_pointmatchers(opts.WFILE)
     for hn in HISTOS.keys():
         if not any(m.match_path(hn) for m in matchers.keys()):

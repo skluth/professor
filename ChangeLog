@@ -1,6 +1,10 @@
+2015-09-11  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Lots of reworking to make prof-tune work again, and to use weight file parsing.
+
 2015-09-10  Andy Buckley  <andy.buckley@cern.ch>
 
-	* Use weight file parsing in prof-ipol.
+	* Use weight file path parsing in prof-ipol.
 
 	* Add prof.weights submodule, with a copy of PointMatcher and a
 	new read_pointmatchers function for handling weight files.

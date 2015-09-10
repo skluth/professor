@@ -22,29 +22,29 @@ class Histo(object):
         for i, b in enumerate(self._bins):
             b.n = i
 
-    # # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
-    # def toYODA(self, ppoint=None, manpath=None):
-    #     # TODO: follow var naming convention
-    #     if self.path is None and not manpath is None:
-    #         P=manpath
-    #     elif self.path is not None and manpath is None:
-    #         P=self.path
-    #     elif self.path is not None and manpath is not None:
-    #         P=manpath
-    #     else:
-    #         print "No path given!"
-    #         return ""
-    #     s="# BEGIN YODA_SCATTER2D %s\n"%P
-    #     s+="Path=%s\n"%P
-    #     s+="Type=Scatter2D\n"
-    #     s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
-    #     for b in self.bins:
-    #         if ppoint is not None:
-    #             s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
-    #         else:
-    #             s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
-    #     s+="# END YODA_SCATTER2D\n"
-    #     return s
+    # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
+    def toYODA(self, ppoint=None, manpath=None):
+        # TODO: follow var naming convention
+        if self.path is None and not manpath is None:
+            P=manpath
+        elif self.path is not None and manpath is None:
+            P=self.path
+        elif self.path is not None and manpath is not None:
+            P=manpath
+        else:
+            print "No path given!"
+            return ""
+        s="# BEGIN YODA_SCATTER2D %s\n"%P
+        s+="Path=%s\n"%P
+        s+="Type=Scatter2D\n"
+        s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
+        for b in self.bins:
+            if ppoint is not None:
+                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+            else:
+                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
+        s+="# END YODA_SCATTER2D\n"
+        return s
 
 
 

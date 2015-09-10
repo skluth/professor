@@ -74,5 +74,5 @@ def read_ipolhistos(ifile):
     "Return both the metadata object and collection of ipol Histos from a binned ipol file"
     imeta = read_ipolmeta(ifile)
     if not imeta["DataFormat"] == 'binned':
-        raise IpolIOError("Error, DataFormat of tuning input is not binned")
+        raise IpolIOError("Error, DataFormat of ipol file %s is not binned" % ifile)
     return imeta, read_binnedipols(ifile)

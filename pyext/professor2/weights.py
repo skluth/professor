@@ -91,10 +91,11 @@ except:
 
 def read_pointmatchers(wfile):
     """
-    Read a file of PointMatcher definition lines, and return a dict of (matcher,
-    string2) pairs, where string2 is the rest of the line.
+    Read a file of PointMatcher definition lines, and return an ordered dict of
+    (matcher, string2) pairs, where string2 is the rest of the line.
     """
-    rtn = {}
+    import collections
+    rtn = collections.OrderedDict() #< need to preserve order
     with open(wfile) as wf:
         for line in wf:
             ## Strip comments (with care due to valid use of # for bin index specification)
