@@ -1,42 +1,43 @@
 #! /usr/bin/env python
 
 """\
-%prog <datadir> <ipolfile>
+%prog [opts] <refdir> [<ipolfile>=ipol.dat]
 
-Interpolate histo bin values as a function of the parameter space by loading
-from the usual data directory structure $datadir/mc/{rundirs}
+Use the interpolations stored in <ipolfile> to find optimised parameters with
+the reference histograms found in the <refdir> as the optimisation target.
 
 TODO:
- * Remove the demo plotting... maybe move it into another script?
  * Handle weight files/args
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
  * User choice of MC error interpolation (mean,median,ipol x none,symm,plusminus,full)
+
 """
 
 import optparse
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 op.add_option("--output", dest="OUTPUT", default="tuned", help="Prefix for outputs (default: %default)")
-op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with paramter limits and fixed parameters")
-op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
-op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
-# TODO: Really a core feature? Define "pull"
+op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
+# TODO: Really a core feature? Define "pull". REMOVE
 op.add_option("--pulls", dest="PULLS", action="store_true", default=False, help="Output pull histograms after minimisation")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
+op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
-## Read persisted interpolations to re-create the ipol Histos
+## Load Professor and show the standard banner
 import professor2 as prof
 if not opts.QUIET:
     print prof.logo
 
 
+## Extract mandatory arguments
 DATADIR = args[0]
 IFILE="ipol.dat"
 if len(args) == 2:
     IFILE=args[1]
 
-## Read in meta data
-# TODO: Use a more meaningful name, and follow var naming convention
+
+## Read persisted interpolations to re-create the ipol Histos
 M = prof.read_meta(IFILE)
 if not M["DataFormat"] == 'binned':
     print "Error, DataFormat of tuning input is not binned, exiting"
@@ -119,11 +120,12 @@ if opts.DEBUG:
 
 
 ## Ignition
+# TODO: Use the internal iminuit/PyMinuit(2) wrapper
 from minuit2 import Minuit2 as Minuit
 minuit = Minuit(profGoF, strategy=2)
 
 ## Starting point --- use center
-C= []
+C = []
 for num, m in enumerate(map(float, M["MinV"].split())):
     C.append(m+0.5*(float(M["MaxV"].split()[num])-m))
 for num, name in enumerate(mpnames):
