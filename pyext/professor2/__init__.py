@@ -2,6 +2,7 @@
 from professor2.core import *
 
 ## Import high-level Python functionality
+# TODO: be more selective, to speed up import?
 from professor2.errors import *
 from professor2.dataio import *
 from professor2.histos import *
@@ -11,6 +12,7 @@ from professor2.minimize import *
 from professor2.paramsio import *
 from professor2.params import *
 from professor2.sampling import *
+from professor2.weights import *
 
 # TODO: DEFUNCT & REMOVE?
 # from professor2.generator import *

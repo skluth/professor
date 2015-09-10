@@ -4,6 +4,7 @@
 ^test/testMaster$
 ^pyext/professor2/.*\.cpp$
 ^pyext/professor2/.*\.so$
+^pyext/professor2/.*\.pyc$
 ^obj/.*\.o$
 ^build$
 ^lib$

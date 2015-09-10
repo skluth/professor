@@ -4,45 +4,57 @@ class Histo(object):
     "A simple histogram -- just a Bin container with an optional path name"
 
     def __init__(self, bins=None, path=None):
-        self.bins = bins if bins else []
+        self._bins = bins if bins else []
         self.path = path
 
     @property
     def nbins(self):
         return len(self.bins)
 
-    # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
-    def toYODA(self, ppoint=None, manpath=None):
-        # TODO: follow var naming convention
-        if self.path is None and not manpath is None:
-            P=manpath
-        elif self.path is not None and manpath is None:
-            P=self.path
-        elif self.path is not None and manpath is not None:
-            P=manpath
-        else:
-            print "No path given!"
-            return ""
-        s="# BEGIN YODA_SCATTER2D %s\n"%P
-        s+="Path=%s\n"%P
-        s+="Type=Scatter2D\n"
-        s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
-        for b in self.bins:
-            if ppoint is not None:
-                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
-            else:
-                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
-        s+="# END YODA_SCATTER2D\n"
-        return s
+    @property
+    def bins(self):
+        return self._bins
+
+    @bins.setter
+    def bins(self, bs):
+        self._bins = bs
+        self._bins.sort()
+        for i, b in enumerate(self._bins):
+            b.n = i
+
+    # # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
+    # def toYODA(self, ppoint=None, manpath=None):
+    #     # TODO: follow var naming convention
+    #     if self.path is None and not manpath is None:
+    #         P=manpath
+    #     elif self.path is not None and manpath is None:
+    #         P=self.path
+    #     elif self.path is not None and manpath is not None:
+    #         P=manpath
+    #     else:
+    #         print "No path given!"
+    #         return ""
+    #     s="# BEGIN YODA_SCATTER2D %s\n"%P
+    #     s+="Path=%s\n"%P
+    #     s+="Type=Scatter2D\n"
+    #     s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
+    #     for b in self.bins:
+    #         if ppoint is not None:
+    #             s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+    #         else:
+    #             s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
+    #     s+="# END YODA_SCATTER2D\n"
+    #     return s
 
 
 
 class Bin(object):
     "A base class for binned data, handling the common x-edge stuff"
 
-    def __init__(self, xmin, xmax):
+    def __init__(self, xmin, xmax, n=None):
         self.xmin = xmin
         self.xmax = xmax
+        self.n = n
 
     @property
     def xmid(self):
