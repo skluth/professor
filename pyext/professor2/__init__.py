@@ -54,6 +54,10 @@ def mk_versionstring():
     import pkg_resources  # part of setuptools
     return pkg_resources.require("professor2")[0].version
 
+
+__version__ = mk_versionstring()
+
+
 logo = \
 """
 Visit us on http://professor.hepforge.org/
@@ -66,7 +70,7 @@ Please cite arXiv:0907.2973 [hep-ph]
  | |  | | | (_) | ||  __/\__ \__ \ (_) | |      _| |_ _| |_
  |_|  |_|  \___/|_| \___||___/___/\___/|_|     |_____|_____|
 
-Andy Buckley, Holger Schulz
-Copyright 2015
+ Andy Buckley, Holger Schulz                          v%s
+ Copyright 2015
 
-""" % mk_timestamp()
+""" % (mk_timestamp(), mk_versionstring())

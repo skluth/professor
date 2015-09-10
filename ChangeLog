@@ -1,3 +1,9 @@
+2015-09-10  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Provide __version__attribute in the Python module.
+
+	* User script CLI consistency, simplification, general smoothing...
+
 2015-08-30  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add recursive scangrid generator function, and other tweaks.
