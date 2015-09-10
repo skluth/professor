@@ -4,7 +4,7 @@ from professor2.histos import *
 from professor2.paramsio import *
 
 
-def read_histos(path, rebin=None):
+def read_histos(path):
     "Load histograms from file, into a dict of path -> yoda.Histo[DataBin]"
     histos = {}
     if path.endswith(".root"):
@@ -20,8 +20,6 @@ def read_histos(path, rebin=None):
             import yoda
             s2s = []
             for ao in yoda.read(path, asdict=False):
-                if type(ao) == yoda.core.Histo1D and rebin is not None:
-                    ao.rebin(rebin)
                 s2s.append(ao.mkScatter())
             #s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
             for s2 in s2s:
@@ -34,16 +32,12 @@ def read_histos(path, rebin=None):
     return histos
 
 
-def read_rundata(dirs, pfname="params.dat", debug=False, rebin=None): #, formats="yoda,root,aida,flat"):
+def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
     params, histos = {}, {}
     import os, glob
     for num, d in enumerate(dirs):
         run = os.path.basename(d)
         files = glob.glob(os.path.join(d, "*"))
-        #if debug:
-            #print "Reading from %s"%run
-        #else:
-            #print "\r%.1f per cent read"%((float(num+1)/len(dirs))*100),
         for f in files:
             ## Params file
             if os.path.basename(f) == pfname:
@@ -51,7 +45,7 @@ def read_rundata(dirs, pfname="params.dat", debug=False, rebin=None): #, formats
             ## Histo file
             else:
                 ## Read as a path -> Histo dict
-                hs = read_histos(f, rebin=rebin)
+                hs = read_histos(f)
                 ## Restructure into the path -> run -> Histo return dict
                 for path, hist in hs.iteritems():
                     histos.setdefault(path, {})[run] = hist
