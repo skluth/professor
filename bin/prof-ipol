@@ -16,7 +16,6 @@ import optparse
 op = optparse.OptionParser()
 # TODO: Remove demo
 op.add_option("--pfile", dest="PFILE", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")
-op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File into which to write the bin interpolations (default: %default)")
 op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median symm, or asymm (default: %default)") #< add rel
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description of this fit to be written to the ipol output file")
@@ -29,22 +28,21 @@ op.add_option("--rebin", dest="REBIN", help="Rebin", default=1, type=int)
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
-
-## Obtain run data dir path from the command line
-import os, glob, sys
-if len(args) == 1:
-    DATADIR = args[0]
-elif len(args) == 2:
-    DATADIR = os.path.join(args[0], args[1])
-else:
-    print "Error: invalid command line, exiting."
-    sys.exit(1)
-
-
 ## Use the Professor machinery to load the data into standard objects
 import professor2 as prof
 if not opts.QUIET:
     print prof.logo
+
+## Obtain run data dir path from the command line
+
+DATADIR = args[0]
+IFILE="ipol.dat"
+
+import os, glob, sys
+if len(args) == 2:
+    IFILE=args[1]
+
+
 
 # TODO: add runcomb file parsing to select a runs subset
 indirs = glob.glob(os.path.join(DATADIR, "*"))
@@ -160,7 +158,7 @@ del HISTOS
 
 ## Write out meta info
 # TODO: Move the format writing into the prof2 Python library
-with open(opts.IFILE, "w") as f:
+with open(IFILE, "w") as f:
     if opts.SUMMARY is not None:
         f.write("Summary: %s\n" % opts.SUMMARY)
     f.write("DataDir: %s\n" % DATADIR) #< TODO: make abs path?
@@ -202,9 +200,9 @@ for hname in sorted(IHISTOS.keys()):
             if ib.ierrs:
                 s += "  " + ib.ierrs.toString("err") + "\n"
 # Open file for write/append
-with open(opts.IFILE, "a") as f:
+with open(IFILE, "a") as f:
     f.write(s)
-print "\nOutput written to %s" % opts.IFILE
+print "\nOutput written to %s" % IFILE
 
 
 # ## Store a record of bad runs?
