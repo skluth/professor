@@ -1,36 +1,38 @@
 #!/usr/bin/env python
 
 """\
-%prog <datadir>
+%prog <ipolfile> <datadir>
 
 Interactive parameterisation explorer
 
-TODO:
-    *
 """
 
 import optparse, sys
 op = optparse.OptionParser()
-op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
-DATADIR = args[0]
 
-
-## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
-# if not opts.QUIET:
-print prof.logo
+if not opts.QUIET:
+    print prof.logo
+
+IFILE = args[0]
+
+DATADIR=None
+if len(args)==2:
+    DATADIR = args[1]
+
 
 ## Read in meta data
-M = prof.read_meta(opts.IFILE)
+M = prof.read_meta(IFILE)
 if not M["DataFormat"] == 'binned':
     print "Error, DataFormat of tuning input is not binned, exiting"
     sys.exit(1)
 
 ## Read in ipol histos
-IHISTOS = prof.read_binnedipol(opts.IFILE)
+IHISTOS = prof.read_binnedipol(IFILE)
 
 ## List of rivet analysis paths in IHISTOS
 ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS.keys()]))
@@ -41,28 +43,30 @@ ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS
 import os, glob
 HISTOS = {}
 # TODO: consistent directory convention and protect against invalid structures
-if DATADIR:
+if DATADIR is not None:
     reffiles = glob.glob(os.path.join(DATADIR, "*"))
     for rf in reffiles:
         HISTOS.update(prof.read_histos(rf))
 
-## Find things available in both
-available = []
-for i in IHISTOS.keys():
-    for r in HISTOS.keys():
-        if i in r:
-            available.append([i,r])
+    ## Find things available in both
+    available = []
+    for i in IHISTOS.keys():
+        for r in HISTOS.keys():
+            if i in r:
+                available.append([i,r])
+    ibins = []
+    databins = []
+    for a in available:
+        ibins.extend(  IHISTOS[a[0]].bins)
+        databins.extend(HISTOS[a[1]].bins)
 
-## Prepare list of ibins and databins --- order should be ok
-ibins = []
-databins = []
-for a in available:
-    ibins.extend(  IHISTOS[a[0]].bins)
-    databins.extend(HISTOS[a[1]].bins)
+else:
+    ibins = []
+    available = [(i,i) for i in IHISTOS.keys()]
+    for a in available:
+        ibins.extend(  IHISTOS[a[0]].bins)
 
 ## Sanity checks
-print len(ibins), len(databins)
-#assert(len(ibins) == len(databins))
 
 if not ibins:
     print "No bins ..., exiting"
@@ -99,7 +103,11 @@ try:
         'figure.subplot.top' : 0.95,
         'figure.subplot.wspace' : 0.15
         }
-    matplotlib.rcParams.update(params)
+    for k, v in params.iteritems():
+        try:
+            matplotlib.rcParams[k] = v
+        except:
+            pass
 except Exception, e:
     print "Problem with getting & configuring matplotlib/WX interface method: %s" % e
     print "Exiting!"
@@ -133,7 +141,8 @@ def mk_data(obs, prefix="/REF"):
             Y.append(b.val)
             dY.append(b.err)
     except Exception, e:
-        print "No data available for %s"%obs
+        if opts.DEBUG:
+            print "No data available for %s"%obs
     return X, Y, dY
 
 def mk_pull(obs, ppoint, prefix="/REF"):
