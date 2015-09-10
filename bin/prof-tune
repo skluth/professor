@@ -9,8 +9,6 @@ the reference histograms found in the <refdir> as the optimisation target.
 TODO:
  * Handle weight files/args
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
- * User choice of MC error interpolation (mean,median,ipol x none,symm,plusminus,full)
-
 """
 
 import optparse
@@ -18,7 +16,7 @@ op = optparse.OptionParser(usage=__doc__)
 op.add_option("--output", dest="OUTPUT", default="tuned", help="Prefix for outputs (default: %default)")
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 # TODO: Really a core feature? Define "pull". REMOVE
-op.add_option("--pulls", dest="PULLS", action="store_true", default=False, help="Output pull histograms after minimisation")
+# op.add_option("--pulls", dest="PULLS", action="store_true", default=False, help="Output pull histograms after minimisation")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -32,14 +30,14 @@ if not opts.QUIET:
 
 ## Extract mandatory arguments
 DATADIR = args[0]
-IFILE="ipol.dat"
+IFILE = "ipol.dat"
 if len(args) == 2:
-    IFILE=args[1]
+    IFILE = args[1]
 
 
 ## Read persisted interpolations to re-create the ipol Histos
-M = prof.read_meta(IFILE)
-if not M["DataFormat"] == 'binned':
+metadata = prof.read_meta(IFILE)
+if not metadata["DataFormat"] == 'binned':
     print "Error, DataFormat of tuning input is not binned, exiting"
     import sys
     sys.exit(1)
@@ -106,11 +104,11 @@ def simpleGOF(params):
 
 
 ## Take parameter names directly from ifile
-mpnames = ["'%s'"%x for x in M["Params"].split()]
+mpnames = ["'%s'"%x for x in metadata["Params"].split()]
 
 ## Fall back solution if empty
 #if len(mpnames)==0:
-mpnames = ["MP%03i"%(i) for i in xrange(int(M["Dimension"]))]
+mpnames = ["MP%03i"%(i) for i in xrange(int(metadata["Dimension"]))]
 
 ## Function definition wrapper
 funcdef = prof.mk_fitfunc("simpleGOF", mpnames)
@@ -126,8 +124,8 @@ minuit = Minuit(profGoF, strategy=2)
 
 ## Starting point --- use center
 C = []
-for num, m in enumerate(map(float, M["MinV"].split())):
-    C.append(m+0.5*(float(M["MaxV"].split()[num])-m))
+for num, m in enumerate(map(float, metadata["MinV"].split())):
+    C.append(m+0.5*(float(metadata["MaxV"].split()[num])-m))
 for num, name in enumerate(mpnames):
     minuit.values[name] = C[num]
 
@@ -154,8 +152,8 @@ if not opts.QUIET:
 
 ## Check if result is in validity range
 result = [minuit.values[p] for p in mpnames]
-rng_low = map(float, M["MinV"].split())
-rng_high = map(float, M["MaxV"].split())
+rng_low = map(float, metadata["MinV"].split())
+rng_high = map(float, metadata["MaxV"].split())
 rok, rng = prof.is_inrange(result, rng_low, rng_high)
 
 ## Print results to screen
@@ -175,51 +173,51 @@ for num, p in enumerate(mpnames):
 
 
 ## Write out result
-with open("%s_results.txt"%opts.OUTPUT,"w") as f:
+with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     ## Meta info
-    f.write("# ProfVersion: %s\n"%prof.mk_versionstring())
-    f.write("# Date: %s\n"%prof.mk_timestamp())
-    f.write("# InterpolationFile: %s\n"%os.path.abspath(IFILE))
-    f.write("# DataDir: %s\n"%os.path.abspath(DATADIR))
-    # TODO: weights --- dump them all or just the file name? for consitency, probably better to dump them all at the end
-    # Limits
+    f.write("# ProfVersion: %s\n" % prof.mk_versionstring())
+    f.write("# Date: %s\n" % prof.mk_timestamp())
+    f.write("# InterpolationFile: %s\n" % os.path.abspath(IFILE))
+    f.write("# DataDir: %s\n" % os.path.abspath(DATADIR))
+    # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end
+    ## Limits
     lstring = ""
     for p in mpnames:
         if limits.has_key(p):
-            lstring+= "#\t%s\t%f %f\n"%(p, limits[p][0], limits[p][1])
-    f.write("# Limits: \n%s"%lstring)
+            lstring += "#\t%s\t%f %f\n"%(p, limits[p][0], limits[p][1])
+    f.write("# Limits: \n%s" % lstring)
     # Fixed parameters
     fstring = ""
     for p in mpnames:
         if fixed.has_key(p):
-            fstring+= "#\t%s\t%f\n"%(p, fixed[p])
-    f.write("# Fixed: \n%s"%fstring)
+            fstring += "#\t%s\t%f\n" % (p, fixed[p])
+    f.write("# Fixed: \n%s" % fstring)
 
     ## The tuned parameter values
     for p in mpnames:
-        f.write("%s\t%f\n"%(p, minuit.values[p]))
+        f.write("%s\t%f\n" % (p, minuit.values[p]))
 
 ## Write out ipolhistos
 result = [minuit.values[name] for name in mpnames]
-with open("%s_ipolhistos.yoda"%opts.OUTPUT, "w") as f:
+with open("%s_ipolhistos.yoda" % opts.OUTPUT, "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
         f.write(IHISTOS[k].toYODA(result, k))
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
 
-## Pull histograms
-if opts.PULLS:
-    pulls = []
-    for a in available:
-        ikey=a[0]
-        dkey=a[1]
-        ib = IHISTOS[ikey].bins
-        db =  HISTOS[dkey].bins
-        pb = []
-        for i in xrange(len(ib)):
-            py = prof.pull(db[i], ib[i], result)
-            pb.append(prof.DataBin(db[i].xmin, db[i].xmax, py, 0))
-        pulls.append(prof.Histo(pb, ikey))
+# ## Pull histograms
+# if opts.PULLS:
+#     pulls = []
+#     for a in available:
+#         ikey=a[0]
+#         dkey=a[1]
+#         ib = IHISTOS[ikey].bins
+#         db =  HISTOS[dkey].bins
+#         pb = []
+#         for i in xrange(len(ib)):
+#             py = prof.pull(db[i], ib[i], result)
+#             pb.append(prof.DataBin(db[i].xmin, db[i].xmax, py, 0))
+#         pulls.append(prof.Histo(pb, ikey))
 
-    with open("%s_pulls.yoda"%opts.OUTPUT, "w") as f:
-        [f.write(h.toYODA()) for h in pulls]
+#     with open("%s_pulls.yoda"%opts.OUTPUT, "w") as f:
+#         [f.write(h.toYODA()) for h in pulls]
