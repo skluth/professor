@@ -31,15 +31,15 @@ if not opts.QUIET:
 
 
 ## Get mandatory arguments
-DATADIR = args[0]
+RUNSDIR = args[0]
 IFILE = "ipol.dat"
-if len(args) == 2:
+if len(args) >= 2:
     IFILE = args[1]
 
 
 import os, glob, sys
 # TODO: add runcomb file parsing to select a runs subset
-indirs = glob.glob(os.path.join(DATADIR, "*"))
+indirs = glob.glob(os.path.join(RUNSDIR, "*"))
 PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 HNAMES = HISTOS.keys()
@@ -154,7 +154,7 @@ del HISTOS
 with open(IFILE, "w") as f:
     if opts.SUMMARY is not None:
         f.write("Summary: %s\n" % opts.SUMMARY)
-    f.write("DataDir: %s\n" % DATADIR) #< TODO: make abs path?
+    #f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
     f.write("ProfVersion: %s\n" % prof.mk_versionstring())
     f.write("Date: %s\n" % prof.mk_timestamp())
     f.write("DataFormat: binned\n") # This tells the reader how to treat the coefficients that follow

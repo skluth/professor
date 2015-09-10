@@ -29,7 +29,7 @@ if not opts.QUIET:
 
 
 ## Extract mandatory arguments
-DATADIR = args[0]
+RUNSDIR = args[0]
 IFILE = "ipol.dat"
 if len(args) == 2:
     IFILE = args[1]
@@ -52,7 +52,7 @@ ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS
 ## Read reference data histos
 import os, glob
 HISTOS = {}
-reffiles = glob.glob(os.path.join(DATADIR,  "*"))
+reffiles = glob.glob(os.path.join(RUNSDIR,  "*"))
 for rf in reffiles:
     HISTOS.update(prof.read_histos(rf))
 
@@ -178,7 +178,7 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     f.write("# ProfVersion: %s\n" % prof.mk_versionstring())
     f.write("# Date: %s\n" % prof.mk_timestamp())
     f.write("# InterpolationFile: %s\n" % os.path.abspath(IFILE))
-    f.write("# DataDir: %s\n" % os.path.abspath(DATADIR))
+    #f.write("# DataDir: %s\n" % os.path.abspath(RUNSDIR))
     # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end
     ## Limits
     lstring = ""
