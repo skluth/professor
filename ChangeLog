@@ -1,5 +1,7 @@
 2015-09-11  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Make root-config dependency optional
+
 	* Lots of reworking to make prof-tune work again, and to use weight file parsing.
 
 2015-09-10  Andy Buckley  <andy.buckley@cern.ch>
