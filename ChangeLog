@@ -1,5 +1,7 @@
 2015-09-11  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Adding prof2-residuals script for ipol faithfulness testing.
+
 	* Rename scripts from prof-* to prof2-* to allow parallel installations of Prof1 and Prof2.
 
 	* Move some non-core scripts from bin to contrib.

@@ -1,0 +1,115 @@
+#! /usr/bin/env python
+
+"""\
+%prog <runsdir> [<ipolfile>=ipol.dat] [opts]
+
+Compute and plot the relative deviations of the given interpolation from the
+corresponding sample points in the given <runsdir>, for both bin values and bin
+errors. Histograms are made for each histogram independently (summed over bins and MC
+points), and for the sum over all histos and bins, and are written to PDFs and
+to a res.yoda data file.
+
+This can be useful for determining whether the interpolation is providing a
+sufficiently faithful approximation to the true observables, and choosing the
+most appropriate order of fit polynomial. It can also be useful to detect
+overfitting, by comparing residuals distributions between the set of runs used
+to make the fit (via prof-ipol) and an equivalent set not included in the fit.
+
+TODO:
+ * Add an option to write out the .yoda file only
+ * Add options for total-only, and value-only (no err) residuals
+ * Support runcomb filtering
+ * Allow control over the output filenames.
+"""
+
+import optparse, os, sys
+op = optparse.OptionParser(usage=__doc__)
+#op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
+op.add_option("--pname", dest="PNAME", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
+op.add_option("--xrange", dest="XRANGE", default=0.1, type=float, help="the +- range of relative deviation to display (default: %default)")
+op.add_option("--nbins", dest="NBINS", default=30, type=int, help="number of bins to use in each of the  (default: %default)")
+opts, args = op.parse_args()
+
+## Get mandatory arguments
+if len(args) < 1:
+    print "Argument missing... exiting\n\n"
+    op.print_usage()
+    sys.exit(1)
+RUNSDIR = args[0]
+IFILE = "ipol.dat"
+if len(args) >= 2:
+    IFILE = args[1]
+
+
+## Load the Professor machinery
+import professor2 as prof
+if not opts.QUIET:
+    print prof.logo
+
+## No point in going further if YODA isn't available, too
+try:
+    import yoda
+except ImportError:
+    print "YODA is required by this tool... exiting"
+    sys.exit(1)
+
+
+## Load MC run histos and params
+import glob
+# TODO: add runcomb file parsing to select a runs subset
+INDIRS = glob.glob(os.path.join(RUNSDIR,"*"))
+PARAMS, HISTOS = prof.load_rundata(INDIRS, opts.PNAME)
+RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
+## Load interpolated histograms from file
+IMETA, IHISTOS = prof.read_ipolhistos(IFILE)
+
+## Set up total histograms
+hargsval = (opts.NBINS, -opts.XRANGE, opts.XRANGE)
+hargserr = (opts.NBINS, -opts.XRANGE, opts.XRANGE)
+hresvaltot = yoda.Histo1D(*hargsval, path="/TOT/resval")
+hreserrtot = yoda.Histo1D(*hargserr, path="/TOT/reserr")
+aos = [hresvaltot, hreserrtot]
+
+## Loop over histograms and compute residuals histos
+for hn, mchistos in HISTOS.iteritems():
+    hnstr = hn.replace("/", "_").strip("_")
+
+    hresval = yoda.Histo1D(*hargsval, path=hn+"/resval")
+    hreserr = yoda.Histo1D(*hargserr, path=hn+"/reserr")
+
+    ihisto = IHISTOS[hn]
+    for irun, run in enumerate(RUNS):
+        mchisto = mchistos[run]
+        assert mchisto.nbins == ihisto.nbins
+        for ib in xrange(ihisto.nbins):
+
+            ## Value residuals
+            absres = ihisto.bins[ib].val(PARAMSLIST[irun]) - mchisto.bins[ib].val
+            relres = absres / mchisto.bins[ib].val
+            hresval.fill(relres)
+            hresvaltot.fill(relres)
+
+            ## Error residuals
+            # print ihisto.bins[ib].err(PARAMSLIST[irun]) , mchisto.bins[ib].err
+            absres = ihisto.bins[ib].err(PARAMSLIST[irun]) - mchisto.bins[ib].err
+            relres = absres / mchisto.bins[ib].err
+            hreserr.fill(relres)
+            hreserrtot.fill(relres)
+
+    aos += [hresval, hreserr]
+
+    yoda.plot(hresval, "res_val_" + hnstr, plotkeys={"Title": hn})
+    print hn, "value:", "mean =", hresval.xMean(), "stddev =", hresval.xStdDev()
+
+    yoda.plot(hreserr, "res_err_" + hnstr, plotkeys={"Title": hn})
+    print hn, "error:", "mean =", hreserr.xMean(), "stddev =", hreserr.xStdDev()
+
+    print
+
+yoda.plot(hresvaltot, "res_val_tot")
+print "Tot val", "mean =", hresvaltot.xMean(), "stddev =", hresvaltot.xStdDev()
+
+yoda.plot(hreserrtot, "res_err_tot")
+print "Tot err", "mean =", hreserrtot.xMean(), "stddev =", hreserrtot.xStdDev()
+
+yoda.write(aos, "res.yoda")

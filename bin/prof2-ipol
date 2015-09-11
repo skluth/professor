@@ -11,7 +11,7 @@ TODO:
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
 """
 
-import optparse
+import optparse, os, sys
 op = optparse.OptionParser()
 op.add_option("--pfile", dest="PFILE", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict ipol building to a subset of bins (default: %default)")
@@ -24,23 +24,27 @@ op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help=
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
-## Use the Professor machinery to load the data into standard objects
-import professor2 as prof
-if not opts.QUIET:
-    print prof.logo
-
-
 ## Get mandatory arguments
+if len(args) < 1:
+    print "Argument missing... exiting\n\n"
+    op.print_usage()
+    sys.exit(1)
 RUNSDIR = args[0]
 IFILE = "ipol.dat"
 if len(args) >= 2:
     IFILE = args[1]
 
 
-import os, glob, sys
+## Load the Professor machinery
+import professor2 as prof
+if not opts.QUIET:
+    print prof.logo
+
+## Load MC run histos and params
+import glob
 # TODO: add runcomb file parsing to select a runs subset
-indirs = glob.glob(os.path.join(RUNSDIR, "*"))
-PARAMS, HISTOS = prof.load_rundata(indirs, opts.PFILE)
+INDIRS = glob.glob(os.path.join(RUNSDIR, "*"))
+PARAMS, HISTOS = prof.load_rundata(INDIRS, opts.PFILE)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 
 
