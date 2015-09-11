@@ -28,6 +28,8 @@ op = optparse.OptionParser(usage=__doc__)
 op.add_option("--pname", dest="PNAME", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
 op.add_option("--xrange", dest="XRANGE", default=0.1, type=float, help="the +- range of relative deviation to display (default: %default)")
 op.add_option("--nbins", dest="NBINS", default=30, type=int, help="number of bins to use in each of the  (default: %default)")
+op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
