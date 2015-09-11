@@ -1,5 +1,9 @@
 2015-09-11  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Rename scripts from prof-* to prof2-* to allow parallel installations of Prof1 and Prof2.
+
+	* Move some non-core scripts from bin to contrib.
+
 	* Make root-config dependency optional
 
 	* Lots of reworking to make prof-tune work again, and to use weight file parsing.
