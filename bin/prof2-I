@@ -94,7 +94,7 @@ try:
         'figure.dpi' : 50,
         'lines.markersize' : 10,
         'lines.linewidth' : 2,
-        #'lines.elinewidth' : 3,
+        'lines.elinewidth' : 3,
         'lines.antialiased' : False,
         #'patches.antialiased' : False,
         'figure.subplot.left' : 0.05,
@@ -166,7 +166,7 @@ class ParamFrame(wx.Frame):
     def __init__(self, parent):
         no_sys_menu = wx.CAPTION
         wx.Frame.__init__(self, None,  title='Prof-I: Parameter control')#, style=no_sys_menu)
-        self.params = M["Params"].split()
+        self.params = METADATA["ParamNames"].split()
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour('#eeefff')
         self.parent = parent
@@ -182,8 +182,8 @@ class ParamFrame(wx.Frame):
             ## Sliders
             #http://www.wxpython.org/docs/api/wx.lib.agw.floatspin-module.html
             from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
-            pmin = float(M["MinV"].split()[i])
-            pmax = float(M["MaxV"].split()[i])
+            pmin = float(METADATA["MinParamValues"].split()[i])
+            pmax = float(METADATA["MaxParamValues"].split()[i])
             slider = FloatSpin(self.panel, -3, style=0, value=pmin + 0.5*(pmax-pmin),
                                min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50)
             controlgrid.Add(slider, pos=(i,2))
