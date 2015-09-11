@@ -107,10 +107,7 @@ namespace Professor {
 
   // NB. Not a member function
   vector<double> mkLongVector1D(const vector<double>& p) {
-    vector<double> retvec;
-    retvec.reserve(1 + p.size());
-    // 0th order offset
-    retvec.push_back(1.0);
+    vector<double> retvec = mkLongVector0D(p);
     // Linear coefficients
     for (size_t i = 0; i < p.size(); ++i)
       retvec.push_back(p[i]);
