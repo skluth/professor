@@ -1,3 +1,11 @@
+2015-09-14  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Use Eigen's svd.setThreshold(1e-20) to prevent the errors we saw with Eigen
+	3.2.2 and later when looking at 5th order polynomials in 3 dimensinos
+	with 900+ anchors
+
+	* Some clean up
+
 2015-09-11  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Adding prof2-residuals script for ipol faithfulness testing.
