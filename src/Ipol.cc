@@ -41,7 +41,6 @@ namespace Professor {
     VectorXd MC = VectorXd(pts.numPoints());
 
     vector<double> tempLV;
-    vector<double> tempDP;
     // Populate the matrix to be inverted
     for (int a = 0; a < pts.numPoints(); ++a) {
       tempLV = mkLongVector(pts.point(a), order);
@@ -52,6 +51,7 @@ namespace Professor {
       MC[a] = vals[a];
     }
     JacobiSVD<MatrixXd> svd = DP.jacobiSvd(ComputeThinU|ComputeThinV);
+    svd.setThreshold(1e-20); // Needed TODO find transform for dependence on stuff
 
     // Check for singular values, i.e. fully correlated parameters
     // TODO maybe figure out how to use Eigen's setTreshold 
@@ -62,7 +62,8 @@ namespace Professor {
         abort();
       }
     }
-    
+
+    // Solve for coefficients
     VectorXd co = svd.solve(MC);
 
     for (size_t i = 0; i < ncoeff; ++i) rtn.push_back(co[i]);

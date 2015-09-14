@@ -2,18 +2,14 @@ PREFIX := /usr/local
 
 CXXSTD := c++11
 
-ifndef CXXFLAGS
-  CXXFLAGS := -O3
-  ifdef DEBUG
-	ifneq ($(DEBUG),0)
-	  CXXFLAGS += -g
-	endif
-  endif
-endif
+#CXXFLAGS := -g -O3
+CXXFLAGS  := -O3
 
-# CPPFLAGS  :=
+CPPFLAGS  := 
 
-HAVE_ROOT := $(shell which root-config)
+# TODO: This needs protection against there being no ROOT installation (which can be fine)
+ROOTINC := $(wildcard $(shell root-config --incdir) )
+ROOTLIB := $(wildcard $(shell root-config --libdir) )
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
@@ -21,7 +17,7 @@ LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol ProfMaster)
 TESTPROGS  := test/testParamPoints test/testIpol test/testMaster
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
-.PHONY := all lib pyext tests cxxtests pytests check icheck clean root
+.PHONY := all lib pyext tests cxxtests pytests check icheck clean
 
 
 all: lib pyext tests
@@ -54,10 +50,9 @@ cxxtests: $(TESTPROGS)
 test/%: test/%.cc $(LIBHEADERS) lib
 	g++ -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) $< -Llib -lProfessor2 -o $@
 
-ifdef $(HAVE_ROOT)
-root: src/testRoot.cc $(LIBHEADERS) lib
-	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude `root-config --cflags --libs` -Llib -lProfessor2 -o test/test$@
-endif
+root: src/testRoot.cc  $(LIBHEADERS) lib
+	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude -I$(ROOTINC) -L$(ROOTLIB) -lHist -lCore -Llib -lProfessor2 -o test/test$@
+
 
 pytests: pyext
 	@true
