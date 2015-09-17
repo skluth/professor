@@ -10,7 +10,7 @@ TODO:
 """
 
 import optparse
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
 op.add_option("--output", dest="OUTPUT", default="tuned", help="Prefix for outputs (default: %default)")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")

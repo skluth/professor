@@ -11,7 +11,7 @@ TODO:
 """
 
 import optparse, os, sys
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
