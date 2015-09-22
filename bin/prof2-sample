@@ -21,7 +21,7 @@ TODO:
 import optparse
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("-n", dest="NUMPOINTS", metavar="NUM", type=int, default=100, help="number of samples to generate [default=%default]")
-op.add_option("-t", dest="TEMPLATES", metavar="FILE", action="append", default=[], help="specify a template file to be populated for each sample point. Can be given multiple times")
+op.add_option("-t", dest="TEMPLATES", metavar="FILE", action="append", default=[], help="specify a template file to be populated for each sample point. Can be given multiple times. Strings in curly braces are instantiated.")
 op.add_option("-o", "--outdir", dest="OUTDIR", metavar="DIR", default="scan", help="specify the output directory name (default: %default)")
 op.add_option("-O", "--outmode", dest="OUTMODE", metavar="MODE", default="hier", help="specify the output structuring mode: either 'hier' (default) or 'flat' to respectively use run subdirs or not or 'table' to create one text file with a table like structure")
 op.add_option("-p", "--pfile", dest="PARAMSFILE", metavar="FILE", default="params.dat", help="specify params file base name to be populated for each sample point")
