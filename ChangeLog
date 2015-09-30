@@ -1,3 +1,7 @@
+2015-09-30  Andy Buckley  <andy.buckley@cern.ch>
+
+	* src/Ipol.h: Use Eigen/SVD include path rather than non-standard eigen3/Eigen/SVD.
+
 2015-09-14  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Use Eigen's svd.setThreshold(1e-20) to prevent the errors we saw with Eigen

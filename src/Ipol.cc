@@ -1,5 +1,5 @@
 #include "Professor/Ipol.h"
-#include "eigen3/Eigen/SVD"
+#include "Eigen/SVD"
 #include <sstream>
 #include <cassert>
 
@@ -22,12 +22,15 @@ namespace Professor {
 
   // NB. Not a member function
   std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order, double threshold) {
+
+    // Early exit if this is a trivial 0th order polynomial
     vector<double> rtn;
-    if (order==0) {
+    if (order == 0) {
       rtn.push_back(vals[0]);
       return rtn;
     }
 
+    // Check the inputs
     if (pts.numPoints() != vals.size())
       throw IpolError("pts.numPoints() != vals.size() in calcCoeffs");
     const int ncoeff = numCoeffs(pts.dim(), order);
@@ -37,11 +40,13 @@ namespace Professor {
          << "for interpolating with " << pts.dim() << " params at order " << order;
       throw IpolError(ss.str());
     }
+
+    // Create Eigen objects for the SVD solving
     MatrixXd DP = MatrixXd(pts.numPoints(), ncoeff);
     VectorXd MC = VectorXd(pts.numPoints());
 
-    vector<double> tempLV;
     // Populate the matrix to be inverted
+    vector<double> tempLV;
     for (int a = 0; a < pts.numPoints(); ++a) {
       tempLV = mkLongVector(pts.point(a), order);
       for (size_t i = 0; i < tempLV.size(); ++i) {
@@ -54,9 +59,9 @@ namespace Professor {
     svd.setThreshold(1e-20); // Needed TODO find transform for dependence on stuff
 
     // Check for singular values, i.e. fully correlated parameters
-    // TODO maybe figure out how to use Eigen's setTreshold 
+    /// @todo Maybe figure out how to use Eigen's setThreshold better?
     VectorXd svals = svd.singularValues();
-    for (unsigned int i=0;i<svd.nonzeroSingularValues();++i) {
+    for (unsigned int i = 0; i < svd.nonzeroSingularValues();++i) {
       if (fabs(svals[i]) < threshold) {
         std::cout << "Singular value encountered, aborting" << std::endl;
         abort();
@@ -66,6 +71,7 @@ namespace Professor {
     // Solve for coefficients
     VectorXd co = svd.solve(MC);
 
+    // Populate the coefficient std::vector and return
     for (size_t i = 0; i < ncoeff; ++i) rtn.push_back(co[i]);
     return rtn;
   }
