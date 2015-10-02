@@ -23,7 +23,7 @@ def read_histos(path):
                 import os
                 ## Skip the Rivet cross-section and event counter objects
                 # TODO: Avoid Rivet-specific behaviour by try block handling & scatter.dim requirements
-                if os.path.basename(ao).startswith("_"):
+                if os.path.basename(ao.path).startswith("_"):
                     continue
                 ##
                 s2s.append(ao.mkScatter())
