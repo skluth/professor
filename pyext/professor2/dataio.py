@@ -14,7 +14,8 @@ def read_histos(path):
             raise Exception("Can't yet read ROOT format files!")
         except:
             print "Can't yet read ROOT format files... TODO!"
-    else:
+    # TODO: can do this more generically with a try..except block, but requires that yoda.read throws a *Python* exception
+    elif any(path.endswith(ext) for ext in [".yoda", ".aida", ".flat"]):
         ## Try YODA (handles .yoda, .aida, and .flat)
         try:
             import yoda
