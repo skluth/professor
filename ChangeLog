@@ -1,3 +1,8 @@
+2015-10-02  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add protection in the histo loader, so we don't trip up on
+	Rivet's new cross-section and counter objects.
+
 2015-09-30  Andy Buckley  <andy.buckley@cern.ch>
 
 	* src/Ipol.h: Use Eigen/SVD include path rather than non-standard eigen3/Eigen/SVD.

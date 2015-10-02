@@ -20,6 +20,12 @@ def read_histos(path):
             import yoda
             s2s = []
             for ao in yoda.read(path, asdict=False):
+                import os
+                ## Skip the Rivet cross-section and event counter objects
+                # TODO: Avoid Rivet-specific behaviour by try block handling & scatter.dim requirements
+                if os.path.basename(ao).startswith("_"):
+                    continue
+                ##
                 s2s.append(ao.mkScatter())
             #s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
             for s2 in s2s:
