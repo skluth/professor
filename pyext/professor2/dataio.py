@@ -50,11 +50,14 @@ def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
                 params[run] = read_paramsfile(f)
             ## Histo file
             else:
-                ## Read as a path -> Histo dict
-                hs = read_histos(f)
-                ## Restructure into the path -> run -> Histo return dict
-                for path, hist in hs.iteritems():
-                    histos.setdefault(path, {})[run] = hist
+                try:
+                    ## Read as a path -> Histo dict
+                    hs = read_histos(f)
+                    ## Restructure into the path -> run -> Histo return dict
+                    for path, hist in hs.iteritems():
+                        histos.setdefault(path, {})[run] = hist
+                except:
+                    pass #< skip files that can't be read as histos
         ## Check that a params file was found and read in this dir
         if run not in params.keys():
             raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))

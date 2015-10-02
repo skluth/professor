@@ -1,5 +1,8 @@
 2015-10-02  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Put histo file reading in a try..except block so read failures
+	on non-histo files in the run dirs are not fatal.
+
 	* Add protection in the histo loader, so we don't trip up on
 	Rivet's new cross-section and counter objects.
 
