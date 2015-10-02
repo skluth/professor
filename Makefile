@@ -13,7 +13,7 @@ endif
 
 # CPPFLAGS  :=
 
-HAVE_ROOT := $(shell which root-config)
+HAVE_ROOT := $(shell which root-config 2> /dev/null)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
