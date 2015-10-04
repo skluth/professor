@@ -1,3 +1,7 @@
+2015-10-04  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add vmin and vmax args to Ipol and IpolBin in Python.
+
 2015-10-02  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Put histo file reading in a try..except block so read failures

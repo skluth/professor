@@ -146,6 +146,7 @@ if num_cores > 1 and opts.MULTI:
     for k in tempDict.keys():
         IHISTOS[k] = tempDict[k]
 
+# TODO: Remove duplication: either multiprocess or don't, but don't make us have to support both ways!
 else:
     for num, hn in enumerate(HNAMES):
         if opts.DEBUG:
@@ -200,6 +201,7 @@ with open(IFILE, "w") as f:
 s = ""
 for hname in sorted(IHISTOS.keys()):
     ih = IHISTOS[hname]
+    # TODO: Remove duplication: either multiprocess or don't, but don't make us have to support both ways!
     if type(ih) is str: ## detect results from multiprocessing
         import zlib
         s += zlib.decompress(ih)

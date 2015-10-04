@@ -24,26 +24,25 @@ class Histo(object):
 
     # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
     def toYODA(self, ppoint=None, manpath=None):
-        # TODO: follow var naming convention
         if self.path is None and not manpath is None:
-            P=manpath
+            path = manpath
         elif self.path is not None and manpath is None:
-            P=self.path
+            path = self.path
         elif self.path is not None and manpath is not None:
-            P=manpath
+            path = manpath
         else:
             print "No path given!"
             return ""
-        s="# BEGIN YODA_SCATTER2D %s\n"%P
-        s+="Path=%s\n"%P
-        s+="Type=Scatter2D\n"
-        s+="# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
+        s = "# BEGIN YODA_SCATTER2D %s\n" % path
+        s += "Path=%s\n" % path
+        s += "Type=Scatter2D\n"
+        s += "# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
         for b in self.bins:
             if ppoint is not None:
-                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+                s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
             else:
-                s+="%e\t%e\t%e\t%e\t%e\t%e\n"%(b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
-        s+="# END YODA_SCATTER2D\n"
+                s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
+        s += "# END YODA_SCATTER2D\n"
         return s
 
 
@@ -128,8 +127,8 @@ class IpolBin(Bin):
         self.ival = ival
         self.ierrs = ierrs
 
-    def val(self, params):
-        return self.ival.value(params)
+    def val(self, params, vmin=None, vmax=None):
+        return self.ival.value(params, vmin=vmin, vmax=vmax)
 
     def err(self, params):
         if self.ierrs is None:
