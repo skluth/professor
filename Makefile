@@ -2,6 +2,8 @@ PREFIX := /usr/local
 
 CXXSTD := c++11
 
+#CPPFLAGS  :=
+
 ifndef CXXFLAGS
   CXXFLAGS := -O3
   ifdef DEBUG
@@ -11,7 +13,6 @@ ifndef CXXFLAGS
   endif
 endif
 
-# CPPFLAGS  :=
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
 

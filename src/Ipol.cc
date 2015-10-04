@@ -56,7 +56,9 @@ namespace Professor {
       MC[a] = vals[a];
     }
     JacobiSVD<MatrixXd> svd = DP.jacobiSvd(ComputeThinU|ComputeThinV);
+    #if EIGEN_WORLD_VERSION >= 3 && EIGEN_MAJOR_VERSION >= 2 && EIGEN_MINOR_VERSION >= 1
     svd.setThreshold(1e-20); // Needed TODO find transform for dependence on stuff
+    #endif
 
     // Check for singular values, i.e. fully correlated parameters
     /// @todo Maybe figure out how to use Eigen's setThreshold better?
