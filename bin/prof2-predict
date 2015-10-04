@@ -20,47 +20,31 @@ opts, args = op.parse_args()
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
-
 if not opts.QUIET:
     print prof.logo
 
 import os, sys
 if not os.path.exists(opts.IFILE):
-    print "Error: specified interpolation file %s not found, exiting."%opts.IFILE
+    print "Error: specified interpolation file %s not found, exiting." % opts.IFILE
     sys.exit(1)
 
-## Read in meta data
-M = prof.read_meta(opts.IFILE)
-if not M["DataFormat"] == 'binned':
-    print "Error, DataFormat of tuning input is not binned, exiting"
-    import sys
-    sys.exit(1)
-
-## Read in ipol histos
-IHISTOS = prof.read_binnedipol(opts.IFILE)
-
+## Read in meta data and ipol histos
+META, IHISTOS = prof.read_ipolhistos(opts.IFILE)
 
 ## This is the Parameter point bit
-if len(args)==1:
+if len(args) == 1:
     try:
-        P=map(float, args[0].split(","))
+        PARAMS = [float(x) for x in args[0].split(",")]
     except:
-        pass
-    try:
-        import os
         if os.path.exists(args[0]):
             with open(args[0]) as f:
-                P=[float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
-    except:
-        pass
+                PARAMS = [float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
 else:
-    P=map(float, args)
-
-
+    PARAMS = [float(a) for a in args]
 
 ## Write out ipolhistos
-with open("%s_prediction.yoda"%opts.OUTPUT, "w") as f:
+with open(opts.OUTPUT + "_prediction.yoda", "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
-        f.write(IHISTOS[k].toYODA(P, k))
+        f.write(IHISTOS[k].toYODA(PARAMS, k))
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")

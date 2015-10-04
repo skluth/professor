@@ -175,7 +175,7 @@ with open(IFILE, "w") as f:
     #f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
     f.write("ProfVersion: %s\n" % prof.mk_versionstring())
     f.write("Date: %s\n" % prof.mk_timestamp())
-    f.write("DataFormat: binned\n") # This tells the reader how to treat the coefficients that follow
+    f.write("DataFormat: binned 1\n") # This tells the reader how to treat the coefficients that follow
     # Format and write out parameter names
     pstring = "ParamNames:"
     for p in PARAMNAMES:
@@ -196,8 +196,7 @@ with open(IFILE, "w") as f:
     f.write("NumInputs: %i\n" % len(PARAMSLIST))
     f.write("---\n")
 
-
-## Write out interpolation persistency info
+## Write out numerical data for all interpolations
 s = ""
 for hname in sorted(IHISTOS.keys()):
     ih = IHISTOS[hname]
@@ -210,14 +209,8 @@ for hname in sorted(IHISTOS.keys()):
             s += "  " + ib.ival.toString("val") + "\n"
             if ib.ierrs:
                 s += "  " + ib.ierrs.toString("err") + "\n"
+
 # Open file for write/append
 with open(IFILE, "a") as f:
     f.write(s)
 print "\nOutput written to %s" % IFILE
-
-
-# ## Store a record of bad runs?
-# TODO: do this is in debug mode only... and write out to a more considered filename / give user control (but let's avoid adding opts for everything)
-# with open("bad", "w") as f:
-#     for b in bad:
-#         f.write("%s\n"%b)
