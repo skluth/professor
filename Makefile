@@ -2,6 +2,10 @@ PREFIX := /usr/local
 
 CXXSTD := c++11
 
+ifndef CXX
+  CXX := g++
+endif
+
 #CPPFLAGS  :=
 
 ifndef CXXFLAGS
@@ -13,6 +17,13 @@ ifndef CXXFLAGS
   endif
 endif
 
+ifndef PYTHON
+  PYTHON := python
+endif
+
+ifndef CYTHON
+  CYTHON := cython
+endif
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
 
@@ -33,18 +44,18 @@ lib: lib/libProfessor2.so
 
 lib/libProfessor2.so: $(LIBOBJECTS)
 	@true
-	g++ -shared -Wl,-soname,libProfessor2.so -o $@ $(LIBOBJECTS)
+	$(CXX) -shared -Wl,-soname,libProfessor2.so -o $@ $(LIBOBJECTS)
 
 obj/%.o: src/%.cc $(LIBHEADERS)
 	mkdir -p obj lib
-	g++ -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -o $@
+	$(CXX) -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -o $@
 
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
-	python pyext/setup.py install --prefix=.
+	$(PYTHON) pyext/setup.py install --prefix=.
 
 pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES) lib
-	cython pyext/professor2/core.pyx --cplus
-	python pyext/setup.py build_ext -i --force
+	$(CYTHON) pyext/professor2/core.pyx --cplus
+	$(PYTHON) pyext/setup.py build_ext -i --force
 
 tests: cxxtests pytests
 	@true
@@ -53,11 +64,11 @@ cxxtests: $(TESTPROGS)
 	@true
 
 test/%: test/%.cc $(LIBHEADERS) lib
-	g++ -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) $< -Llib -lProfessor2 -o $@
+	$(CXX) -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) $< -Llib -lProfessor2 -o $@
 
 ifdef $(HAVE_ROOT)
 root: src/testRoot.cc $(LIBHEADERS) lib
-	g++ -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude `root-config --cflags --libs` -Llib -lProfessor2 -o test/test$@
+	$(CXX) -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude `root-config --cflags --libs` -Llib -lProfessor2 -o test/test$@
 endif
 
 pytests: pyext
