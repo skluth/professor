@@ -52,7 +52,7 @@ cdef class Ipol:
 
     @property
     def dim(self):
-        return self._ptr.order()
+        return self._ptr.dim()
 
     @property
     def order(self):
@@ -64,14 +64,31 @@ cdef class Ipol:
 
     def value(self, *params, vmin=None, vmax=None):
         """Calculate the value of this interpolation at the given params point,
-        forcing return within the range vmin..vmax"""
-        if len(params) == 1 and hasattr(params[0], "__iter__"):
+        forcing return within the range vmin..vmax.
+
+        params can be an expanded tuple of floats, an unexpanded iterable of
+        floats, or an ordered dict of paramname -> value.
+        """
+
+        import collections
+
+        ## Detect if the params have been passed as a single iterable and convert
+        if len(params) == 1 and isinstance(params[0], collections.Iterable):
             params = params[0]
+            ## Further, detect if the params have been passed as a (ordered!) dict-like and extract the (ordered) values
+            if isinstance(params, collections.Mapping):
+                params = params.values()
+
+        ## Ensure that the param values are floats
+        params = [float(p) for p in params]
+
+        ## Compute the interpolated value at 'params' and impose optional range limits
         v = self._ptr.value(params)
         if vmin is not None and v < vmin:
             return vmin
         if vmax is not None and v > vmax:
             return vmax
+
         return v
 
     ## Alias

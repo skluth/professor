@@ -7,21 +7,24 @@ from libcpp.string cimport string
 
 cdef extern from "Professor/ParamPoints.h" namespace "Professor":
     cdef cppclass ParamPoints:
-        ParamPoints(const vector[ vector[double] ]&)
+        ParamPoints(const vector[ vector[double] ]&) except +
 
 
 cdef extern from "Professor/Ipol.h" namespace "Professor":
     cdef cppclass Ipol:
-        # Ipol(const vector[ vector[double] ] p, const vector[double]&, int, const string&)
-        #Ipol(const ParamPoints& p, const vector[double]&, int, const string&)
-        Ipol(const ParamPoints& p, const vector[double]&, int, const string&, const double&)
-        Ipol(const string&)
-        double value(const vector[double]&)
-        int order()
-        # TODO: add dim() and numCoeffs()
-        double coeff(size_t)
-        const vector[double]& coeffs()
-        const ParamPoints& params()
-        string toString()
-        string toString(const string&)
-        string name()
+        Ipol(const ParamPoints& p, const vector[double]&, int, const string&, const double&) except +
+        Ipol(const string&) except +
+
+        string name() except +
+        int order() except +
+        int dim() except +
+
+        const vector[double]& coeffs() except +
+        double coeff(size_t) except +
+
+        const ParamPoints& params() except +
+
+        double value(const vector[double]&) except +
+
+        string toString() except +
+        string toString(const string&) except +

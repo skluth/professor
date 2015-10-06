@@ -1,5 +1,12 @@
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Add possibility to pass params as an dict-like as well as a list
+	or tuple of floats -- note that the dict-like must return
+	*ordered* values consistent with the Ipol training. Also ensure
+	the float type.
+
+	* Add conversion of C++ exceptions to Python exceptions.
+
 	* Add professor2.utils module, providing an opportunistic use of
 	OrderedDict for params so the params order required by Ipol is the
 	same as the order in which they are specified in the (first run's)
