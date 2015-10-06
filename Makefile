@@ -66,6 +66,9 @@ pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 ifdef $(HAVE_CYTHON)
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
+else
+pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
+	$(error Cython not available; can't build $@)
 endif
 
 pyext/professor2/core.so: pyext/professor2/core.cpp
