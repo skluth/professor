@@ -1,5 +1,7 @@
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Add 'make dist' target to Makefile, and tweak/reduce Cython necessity
+
 	* Allow calls to IpolBin and IpolHisto methods with params passed
 	as unpacked *args as well as a packed iterable.
 

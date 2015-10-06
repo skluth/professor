@@ -25,15 +25,24 @@ ifndef CYTHON
   CYTHON := cython
 endif
 
+
+###################
+
+# TODO: automatically pass this into the C++ and Python sources
+VERSION = "2.0.0"
+
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
 LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol)
+TESTSOURCES := $(wildcard test/*.cc test/testPython*)
 TESTPROGS  := test/testParamPoints test/testIpol
+BINPROGS := $(wildcard bin/*)
+PYTHONSOURCES := $(wildcard pyext/professor2/*.py)
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
-.PHONY := all lib pyext tests cxxtests pytests check icheck clean root
+.PHONY := all lib pyext tests cxxtests pytests check icheck clean root dist
 
 
 all: lib pyext tests
@@ -53,8 +62,10 @@ obj/%.o: src/%.cc $(LIBHEADERS)
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	$(PYTHON) pyext/setup.py install --prefix=.
 
-pyext/professor2/core.so: $(LIBHEADERS) $(CYTHONSOURCES) lib
+pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
+
+pyext/professor2/core.so: pyext/professor2/core.cpp
 	$(PYTHON) pyext/setup.py build_ext -i --force
 
 tests: cxxtests pytests
@@ -95,3 +106,14 @@ install: all
 	test -d lib   && mkdir -p $(PREFIX)/lib   && cp -r lib/* $(PREFIX)/lib/ || true
 	test -d lib64 && mkdir -p $(PREFIX)/lib64 && cp -r lib64/* $(PREFIX)/lib64/ || true
 	cp setup.sh $(PREFIX)
+
+dist: all
+	tar czf Professor-$(VERSION).tar.gz \
+      README Makefile \
+      $(LIBHEADERS) \
+      $(LIBSOURCES) \
+      $(BINPROGS) \
+      $(TESTSOURCES) \
+      $(PYTHONSOURCES) \
+      $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
+      $(wildcard contrib/*)
