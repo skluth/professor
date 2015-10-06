@@ -182,8 +182,8 @@ class ParamFrame(wx.Frame):
             ## Sliders
             #http://www.wxpython.org/docs/api/wx.lib.agw.floatspin-module.html
             from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
-            pmin = float(METADATA["MinParamValues"].split()[i])
-            pmax = float(METADATA["MaxParamValues"].split()[i])
+            pmin = float(METADATA["MinParamVals"].split()[i])
+            pmax = float(METADATA["MaxParamVals"].split()[i])
             slider = FloatSpin(self.panel, -3, style=0, value=pmin + 0.5*(pmax-pmin),
                                min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50)
             controlgrid.Add(slider, pos=(i,2))
