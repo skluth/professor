@@ -118,7 +118,7 @@ dist: all
        $(LIBSOURCES) \
        $(BINPROGS) \
        $(TESTSOURCES) \
-       $(PYTHONSOURCES) \
+       $(PYTHONSOURCES) pyext/setup.py \
        $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
        $(wildcard contrib/*) \
        $(DISTNAME)/
