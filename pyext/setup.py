@@ -9,33 +9,22 @@ incdir = os.path.abspath("include") #< assume makefile is called from base dir  
 os.environ.setdefault("CC", "g++")
 os.environ.setdefault("CXX", "g++")
 
-# TODO: simplify!! The ext function isn't actually needed
-
-lookupdirs = [libdir]
-
-def ext(name, depends=[], statics=[]):
-    return Extension(
-        "professor2.%s" % name,
-        ["pyext/professor2/%s.cpp" % name] + statics,
-        language="C++",
-        depends=depends,
-        include_dirs=[incdir, os.path.join(srcdir, "pyext", "professor2")],
-        extra_compile_args="-std=c++11 -Wno-unused-but-set-variable -Wno-sign-compare".split(),
-        library_dirs=lookupdirs,
-        runtime_library_dirs=lookupdirs[1:],
-        libraries=["Professor2"])
-
-header_files = glob("../include/*.h")
-
-extns = [ext("core", header_files)]
+ext = Extension("professor2.core",
+                ["pyext/professor2/core.cpp"],
+                language="C++",
+                depends=glob("../include/*.h"),
+                include_dirs=[incdir, os.path.join(srcdir, "pyext", "professor2")],
+                extra_compile_args="-std=c++11 -Wno-unused-but-set-variable -Wno-sign-compare".split(),
+                library_dirs=[libdir],
+                runtime_library_dirs=[],
+                libraries=["Professor2"])
 
 setup(name = "professor2",
-      version="2.0.0a",
-      ext_modules = extns,
+      version="2.0.0",
+      ext_modules = [ext],
       packages = ["professor2"],
       package_dir = {"": "pyext"},
       description="Professor version 2",
       author="Professor collaboration",
       author_email="professor@projects.hepforge.org",
-      url="http://professor.hepforge.org"
-     )
+      url="http://professor.hepforge.org")

@@ -8,7 +8,7 @@ from libcpp.string cimport string
 cdef extern from "Professor/ParamPoints.h" namespace "Professor":
     cdef cppclass ParamPoints:
         ParamPoints(const vector[ vector[double] ]&)
-        # TODO: 'dress' this Python wrapper with more functionality than the basic C++ object
+
 
 cdef extern from "Professor/Ipol.h" namespace "Professor":
     cdef cppclass Ipol:
@@ -25,9 +25,3 @@ cdef extern from "Professor/Ipol.h" namespace "Professor":
         string toString()
         string toString(const string&)
         string name()
-
-cdef extern from "Professor/ProfMaster.h" namespace "Professor":
-    cdef cppclass ProfMaster:
-        ProfMaster(vector[vector[double]])
-        void addIpol(string, vector[double], int)
-        double value(string, vector[double])

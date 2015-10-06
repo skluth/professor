@@ -1,3 +1,7 @@
+2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Remove ProfMaster.
+
 2015-10-04  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add protection of svd.setThreshold call to ensure it is

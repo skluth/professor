@@ -68,28 +68,3 @@ cdef class Ipol:
 
     def name(self):
         return self._ptr.name()
-
-
-
-cdef class ProfMaster:
-    """Helper object for managing a collection of Ipols.
-
-    Construct from a list of
-    parameter point anchors, then make named interpolations (e.g. one per bin) by
-    adding lists of values corresponding to those points.
-    """
-    cdef c.ProfMaster* _ptr
-
-    # TODO: overloading
-    def __cinit__(self, parampts):
-        self._ptr = new c.ProfMaster(parampts)
-
-    def __del__(self):
-        del self._ptr
-
-    # TODO: overloading
-    def addIpol(self, name, vals, order):
-        self._ptr.addIpol(name, vals, order)
-
-    def value(self, name, params):
-        return self._ptr.value(name, params)

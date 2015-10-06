@@ -29,8 +29,8 @@ HAVE_ROOT := $(shell which root-config 2> /dev/null)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
-LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol ProfMaster)
-TESTPROGS  := test/testParamPoints test/testIpol test/testMaster
+LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol)
+TESTPROGS  := test/testParamPoints test/testIpol
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
 .PHONY := all lib pyext tests cxxtests pytests check icheck clean root
@@ -78,7 +78,6 @@ check: tests
 	@echo
 	@echo "testParamPoints" && test/testParamPoints && echo "\n\n"
 	@echo "testIpol" && test/testIpol && echo "\n\n"
-	@echo "testMaster" && test/testMaster
 
 icheck: tests
 	test/testPython
