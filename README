@@ -28,7 +28,7 @@ Absolute (for pure C++ use, restricted functionality):
 Required for standard scripts:
 
   Python interpreter
-  Cython compiler
+  Cython compiler (only needed for not-from-tarball builds)
   YODA library
   numpy library
 
@@ -42,10 +42,15 @@ Installation
 ------------
 
 Professor 2 is built and installed using a minimal makefile setup. You must have
-the Eigen3 linear algebra library, a C++ compiler, and the Python interpreter
-and Cython tool available on your system. If these are provided by your OS
-(e.g. the Ubuntu libeigen3-dev, g++, python and cython packages) then the build command is
-just:
+the Eigen3 linear algebra library, a C++ compiler, and the Python interpreter.
+
+If you are not building from a tarball, you will need the Cython tool on your
+system to generate a C++ source file that connects the libProfessor2 library to
+Python; if building from a tarball, this intermediate file should already exist
+and you don't need Cython.
+
+If these tools are provided by your OS (e.g. the Ubuntu libeigen3-dev, g++,
+python and cython packages) then the build command is just:
 
   $ make
 

@@ -32,6 +32,7 @@ endif
 VERSION = "2.0.0"
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
+HAVE_CYTHON := $(shell which $(CYTHON) 2> /dev/null)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
@@ -62,8 +63,10 @@ obj/%.o: src/%.cc $(LIBHEADERS)
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	$(PYTHON) pyext/setup.py install --prefix=.
 
+ifdef $(HAVE_CYTHON)
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
+endif
 
 pyext/professor2/core.so: pyext/professor2/core.cpp
 	$(PYTHON) pyext/setup.py build_ext -i --force
