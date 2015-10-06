@@ -1,3 +1,5 @@
+#cython: embedsignature=True
+
 cimport professor as c
 cimport cython.operator.dereference as deref
 
@@ -44,10 +46,25 @@ cdef class Ipol:
     def __del__(self):
         del self._ptr
 
+    @property
     def coeffs(self):
         return self._ptr.coeffs()
 
+    @property
+    def dim(self):
+        return self._ptr.order()
+
+    @property
+    def order(self):
+        return self._ptr.order()
+
+    @property
+    def name(self):
+        return self._ptr.name()
+
     def value(self, *params, vmin=None, vmax=None):
+        """Calculate the value of this interpolation at the given params point,
+        forcing return within the range vmin..vmax"""
         if len(params) == 1 and hasattr(params[0], "__iter__"):
             params = params[0]
         v = self._ptr.value(params)
@@ -60,11 +77,9 @@ cdef class Ipol:
     ## Alias
     val = value
 
-    def order(self):
-        return self._ptr.order()
-
     def toString(self, name=""):
+        "Produce a persistent string representing this Ipol object"
         return self._ptr.toString(name)
 
-    def name(self):
-        return self._ptr.name()
+    def __repr__(self):
+        return self.toString(self.name)
