@@ -107,7 +107,7 @@ install: all
 	mkdir -p $(PREFIX)/include && cp -r include/Professor $(PREFIX)/include/
 	test -d lib   && mkdir -p $(PREFIX)/lib   && cp -r lib/* $(PREFIX)/lib/ || true
 	test -d lib64 && mkdir -p $(PREFIX)/lib64 && cp -r lib64/* $(PREFIX)/lib64/ || true
-	cp setup.sh $(PREFIX)
+#	cp setup.sh $(PREFIX)
 
 dist: all
 	rm -rf $(DISTNAME)
