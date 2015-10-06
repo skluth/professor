@@ -1,5 +1,10 @@
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Add professor2.utils module, providing an opportunistic use of
+	OrderedDict for params so the params order required by Ipol is the
+	same as the order in which they are specified in the (first run's)
+	params.dat file.
+
 	* Change Python-mapped Ipol methods with no args to be properties.
 
 	* Add nice __repr__ methods for Histo and Bin objects.

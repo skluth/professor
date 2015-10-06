@@ -25,24 +25,23 @@ def mk_ipolinputs(params):
     """
     Make sorted run and parameter lists suitable for passing to prof.Ipol
 
-    params is a dict of run_names -> param_vals, as returned from load_rundata
+    params is a dict (actually, prefer OrderedDict) of run_names -> param_vals,
+    as returned from load_rundata
     """
     runs = sorted(params.keys())
     if not runs:
         return runs, [], [[]]
-    paramnames = sorted(params[runs[0]].keys())
-    paramslist = [[params[pn] for pn in paramnames] for (run, params) in sorted(params.iteritems())]
+    paramnames = params[runs[0]].keys()
+    paramslist = [[params[run][pn] for pn in paramnames] for run in runs]
     return runs, paramnames, paramslist
 
 
 def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
     """\
-    Make a prof.Histo filled with prof.IpolBins, from a dict of prof.DataBin
-    histos and the corresponding runs and params lists, at the given polynomial order.
+    Make a prof.IpolHisto from a dict of prof.DataHistos and the corresponding
+    runs and params lists, at the given polynomial order.
 
     If errs is non-null, the data histo errors will also be interpolated.
-
-    TODO: add relative versions of the error interpolation
     """
     nbins = len(histos.itervalues().next().bins)
     ibins = []
