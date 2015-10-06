@@ -22,6 +22,13 @@ class Histo(object):
         for i, b in enumerate(self._bins):
             b.n = i
 
+
+class DataHisto(Histo):
+    "Specialisation of Histo as a container of DataBins"
+
+    def __init__(self, dbins=None, path=None):
+        Histo.__init__(self, dbins, path)
+
     # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
     def toYODA(self, ppoint=None, manpath=None):
         if self.path is None and not manpath is None:
@@ -45,6 +52,17 @@ class Histo(object):
         s += "# END YODA_SCATTER2D\n"
         return s
 
+
+class IpolHisto(Histo):
+    "Specialisation of Histo as a container of IpolBins"
+
+    def __init__(self, ibins=None, path=None):
+        Histo.__init__(self, ibins, path)
+
+    def toDataHisto(self, params):
+        dbins = [ib.toDataBin(params) for ib in self.bins]
+        dhist = DataHisto(dbins, self.path)
+        return dhist
 
 
 class Bin(object):
@@ -130,21 +148,27 @@ class IpolBin(Bin):
     def val(self, params, vmin=None, vmax=None):
         return self.ival.value(params, vmin=vmin, vmax=vmax)
 
-    def err(self, params):
+    def err(self, params, emin=0, emax=None):
         if self.ierrs is None:
             return 0.0
         elif hasattr(self.ierrs, "__len__"):
             assert len(self.ierrs) == 2
-            return (self.ierrs[0].value(params) + self.ierrs[1].value(params))/2.0
+            return (self.ierrs[0].value(params, emin, emax) + self.ierrs[1].value(params, emin, emax))/2.0
         else:
-            return self.ierrs.value(params)
+            return self.ierrs.value(params, emin, emax)
 
-    def errs(self, params):
+    def errs(self, params, emin=0, emax=None):
         if self.ierrs is None:
             return (0.0, 0.0)
         elif hasattr(self.ierrs, "__len__"):
             assert len(self.ierrs) == 2
-            return (self.ierrs[0].value(params), self.ierrs[1].value(params))
+            return (self.ierrs[0].value(params, emin, emax), self.ierrs[1].value(params, emin, emax))
         else:
-            e = self.ierrs.value(params)
+            e = self.ierrs.value(params, emin, emax)
             return (e, e)
+
+    def toDataBin(self, params, vmin=None, vmax=None, emin=None, emax=None):
+        db = DataBin(self.xmin, self.xmax,
+                     val=self.val(params, vmin, vmax),
+                     errs=self.errs(params, emin, emax))
+        return db

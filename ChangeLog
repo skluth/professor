@@ -1,5 +1,8 @@
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Specialise Histo as IpolHisto and DataHisto, and provide
+	toData{Histo,Bin} on IpolHisto and IpolBin respectively.
+
 	* Remove ProfMaster.
 
 2015-10-04  Andy Buckley  <andy.buckley@cern.ch>

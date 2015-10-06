@@ -59,7 +59,7 @@ def read_binnedipols(ifile):
                 fullpath, sxmin, sxmax = sline.split()
                 hpath, nbin = fullpath.split("#")
                 currentib = IpolBin(float(sxmin), float(sxmax))
-                IHISTOS.setdefault(hpath, Histo()).bins.append(currentib)
+                IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
             elif sline.startswith("val"):
                 currentib.ival = Ipol(sline)
                 #print currentib.ival.coeffs()
@@ -71,7 +71,7 @@ def read_binnedipols(ifile):
 
 
 def read_ipolhistos(ifile):
-    "Return both the metadata object and collection of ipol Histos from a binned ipol file"
+    "Return both the metadata object and collection of IpolHistos from a binned ipol file"
     imeta = read_ipolmeta(ifile)
     if not imeta["DataFormat"].startswith('binned'):
         raise IpolIOError("Error, DataFormat of ipol file %s is not binned" % ifile)
