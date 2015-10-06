@@ -63,12 +63,12 @@ obj/%.o: src/%.cc $(LIBHEADERS)
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	$(PYTHON) pyext/setup.py install --prefix=.
 
-ifdef $(HAVE_CYTHON)
+ifdef HAVE_CYTHON
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
 else
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
-	$(error Cython not available; can't build $@)
+	$(error "Cython not available; can't build $@")
 endif
 
 pyext/professor2/core.so: pyext/professor2/core.cpp
@@ -83,7 +83,7 @@ cxxtests: $(TESTPROGS)
 test/%: test/%.cc $(LIBHEADERS) lib
 	$(CXX) -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) $< -Llib -lProfessor2 -o $@
 
-ifdef $(HAVE_ROOT)
+ifdef HAVE_ROOT
 root: src/testRoot.cc $(LIBHEADERS) lib
 	$(CXX) -std=$(CXXSTD) $(CPPFLAGS) $(CXXFLAGS) $< -Iinclude `root-config --cflags --libs` -Llib -lProfessor2 -o test/test$@
 endif
