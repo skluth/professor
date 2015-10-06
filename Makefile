@@ -29,7 +29,8 @@ endif
 ###################
 
 # TODO: automatically pass this into the C++ and Python sources
-VERSION = "2.0.0"
+VERSION := "2.0.0"
+DISTNAME := Professor-$(VERSION)
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
 HAVE_CYTHON := $(shell which $(CYTHON) 2> /dev/null)
@@ -101,11 +102,6 @@ icheck: tests
 	test/testPython1D
 	test/testPython2D
 
-clean:
-	rm -rf obj/*.o lib/*
-	rm -f pyext/professor2/core.cpp pyext/professor2/core.so
-	rm -f $(TESTPROGS)
-
 install: all
 	mkdir -p $(PREFIX)/bin && cp bin/* $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/include && cp -r include/Professor $(PREFIX)/include/
@@ -114,12 +110,20 @@ install: all
 	cp setup.sh $(PREFIX)
 
 dist: all
-	tar czf Professor-$(VERSION).tar.gz \
-      README Makefile \
-      $(LIBHEADERS) \
-      $(LIBSOURCES) \
-      $(BINPROGS) \
-      $(TESTSOURCES) \
-      $(PYTHONSOURCES) \
-      $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
-      $(wildcard contrib/*)
+	mkdir $(DISTNAME)
+	cp README Makefile \
+       $(LIBHEADERS) \
+       $(LIBSOURCES) \
+       $(BINPROGS) \
+       $(TESTSOURCES) \
+       $(PYTHONSOURCES) \
+       $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
+       $(wildcard contrib/*) \
+       $(DISTNAME)/
+	tar czf $(DISTNAME).tar.gz $(DISTNAME)
+
+clean:
+	rm -rf obj/*.o lib/*
+	rm -f pyext/professor2/core.cpp pyext/professor2/core.so
+	rm -f $(TESTPROGS)
+	rm -rf $(DISTNAME) $(DISTNAME).tar.gz
