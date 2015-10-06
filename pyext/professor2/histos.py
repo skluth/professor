@@ -22,6 +22,12 @@ class Histo(object):
         for i, b in enumerate(self._bins):
             b.n = i
 
+    def __len__(self):
+        return self.nbins
+
+    def __repr__(self):
+        return "<%s with %d bins>" % (self.__class__.__name__, self.nbins)
+
 
 class DataHisto(Histo):
     "Specialisation of Histo as a container of DataBins"
@@ -129,13 +135,16 @@ class DataBin(Bin):
         else:
             self._errs = [e,e]
 
+    def __repr__(self):
+        return "<%s x=[%.3g..%.3g], y=%.3g, ey=[%.3g,%.3g]>" % \
+            (self.__class__.__name__, self.xmin, self.xmax, self.val, self.errs[0], self.errs[1])
+
 
 class IpolBin(Bin):
     """
     A bin containing a value interpolation and its error(s)
 
     TODO:
-     * Implement optional limits on the range of return values... for val and errs?
      * Provide ierr and ierrs getter/setter pairs cf. err/errs on DataBin? They can't be averaged, so not sure it makes sense...
      * Allow ipol'd error handling, with wrapped relative error parameterisation as an option?
     """
@@ -172,3 +181,16 @@ class IpolBin(Bin):
                      val=self.val(params, vmin, vmax),
                      errs=self.errs(params, emin, emax))
         return db
+
+    def __repr__(self):
+        s = "<%s x=[%.3g..%.3g]" % (self.__class__.__name__, self.xmin, self.xmax)
+        try:
+            s += ", %d params, ival order %d" % (self.ival.dim, self.ival.order)
+        except:
+            pass
+        try:
+            s += ", ierr order %d" % self.ierrs[0].order
+        except:
+            pass
+        s += ">"
+        return s

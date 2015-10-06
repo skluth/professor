@@ -1,5 +1,9 @@
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Change Python-mapped Ipol methods with no args to be properties.
+
+	* Add nice __repr__ methods for Histo and Bin objects.
+
 	* Specialise Histo as IpolHisto and DataHisto, and provide
 	toData{Histo,Bin} on IpolHisto and IpolBin respectively.
 
