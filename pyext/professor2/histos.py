@@ -65,8 +65,9 @@ class IpolHisto(Histo):
     def __init__(self, ibins=None, path=None):
         Histo.__init__(self, ibins, path)
 
-    def toDataHisto(self, params):
-        dbins = [ib.toDataBin(params) for ib in self.bins]
+    def toDataHisto(self, *params):
+        "Convert this IpolBin to a DataBin with values and errors computed at params"
+        dbins = [ib.toDataBin(*params) for ib in self.bins]
         dhist = DataHisto(dbins, self.path)
         return dhist
 
@@ -154,32 +155,48 @@ class IpolBin(Bin):
         self.ival = ival
         self.ierrs = ierrs
 
-    def val(self, params, vmin=None, vmax=None):
-        return self.ival.value(params, vmin=vmin, vmax=vmax)
+    #def val(self, *params, vmin=None, vmax=None): #< needs Python3
+    #    return self.ival.value(*params, vmin=vmin, vmax=vmax)
+    def val(self, *params, **vminmax):
+        vmin = vminmax.get("vmin", None)
+        vmax = vminmax.get("vmax", None)
+        return self.ival.value(*params, vmin=vmin, vmax=vmax)
 
-    def err(self, params, emin=0, emax=None):
+    #def err(self, *params, emin=0, emax=None): #< needs Python3
+    def err(self, *params, **eminmax):
+        emin = eminmax.get("emin", 0)
+        emax = eminmax.get("emax", None)
         if self.ierrs is None:
             return 0.0
         elif hasattr(self.ierrs, "__len__"):
             assert len(self.ierrs) == 2
-            return (self.ierrs[0].value(params, emin, emax) + self.ierrs[1].value(params, emin, emax))/2.0
+            return (self.ierrs[0].value(*params, vmin=emin, vmax=emax) + self.ierrs[1].value(*params, vmin=emin, vmax=emax))/2.0
         else:
-            return self.ierrs.value(params, emin, emax)
+            return self.ierrs.value(*params, vmin=emin, vmax=emax)
 
-    def errs(self, params, emin=0, emax=None):
+    #def errs(self, params, emin=0, emax=None): #< needs Python3
+    def errs(self, *params, **eminmax):
+        emin = eminmax.get("emin", 0)
+        emax = eminmax.get("emax", None)
         if self.ierrs is None:
             return (0.0, 0.0)
         elif hasattr(self.ierrs, "__len__"):
             assert len(self.ierrs) == 2
-            return (self.ierrs[0].value(params, emin, emax), self.ierrs[1].value(params, emin, emax))
+            return (self.ierrs[0].value(*params, vmin=emin, vmax=emax), self.ierrs[1].value(*params, vmin=emin, vmax=emax))
         else:
-            e = self.ierrs.value(params, emin, emax)
+            e = self.ierrs.value(*params, vmin=emin, vmax=emax)
             return (e, e)
 
-    def toDataBin(self, params, vmin=None, vmax=None, emin=None, emax=None):
+    #def toDataBin(self, *params, vmin=None, vmax=None, emin=0, emax=None): #< needs Python3
+    def toDataBin(self, *params, **veminmax): #< needs Python3
+        "Convert this IpolBin to a DataBin with values and errors computed at params, with optional range limits"
+        vmin = veminmax.get("vmin", None)
+        vmax = veminmax.get("vmax", None)
+        emin = veminmax.get("vmin", 0)
+        emax = veminmax.get("vmax", None)
         db = DataBin(self.xmin, self.xmax,
-                     val=self.val(params, vmin, vmax),
-                     errs=self.errs(params, emin, emax))
+                     val=self.val(*params, vmin=vmin, vmax=vmax),
+                     errs=self.errs(*params, vmin=emin, vmax=emax))
         return db
 
     def __repr__(self):

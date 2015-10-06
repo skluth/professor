@@ -1,5 +1,8 @@
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Allow calls to IpolBin and IpolHisto methods with params passed
+	as unpacked *args as well as a packed iterable.
+
 	* Add possibility to pass params as an dict-like as well as a list
 	or tuple of floats -- note that the dict-like must return
 	*ordered* values consistent with the Ipol training. Also ensure
