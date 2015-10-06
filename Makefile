@@ -54,11 +54,11 @@ lib: lib/libProfessor2.so
 	@true
 
 lib/libProfessor2.so: $(LIBOBJECTS)
-	@true
+	mkdir -p lib
 	$(CXX) -shared -Wl,-soname,libProfessor2.so -o $@ $(LIBOBJECTS)
 
 obj/%.o: src/%.cc $(LIBHEADERS)
-	mkdir -p obj lib
+	mkdir -p obj
 	$(CXX) -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -o $@
 
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
@@ -110,8 +110,10 @@ install: all
 	cp setup.sh $(PREFIX)
 
 dist: all
-	mkdir $(DISTNAME)
-	cp README Makefile \
+	rm -rf $(DISTNAME)
+	mkdir -p $(DISTNAME)
+	cp --parents \
+       README Makefile \
        $(LIBHEADERS) \
        $(LIBSOURCES) \
        $(BINPROGS) \
