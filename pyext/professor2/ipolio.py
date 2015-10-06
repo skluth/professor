@@ -14,7 +14,7 @@ def read_ipolmeta(ifile):
         for l in f:
             ## Strip out comments
             if "#" in l:
-                l = l[l.find("#")+1:]
+                l = l[:l.find("#")]
             ## Ignore blank / pure whitespace lines
             l = l.strip()
             if not l:
