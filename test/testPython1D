@@ -16,6 +16,6 @@ Z = [[i.value(x) for x in X] for i in ipols]
 import pylab
 pylab.plot(A, Y, "ro", label="Anchors")
 for num, z in enumerate(Z):
-    pylab.plot(X, z, "-", label="Ipol order %i" % (num+1))
+    pylab.plot(X, z, "-", label="Ipol order %i" % (num))
 pylab.legend(loc=2)
 pylab.show()
