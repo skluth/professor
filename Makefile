@@ -29,7 +29,7 @@ endif
 ###################
 
 # TODO: automatically pass this into the C++ and Python sources
-VERSION := "2.0.0"
+VERSION := "2.1.0a"
 DISTNAME := Professor-$(VERSION)
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
@@ -37,7 +37,7 @@ HAVE_CYTHON := $(shell which $(CYTHON) 2> /dev/null)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
-LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol)
+LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Counter Ipol)
 TESTSOURCES := $(wildcard test/*.cc test/testPython*)
 TESTPROGS  := test/testParamPoints test/testIpol
 BINPROGS := $(wildcard bin/*)

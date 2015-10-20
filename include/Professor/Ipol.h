@@ -29,20 +29,6 @@ namespace Professor {
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
   std::vector<double> mkLongVector(const std::vector<double>& p, int order);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied --- constant values
-  std::vector<double> mkLongVector0D(const std::vector<double>& p);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 1st order
-  std::vector<double> mkLongVector1D(const std::vector<double>& p);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 2nd order
-  std::vector<double> mkLongVector2D(const std::vector<double>& p);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 3rd order
-  std::vector<double> mkLongVector3D(const std::vector<double>& p);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 4th order
-  std::vector<double> mkLongVector4D(const std::vector<double>& p);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 5th order
-  std::vector<double> mkLongVector5D(const std::vector<double>& p);
-  /// Make the vector of polynomial terms to which the coeffs are to be applied, at 6th order
-  std::vector<double> mkLongVector6D(const std::vector<double>& p);
 
   //@}
 
@@ -53,7 +39,7 @@ namespace Professor {
   public:
 
     /// Constructor for calculation of coefficients
-    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="", double threshold=1.1e-10) {
+    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="", double threshold=1e-15) {
       _dim = pts.dim();
       _order = order;
       _name = name;
