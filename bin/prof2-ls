@@ -1,0 +1,29 @@
+#! /usr/bin/env python
+
+"""\
+%prog ipol.dat
+
+Print object/histogram names present in ipolfile
+"""
+
+import optparse
+op = optparse.OptionParser(usage=__doc__)
+opts, args = op.parse_args()
+
+## Read persisted interpolations to re-create the ipol Histos
+import os, sys
+if not os.path.exists(args[0]):
+    print "Error: specified interpolation file %s not found, exiting." % opts.IFILE
+    sys.exit(1)
+
+import professor2 as prof
+
+try:
+    ## Read in meta data and ipol histos
+    META, IHISTOS = prof.read_ipolhistos(args[0])
+except:
+    IHISTOS = prof.read_simpleipols(args[0])
+
+for i in sorted(IHISTOS.keys()):
+    print i
+
