@@ -1,3 +1,8 @@
+2015-11-10  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add prof2-lsipol as a handy way to make a tuning weights file
+	and for general convenience.
+
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add 'make dist' target to Makefile, and tweak/reduce Cython necessity
