@@ -44,6 +44,8 @@ namespace Professor {
       _order = order;
       _name = name;
       _coeffs = calcCoeffs(pts, ptvals, _order, threshold);
+      _minPV = pts.ptmins();
+      _maxPV = pts.ptmaxs();
     };
 
 
@@ -86,7 +88,7 @@ namespace Professor {
 
     int _dim, _order;
     std::string _name;
-    std::vector<double> _coeffs;
+    std::vector<double> _coeffs, _minPV, _maxPV;
 
   };
 

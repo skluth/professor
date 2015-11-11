@@ -54,10 +54,25 @@ namespace Professor {
     MatrixXd DP = MatrixXd(pts.numPoints(), ncoeff);
     VectorXd MC = VectorXd(pts.numPoints());
 
+    // The parameter scaling business
+    std::vector<std::vector<double> > origpoints = pts.points();
+    std::vector<std::vector<double> > scaledpoints;
+    std::vector<double> minPV = pts.ptmins();
+    std::vector<double> maxPV = pts.ptmaxs();
+
+    for (int p = 0; p < origpoints.size(); ++p) {
+      std::vector<double> temp;
+      for (int i = 0; i < pts.dim(); ++i) {
+        temp.push_back(scale(origpoints[p][i], minPV[i], maxPV[i]));
+      }
+      scaledpoints.push_back(temp);
+    }
+
+
     // Populate the matrix to be inverted
     vector<double> tempLV;
     for (int a = 0; a < pts.numPoints(); ++a) {
-      tempLV = mkLongVector(pts.point(a), order);
+      tempLV = mkLongVector(scaledpoints[a], order);
       for (size_t i = 0; i < tempLV.size(); ++i) {
         DP(a, i) = tempLV[i];
       }
@@ -145,6 +160,7 @@ namespace Professor {
   }
 
 
+  /// TODO: How do we want to read in the MinMaxValues here?
   void Ipol::fromString(const string& s) {
     // Extract a name if given at the start of the string
     _name = (s.find(":") != std::string::npos) ? s.substr(0, s.find(":")) : "";
@@ -168,7 +184,14 @@ namespace Professor {
          << dim() << " params required, " << params.size() << " supplied)";
       throw IpolError(ss.str());
     }
-    const vector<double> lv = mkLongVector(params, order());
+    
+    // Param scaling
+    vector<double> scaledpoint;
+    for (int i = 0; i < dim(); ++i) {
+      scaledpoint.push_back(scale(params[i], _minPV[i], _maxPV[i]));
+    }
+    // Dot product for value
+    const vector<double> lv = mkLongVector(scaledpoint, order());
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 0; i < lv.size(); ++i) {
