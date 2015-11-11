@@ -87,6 +87,7 @@ for ihn in IHISTOS.keys():
 ibins, dbins = [], []
 for a in available:
     # TODO: print out the available observables
+    #print a, len(IHISTOS[a[0]].bins) == len(HISTOS[a[1]].bins)
     ibins.extend(IHISTOS[a[0]].bins)
     dbins.extend( HISTOS[a[1]].bins)
 
@@ -121,7 +122,7 @@ def simpleGOF(params):
 
 
 ## Take parameter names directly from ifile
-mpnames = [x for x in metadata["ParamNames"].split()]
+mpnames = [x.replace("^","").replace("lambda", "llambda") for x in metadata["ParamNames"].split()]
 ## Fallback solution if empty
 if not mpnames:
     mpnames = ["MP%03i" % (i) for i in xrange(int(metadata["Dimension"]))]
@@ -219,7 +220,7 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
 result = [minuit.values[name] for name in mpnames]
 with open("%s_ipolhistos.yoda" % opts.OUTPUT, "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
-        f.write(IHISTOS[k].toYODA(result, k))
+        f.write(IHISTOS[k].toDataHisto(result).toYODA())
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
 
