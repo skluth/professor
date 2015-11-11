@@ -28,3 +28,6 @@ cdef extern from "Professor/Ipol.h" namespace "Professor":
 
         string toString() except +
         string toString(const string&) except +
+
+        void setMinPV(const vector[double]&) except +
+        void setMaxPV(const vector[double]&) except +

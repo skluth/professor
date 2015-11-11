@@ -24,8 +24,14 @@ cdef class Ipol:
     cdef c.Ipol* _ptr
 
     def __cinit__(self, *args):
-        if len(args) == 1 and type(args[0]) is str:
+        if len(args) == 3 and type(args[0]) is str and type(args[1]) is str and type(args[2]) is str:
             self._ptr = new c.Ipol(args[0])
+            self._ptr.setMinPV([float(x) for x in args[1].split()])
+            self._ptr.setMaxPV([float(x) for x in args[2].split()])
+        elif len(args) == 1 and type(args[0]) is str: # Backward compatibility --- no scaling
+            self._ptr = new c.Ipol(args[0])
+            self._ptr.setMinPV([0 for x in xrange(self._ptr.dim())])
+            self._ptr.setMaxPV([1 for x in xrange(self._ptr.dim())])
         else:
             pp = ParamPoints(args[0])
             vals = list(args[1])

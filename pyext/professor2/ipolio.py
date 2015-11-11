@@ -38,12 +38,19 @@ def read_simpleipols(ifile):
     IOBJECTS = {}
     with open(ifile, "r") as f:
         name = ""
+        minstring =""
+        maxstring =""
         for line in f:
             sline = line.strip()
             if sline.startswith("/"):
                 name = sline.split()[0]
             elif sline.startswith("val"):
-                IOBJECTS[name]= Ipol(sline)
+                IOBJECTS[name]= Ipol(sline, minstring, maxstring)
+            elif sline.startswith("MinParamVals:"):
+                minstring = sline.split(":")[1].strip()
+            elif sline.startswith("MaxParamVals:"):
+                maxstring = sline.split(":")[1].strip()
+
     return IOBJECTS
 
 
@@ -53,6 +60,8 @@ def read_binnedipols(ifile):
     """
     IHISTOS = {}
     with open(ifile, "r") as f:
+        minstring =""
+        maxstring =""
         for line in f:
             sline = line.strip()
             if sline.startswith("/"):
@@ -61,11 +70,15 @@ def read_binnedipols(ifile):
                 currentib = IpolBin(float(sxmin), float(sxmax))
                 IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
             elif sline.startswith("val"):
-                currentib.ival = Ipol(sline)
+                currentib.ival = Ipol(sline, minstring, maxstring)
                 #print currentib.ival.coeffs()
             elif sline.startswith("err"):
-                currentib.ierrs = Ipol(sline)
+                currentib.ierrs = Ipol(sline, minstring, maxstring)
                 #print currentib.ierrs.coeffs()
+            elif sline.startswith("MinParamVals:"):
+                minstring = sline.split(":")[1].strip()
+            elif sline.startswith("MaxParamVals:"):
+                maxstring = sline.split(":")[1].strip()
             # TODO: read back asymm errs as two ipols
     return IHISTOS
 

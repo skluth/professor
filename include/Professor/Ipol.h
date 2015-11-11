@@ -81,6 +81,9 @@ namespace Professor {
     /// Get the name of the parametrised object
     std::string name() const {return _name; }
 
+    void setMinPV(std::vector<double> c) {_minPV=c;}
+    void setMaxPV(std::vector<double> c) {_maxPV=c;}
+
     //@}
 
 
