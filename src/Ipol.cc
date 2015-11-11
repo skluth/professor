@@ -13,6 +13,12 @@ namespace Professor {
 
 
   // NB. Not a member function
+  /// Scaling function to map x from [a,b] into [0,1] 
+  double scale(double x, double a, double b) {
+    return (x-a)/(b-a);
+  }
+
+  // NB. Not a member function
   int numCoeffs(int dim, int order) {
     int ntok = 1;
     int r = min(order, dim);
