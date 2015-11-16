@@ -1,3 +1,11 @@
+2015-11-16  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add CPPFLAGS steering in Makefile and general code/API tidying.
+
+2015-11-11  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Add any-order long vector calculation, and automatic unit range mapping to Ipol.
+
 2015-11-10  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add prof2-lsipol as a handy way to make a tuning weights file

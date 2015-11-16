@@ -38,18 +38,34 @@ namespace Professor {
   class Ipol {
   public:
 
-    /// Constructor for calculation of coefficients
-    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order, const std::string& name="", double threshold=1e-15) {
+    /// @brief Constructor for calculation of coefficients
+    ///
+    /// The @a pts list of N-dimensional parameter points must correspond to the @a ptvals
+    /// list of values at those points, to be interpolated at the given polynomial @a order.
+    /// A name may optionally be given.
+    ///
+    /// @note Expert settings: The stability of the SVD operation is controlled
+    /// by the @a svdthreshold parameter, which should not normally be
+    /// touched. The stability is normally ensured by internally scaling
+    /// parameter points into unit ranges within the sampled hypercube defined
+    /// by @a pts; changing @doscaling to false will disable this scaling, which
+    /// simplifies Ipol I/O (no PMin/Max metadata is needed) but risks SVD
+    /// instability.
+    ///
+    Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order,
+         const std::string& name="", double svdthreshold=1e-15, bool doscaling=true) {
       _dim = pts.dim();
       _order = order;
       _name = name;
-      _coeffs = calcCoeffs(pts, ptvals, _order, threshold);
-      _minPV = pts.ptmins();
-      _maxPV = pts.ptmaxs();
+      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold);
+      if (doscaling) {
+        _minPV = pts.ptmins();
+        _maxPV = pts.ptmaxs();
+      }
     };
 
-
     /// Constructor to read ipol from file (one string for each object)
+    /// @todo Also allow optional passing of pmins, pmaxs vectors for the case where the string includes scaling?
     Ipol(const std::string& s) {
       fromString(s);
     };
@@ -59,6 +75,7 @@ namespace Professor {
     std::string toString(const std::string& name="") const;
 
     /// Read and set coefficients (name), order from string
+    /// @todo Also allow optional passing of pmins, pmaxs vectors for the case where the string includes scaling?
     void fromString(const std::string& s);
 
 
@@ -79,10 +96,15 @@ namespace Professor {
     int order() const { return _order; }
 
     /// Get the name of the parametrised object
-    std::string name() const {return _name; }
+    std::string name() const { return _name; }
 
-    void setMinPV(std::vector<double> c) {_minPV=c;}
-    void setMaxPV(std::vector<double> c) {_maxPV=c;}
+
+    void setParamLimits(const std::vector<double>& minpvs, const std::vector<double>& maxpvs) {
+      setMinParamVals(minpvs);
+      setMaxParamVals(maxpvs);
+    }
+    void setMinParamVals(const std::vector<double>& minpvs) { _minPV = minpvs; }
+    void setMaxParamVals(const std::vector<double>& maxpvs) { _maxPV = maxpvs; }
 
     //@}
 

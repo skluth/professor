@@ -6,7 +6,9 @@ ifndef CXX
   CXX := g++
 endif
 
-#CPPFLAGS  :=
+ifndef CPPFLAGS
+  CPPFLAGS := -I/usr/include/eigen3
+endif
 
 ifndef CXXFLAGS
   CXXFLAGS := -O3

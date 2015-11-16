@@ -26,12 +26,12 @@ cdef class Ipol:
     def __cinit__(self, *args):
         if len(args) == 3 and type(args[0]) is str and type(args[1]) is str and type(args[2]) is str:
             self._ptr = new c.Ipol(args[0])
-            self._ptr.setMinPV([float(x) for x in args[1].split()])
-            self._ptr.setMaxPV([float(x) for x in args[2].split()])
+            self._ptr.setMinParamVals([float(x) for x in args[1].split()])
+            self._ptr.setMaxParamVals([float(x) for x in args[2].split()])
         elif len(args) == 1 and type(args[0]) is str: # Backward compatibility --- no scaling
             self._ptr = new c.Ipol(args[0])
-            self._ptr.setMinPV([0 for x in xrange(self._ptr.dim())])
-            self._ptr.setMaxPV([1 for x in xrange(self._ptr.dim())])
+            self._ptr.setMinParamVals([0 for x in xrange(self._ptr.dim())])
+            self._ptr.setMaxParamVals([1 for x in xrange(self._ptr.dim())])
         else:
             pp = ParamPoints(args[0])
             vals = list(args[1])
@@ -46,8 +46,7 @@ cdef class Ipol:
             if len(args) == 5:
                     name = str(args[3])
                     threshold = float(args[4])
-
-            self._ptr = new c.Ipol(deref(pp._ptr), vals, order, name, threshold)
+            self._ptr = new c.Ipol(deref(pp._ptr), vals, order, name, threshold, True)
 
     def __del__(self):
         del self._ptr

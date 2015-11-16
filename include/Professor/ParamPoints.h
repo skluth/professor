@@ -10,16 +10,20 @@
 
 namespace Professor {
 
+
   /// Throwable error
   struct ParamPointsError : public std::runtime_error {
     ParamPointsError(const std::string& reason) : std::runtime_error(reason) { }
   };
 
+
   /// Typedef for a list of parameters, defining a parameter point
   typedef std::vector<double> ParamPoint;
 
+
   /// @todo I think we need to rename the more structured object
   // typedef const std::vector< std::vector<double> > ParamPointVec;
+
 
   /// Class for the parametrisation hypercube, i.e. anchors
   class ParamPoints {

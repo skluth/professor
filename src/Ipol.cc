@@ -12,11 +12,12 @@ namespace Professor {
   using namespace Eigen;
 
 
+  // Scaling function to map x from [a,b] into [0,1]
   // NB. Not a member function
-  /// Scaling function to map x from [a,b] into [0,1] 
   double scale(double x, double a, double b) {
     return (x-a)/(b-a);
   }
+
 
   // NB. Not a member function
   int numCoeffs(int dim, int order) {
@@ -105,20 +106,15 @@ namespace Professor {
 
   // NB. Not a member function
   vector<double> mkLongVector(const vector<double>& p, int order) {
-    if (order < 0) {
-      std::cout << "ERROR degree " << order << " not implemented, exiting" << std::endl;
-      /// @todo Never call exit() from a library function. Throw an IpolError instead
-      // exit(1);
-    }
+    if (order < 0)
+      throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
-  
-    int N=p.size(); 
-    vector<int> zero; 
-    for (unsigned int i;i<N;++i) zero.push_back(0);
+    const int N = p.size();
+    const vector<int> zero(N, 0);
     vector<vector<int> > temp;
     temp.push_back(zero);
-    
-    for (unsigned int i=0;i<=order;++i) {
+
+    for (unsigned int i = 0; i <= order; ++i) {
       Professor::Counter c(N,i);
       while (c.next(N-1)) {
         if (c.sum() == i) {
@@ -127,20 +123,16 @@ namespace Professor {
       }
     }
 
-    vector<double> retvec;
-    double prod(1.0);
-
-    for (vector<int> v : temp) {
-      prod=1.0;
-      for (unsigned int i=0;i<v.size();++i) {
-        prod*=std::pow(p[i],v[i]);
+    vector<double> rtn;
+    for (const vector<int>& v : temp) {
+      double prod = 1.0;
+      for (size_t i = 0; i < v.size(); ++i) {
+        prod *= std::pow(p[i],v[i]);
       }
-      retvec.push_back(prod);
+      rtn.push_back(prod);
     }
-    return retvec;
+    return rtn;
   }
-
-
 
 
 
@@ -184,14 +176,16 @@ namespace Professor {
          << dim() << " params required, " << params.size() << " supplied)";
       throw IpolError(ss.str());
     }
-    
-    // Param scaling
-    vector<double> scaledpoint;
-    for (int i = 0; i < dim(); ++i) {
-      scaledpoint.push_back(scale(params[i], _minPV[i], _maxPV[i]));
+
+    // Param scaling into [0,1] ranges defined by sampling limits (if set)
+    vector<double> sparams = params;
+    if (!_minPV.empty() && !_maxPV.empty()) {
+      for (size_t i = 0; i < dim(); ++i)
+        sparams[i] = scale(params[i], _minPV[i], _maxPV[i]);
     }
+
     // Dot product for value
-    const vector<double> lv = mkLongVector(scaledpoint, order());
+    const vector<double> lv = mkLongVector(sparams, order());
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 0; i < lv.size(); ++i) {

@@ -12,7 +12,8 @@ cdef extern from "Professor/ParamPoints.h" namespace "Professor":
 
 cdef extern from "Professor/Ipol.h" namespace "Professor":
     cdef cppclass Ipol:
-        Ipol(const ParamPoints& p, const vector[double]&, int, const string&, const double&) except +
+
+        Ipol(const ParamPoints& p, const vector[double]&, int, const string&, double, bool) except +
         Ipol(const string&) except +
 
         string name() except +
@@ -29,5 +30,6 @@ cdef extern from "Professor/Ipol.h" namespace "Professor":
         string toString() except +
         string toString(const string&) except +
 
-        void setMinPV(const vector[double]&) except +
-        void setMaxPV(const vector[double]&) except +
+        void setParamLimits(const vector[double]&, const vector[double]&) except +
+        void setMinParamVals(const vector[double]&) except +
+        void setMaxParamVals(const vector[double]&) except +
