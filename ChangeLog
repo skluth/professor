@@ -1,5 +1,7 @@
 2015-11-18  Andy Buckley  <andy.buckley@cern.ch>
 
+	* dataio.py: Add ROOT file reading ability.
+
 	* Change rescaling I/O behaviour a bit, changing some hacked
 	Python-only string constructors to explicit API improvements and
 	only activating rescaling if DoParamScaling is set true.
