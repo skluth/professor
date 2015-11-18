@@ -192,6 +192,7 @@ with open(IFILE, "w") as f:
     maxstring = "MaxParamVals:"
     for v in prof.mk_maxvals(PARAMSLIST):
         maxstring += " %f" % v
+    f.write("DoParamScaling: 1\n")
     f.write(maxstring + "\n")
     # Number of inputs per bin
     f.write("NumInputs: %i\n" % len(PARAMSLIST))

@@ -79,10 +79,10 @@ with open(opts.IFILE, "w") as f:
     # Dimension (consistency check)
     f.write("Dimension: %i\n"%len(A[0]))
     # Interpolation validity (hypercube edges)
-    minstring = "MinV:"
+    minstring = "MinParamVals:"
     for v in prof.mk_minvals(A):
         minstring+=" %f"%v
-    maxstring = "MaxV:"
+    maxstring = "MaxParamVals:"
     for v in prof.mk_maxvals(A):
         maxstring+=" %f"%v
     f.write(minstring+"\n")
@@ -102,5 +102,3 @@ with open(opts.IFILE, "a") as f:
     f.write(s)
 
 print "\nOutput written to %s"%opts.IFILE
-
-

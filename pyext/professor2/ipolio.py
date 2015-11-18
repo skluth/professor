@@ -24,44 +24,49 @@ def read_ipolmeta(ifile):
                 break
             ## Extract the key-value pair from the line
             try:
-                key, value = map(str.strip, l.split(":",1))
+                key, value = [str.strip(s) for s in l.split(":", 1)]
                 meta[key] = value
             except:
                 print "Couldn't extract key-value pair from '%s'" % l
     return meta
 
 
-def read_simpleipols(ifile):
+def read_simpleipols(ifile, paramlimits=None):
     """
-    Read ipol data back in from ifile
+    Read ipol data back in from ifile.
+
+    If the paramlimits argument is non-null, it will be used internally by
+    the Ipol objects to stabilise the SVD calculation. For this to make sense,
+    the persisted ipols must have been created with the same scaling factors.
+    paramlimits should be a 2-tuple of lists for min and max param values
+    respectively.
     """
     IOBJECTS = {}
     with open(ifile, "r") as f:
         name = ""
-        minstring =""
-        maxstring =""
         for line in f:
             sline = line.strip()
             if sline.startswith("/"):
                 name = sline.split()[0]
             elif sline.startswith("val"):
-                IOBJECTS[name]= Ipol(sline, minstring, maxstring)
-            elif sline.startswith("MinParamVals:"):
-                minstring = sline.split(":")[1].strip()
-            elif sline.startswith("MaxParamVals:"):
-                maxstring = sline.split(":")[1].strip()
-
+                IOBJECTS[name] = Ipol(sline)
+                if paramlimits:
+                    IOBJECTS[name].setParamLimits(*paramlimits)
     return IOBJECTS
 
 
-def read_binnedipols(ifile):
+def read_binnedipols(ifile, paramlimits=None):
     """
-    Read binned ipol data back in from ifile
+    Read binned ipol data back in from ifile.
+
+    If the paramlimits argument is non-null, it will be used internally by
+    the Ipol objects to stabilise the SVD calculation. For this to make sense,
+    the persisted ipols must have been created with the same scaling factors.
+    paramlimits should be a 2-tuple of lists for min and max param values
+    respectively.
     """
     IHISTOS = {}
     with open(ifile, "r") as f:
-        minstring =""
-        maxstring =""
         for line in f:
             sline = line.strip()
             if sline.startswith("/"):
@@ -70,15 +75,15 @@ def read_binnedipols(ifile):
                 currentib = IpolBin(float(sxmin), float(sxmax))
                 IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
             elif sline.startswith("val"):
-                currentib.ival = Ipol(sline, minstring, maxstring)
+                currentib.ival = Ipol(sline)
+                if paramlimits:
+                    currentib.ival.setParamLimits(*paramlimits)
                 #print currentib.ival.coeffs()
             elif sline.startswith("err"):
-                currentib.ierrs = Ipol(sline, minstring, maxstring)
+                currentib.ierrs = Ipol(sline)
+                if paramlimits:
+                    currentib.ierrs.setParamLimits(*paramlimits)
                 #print currentib.ierrs.coeffs()
-            elif sline.startswith("MinParamVals:"):
-                minstring = sline.split(":")[1].strip()
-            elif sline.startswith("MaxParamVals:"):
-                maxstring = sline.split(":")[1].strip()
             # TODO: read back asymm errs as two ipols
     return IHISTOS
 
@@ -88,4 +93,10 @@ def read_ipolhistos(ifile):
     imeta = read_ipolmeta(ifile)
     if not imeta["DataFormat"].startswith('binned'):
         raise IpolIOError("Error, DataFormat of ipol file %s is not binned" % ifile)
-    return imeta, read_binnedipols(ifile)
+    paramlimits = None
+    if bool(int(imeta.get("DoParamScaling", 0))):
+        assert imeta.has_key("MinParamVals") and imeta.has_key("MaxParamVals")
+        minparamvals = [float(s) for s in imeta["MinParamVals"].split()]
+        maxparamvals = [float(s) for s in imeta["MaxParamVals"].split()]
+        paramlimits = (minparamvals, maxparamvals)
+    return imeta, read_binnedipols(ifile, paramlimits)

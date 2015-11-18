@@ -42,6 +42,9 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
     runs and params lists, at the given polynomial order.
 
     If errs is non-null, the data histo errors will also be interpolated.
+
+    Parameter range scaling will be applied, so a DoParamScaling=true flag will
+    need to be written to the metadata when persisting the resulting IpolHisto.
     """
     nbins = len(histos.itervalues().next().bins)
     ibins = []
