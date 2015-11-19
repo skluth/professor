@@ -81,6 +81,13 @@ def read_histos(path):
 
 
 def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
+    """
+    Read interpolation anchor point data from a provided set of run directory paths.
+
+    Returns a pair of dicts, the first mapping run names (i.e. rundir basenames) to
+    the parameter value list for each run, and the second mapping observable names
+    (i.e. histogram paths) to a run -> histo dict.
+    """
     params, histos = {}, {}
     import os, glob
     for num, d in enumerate(dirs):
