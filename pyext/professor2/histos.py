@@ -3,6 +3,8 @@
 class Histo(object):
     "A simple histogram -- just a Bin container with an optional path name"
 
+    __slots__ = ["_bins", "path"]
+
     def __init__(self, bins=None, path=None):
         self._bins = bins if bins else []
         self.path = path
@@ -75,6 +77,8 @@ class IpolHisto(Histo):
 class Bin(object):
     "A base class for binned data, handling the common x-edge stuff"
 
+    __slots__ = ["xmin", "xmax", "n"]
+
     def __init__(self, xmin, xmax, n=None):
         self.xmin = xmin
         self.xmax = xmax
@@ -94,6 +98,8 @@ class Bin(object):
 
 class DataBin(Bin):
     "A bin containing a data value and its error(s)"
+
+    __slots__ = ["val", "_errs"]
 
     def __init__(self, xmin, xmax, val=None, errs=None):
         Bin.__init__(self, xmin, xmax)
@@ -149,6 +155,8 @@ class IpolBin(Bin):
      * Provide ierr and ierrs getter/setter pairs cf. err/errs on DataBin? They can't be averaged, so not sure it makes sense...
      * Allow ipol'd error handling, with wrapped relative error parameterisation as an option?
     """
+
+    __slots__ = ["ival", "ierrs"]
 
     def __init__(self, xmin, xmax, ival=None, ierrs=None):
         Bin.__init__(self, xmin, xmax)
