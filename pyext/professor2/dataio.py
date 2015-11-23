@@ -105,13 +105,15 @@ def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
     (i.e. histogram paths) to a run -> histo dict.
     """
     params, histos = {}, {}
-    import os, glob
+    import os, glob, re
+    re_pfname = re.compile(pfname)
     for num, d in enumerate(dirs):
         run = os.path.basename(d)
         files = glob.glob(os.path.join(d, "*"))
         for f in files:
             ## Params file
-            if os.path.basename(f) == pfname:
+            #if os.path.basename(f) == pfname:
+            if re_pfname.search(os.path.basename(f)):
                 params[run] = read_paramsfile(f)
             ## Histo file
             else:
