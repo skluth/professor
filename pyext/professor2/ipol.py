@@ -62,10 +62,11 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
             erripols = None
         ## Build the error interpolation(s)
         elif errmode == "mean":
-            meanerr = sum(histos[run].bins[n].err for run in runs) / float(nbins)
+            meanerr = sum(histos[run].bins[n].err for run in runs) / float(len(runs))
             erripols = Ipol(paramslist, [meanerr], 0) #< const 0th order interpolation
         elif errmode == "median":
-            medianerr = [histos[run].bins[n].err for run in runs][nbins//2]
+            errs = [histos[run].bins[n].err for run in runs]
+            medianerr = errs[len(runs)//2]
             erripols = Ipol(paramslist, [medianerr], 0) #< const 0th order interpolation
         elif errmode == "symm":
             errs = [histos[run].bins[n].err for run in runs]

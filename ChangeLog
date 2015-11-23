@@ -1,5 +1,7 @@
 2015-11-23  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Fix (re-fix?) use of inappropriate indices in calculation of mean and median MC uncertainties.
+
 	* More proactive data object deletion after conversion to YODA data format.
 
 2015-11-22  Andy Buckley  <andy.buckley@cern.ch>
