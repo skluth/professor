@@ -1,5 +1,7 @@
 2015-11-23  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Add find_maxerrs() to the Python interface, for use in error regularisation.
+
 	* Use the param file name as a regex.
 
 	* Use __slots__ in the internal histogram and bin types, for better memory efficiency.

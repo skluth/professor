@@ -16,6 +16,7 @@ def read_histos_root(path):
         print "PyROOT not available... skipping"
         return histos
 
+    # TODO: use yoda.root.getall
     def _getallrootobjs(d, basepath="/"):
         "Recurse through a ROOT file/dir and generate (path, obj) pairs"
         for key in d.GetListOfKeys():
@@ -130,6 +131,33 @@ def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
             raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))
     return params, histos
 
-
 # TODO: remove this alias
 load_rundata = read_rundata
+
+
+def find_maxerrs(histos):
+    """
+    Helper function to find the maximum error values found for each bin in the histos double-dict.
+
+    histos is a nested dict of DataHisto objects, indexed first by histo path and then by
+    run name, i.e. it is the second of the two objects returned by read_histos().
+
+    Returns a dict of lists of floats, indexed by histo path. Each list of floats contains the
+    max error size seen for each bin of the named observable, across the collection of runs
+    histos.keys().
+
+    This functions is useful for regularising chi2 etc. computation by constraining interpolated
+    uncertainties to within the range seen in the run data used to create the ipols, to avoid
+    blow-up of uncertainties with corresponding distortion of fit optimisation.
+
+    TODO: asymm version?
+    """
+    rtn = {}
+    for hn, hs in histos.iteritems():
+        numbins_h = hs.next().nbins
+        maxerrs_h = []
+        for ib in xrange(numbins_h):
+            emax = max(h.bins[ib].err for h in hs.values())
+            maxerrs_h.append(emax)
+        rtn[hn] = maxerrs_h
+    return rtn
