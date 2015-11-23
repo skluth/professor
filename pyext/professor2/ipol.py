@@ -26,7 +26,7 @@ def mk_ipolinputs(params):
     Make sorted run and parameter lists suitable for passing to prof.Ipol
 
     params is a dict (actually, prefer OrderedDict) of run_names -> param_vals,
-    as returned from load_rundata
+    as returned from read_rundata
     """
     runs = sorted(params.keys())
     if not runs:

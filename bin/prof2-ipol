@@ -44,7 +44,7 @@ if not opts.QUIET:
 import glob
 # TODO: add runcomb file parsing to select a runs subset
 INDIRS = glob.glob(os.path.join(RUNSDIR, "*"))
-PARAMS, HISTOS = prof.load_rundata(INDIRS, opts.PFILE)
+PARAMS, HISTOS = prof.read_rundata(INDIRS, opts.PFILE)
 RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 
 

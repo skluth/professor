@@ -1,5 +1,9 @@
 2015-11-23  Andy Buckley  <andy.buckley@cern.ch>
 
+	* More proactive data object deletion after conversion to YODA data format.
+
+2015-11-22  Andy Buckley  <andy.buckley@cern.ch>
+
 	* Version 2.1.0 (significant version change due to scaling, all-orders, and ROOT support)
 
 2015-11-18  Andy Buckley  <andy.buckley@cern.ch>

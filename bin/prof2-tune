@@ -43,10 +43,6 @@ if not opts.QUIET:
 ## Read persisted interpolations to re-create the ipol Histos
 metadata, IHISTOS = prof.read_ipolhistos(IFILE)
 
-## List of rivet analysis paths in IHISTOS
-# TODO: Ick! We should avoid noise-code like this
-# ananames = list(set([filter(lambda x:len(x)>1, i.split("/"))[0] for i in IHISTOS.keys()]))
-
 
 ## Read reference data histos
 import os, sys, glob
