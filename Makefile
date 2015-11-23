@@ -1,3 +1,10 @@
+## Makefile for Professor 2.x
+# TODO: automatically pass the version into the C++ and Python sources
+VERSION := "2.1.0"
+
+
+## Default values for user-specifiable build variables
+
 PREFIX := /usr/local
 
 CXXSTD := c++11
@@ -30,8 +37,7 @@ endif
 
 ###################
 
-# TODO: automatically pass this into the C++ and Python sources
-VERSION := "2.1.0a"
+
 DISTNAME := Professor-$(VERSION)
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)

@@ -1,18 +1,24 @@
+2015-11-23  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Version 2.1.0 (significant version change due to scaling, all-orders, and ROOT support)
+
 2015-11-18  Andy Buckley  <andy.buckley@cern.ch>
 
 	* dataio.py: Add ROOT file reading ability.
 
-	* Change rescaling I/O behaviour a bit, changing some hacked
-	Python-only string constructors to explicit API improvements and
+	* Change rescaling I/O behaviour a bit, moving some hacked
+	Python-only Ipol string constructors into explicit API improvements, and
 	only activating rescaling if DoParamScaling is set true.
 
 2015-11-16  Andy Buckley  <andy.buckley@cern.ch>
 
-	* Add CPPFLAGS steering in Makefile and general code/API tidying.
+	* Add CPPFLAGS steering in Makefile and API tidying.
 
 2015-11-11  Holger Schulz  <holger.schulz@cern.ch>
 
-	* Add any-order long vector calculation, and automatic unit range mapping to Ipol.
+	* Add automatic raw param value -> unit range mapping to Ipol.
+
+	* Add any-order long vector calculation.
 
 2015-11-10  Andy Buckley  <andy.buckley@cern.ch>
 
@@ -20,6 +26,8 @@
 	and for general convenience.
 
 2015-10-06  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Version 2.0.0
 
 	* Add 'make dist' target to Makefile, and tweak/reduce Cython necessity
 
