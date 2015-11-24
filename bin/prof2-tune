@@ -117,14 +117,13 @@ def simpleGOF(params):
     return chi2
 
 
-## Take parameter names directly from ifile
-mpnames = [x.replace("^","").replace("lambda", "llambda") for x in metadata["ParamNames"].split()]
-## Fallback solution if empty
-if not mpnames:
-    mpnames = ["MP%03i" % (i) for i in xrange(int(metadata["Dimension"]))]
+## Take parameter names directly from ifile, or fallback
+PNAMES = metadata["ParamNames"].split()
+if not PNAMES:
+    PNAMES = ["A%03i" % i for i in xrange(int(metadata["Dimension"]))]
 
 ## Function definition wrapper
-funcdef = prof.mk_fitfunc("simpleGOF", mpnames)
+funcdef, ANAMES = prof.mk_fitfunc("simpleGOF", PNAMES)
 exec funcdef in locals()
 if opts.DEBUG:
     print "Built GoF wrapper from:\n  '%s'" % funcdef
@@ -135,21 +134,22 @@ minuit = prof.Minuit(profGoF)
 minuit.strategy = 2
 
 ## Starting point --- use center
-# TODO: Optionally make an initial brute force scan to choose the Minuit starting point
-C = []
-for num, m in enumerate(map(float, metadata["MinParamVals"].split())):
-    C.append(m + 0.5*(float(metadata["MaxParamVals"].split()[num])-m)) #< TODO: there's got to be a nicer way...
-for num, name in enumerate(mpnames):
-    minuit.values[name] = C[num]
+# TODO: Optionally make an initial brute force scan to choose the Minuit starting point, using prof.scangrid
+pmins = [float(x) for x in metadata["MinParamVals"].split()]
+pmaxs = [float(x) for x in metadata["MaxParamVals"].split()]
+assert len(pmins) == len(pmaxs)
+pmids = [(pmins[i] + pmaxs[i])/2. for i in len(pmins)]
+for i, aname in enumerate(ANAMES):
+    minuit.values[aname] = pmids[i]
 
-## Fix parameters, set limits
+## Fix parameters, set limits (with pname translation)
 limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
-for mp in mpnames:
-    if mp in limits.keys():
-        minuit.limits[mp] = limits[mp]
-    if mp in fixed.keys():
-        minuit.values[mp] = fixed[mp]
-        minuit.fixed[mp] = True
+for i, p in enumerate(PNAMES):
+    if p in limits.keys():
+        minuit.limits[ANAMES[i]] = limits[p]
+    if p in fixed.keys():
+        minuit.values[ANAMES[i]] = fixed[p]
+        minuit.fixed[ANAMES[i]] = True
 
 ## Lift off
 minuit.migrad()
@@ -157,34 +157,30 @@ minuit.migrad()
 ## Goodness of fit
 if not opts.QUIET:
     chi2 = minuit.fval
-    ndof = len(dbins) - len(mpnames) + len(fixed.keys())
-    # TODO: improve... chi2/Ndf isn't the GoF
-    print "'chi2': %.2f" % chi2
-    print "Ndf   : %i" % ndof
-    # print "G.o.F.: %.2f \n" % (chi2, chi2/ndof)
+    ndof = len(dbins) - (len(PNAMES) - len(fixed.keys()))
+    print "chi2: %.2f" % chi2
+    print "Ndf : %i" % ndof
 
 
 ## Check if result is in validity range
-result = [minuit.values[p] for p in mpnames]
-rng_low = map(float, metadata["MinParamVals"].split())
-rng_high = map(float, metadata["MaxParamVals"].split())
-rok, rng = prof.is_inrange(result, rng_low, rng_high)
+result = [minuit.values[a] for a in ANAMES]
+rok, rng = prof.is_inrange(result, pmins, pmaxs)
 
 
 ## Print results to screen
-for num, p in enumerate(mpnames):
+for num, p in enumerate(PNAMES):
     isl, isf = " ", " "
     if opts.QUIET:
-        print "%s\t%f"%(p, minuit.values[p])
+        print "%s\t%f" % (p, minuit.values[ANAMES[num]])
     else:
         if p in fixed.keys():
             isf = "F"
         if p in limits.keys():
             isl = "L"
-        if rok or not num in rng:
-            print "%s\t%f\t%f\t%.2f %%   inside  (%f --- %f) %s %s"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num], isf, isl)
-        else:
-            print "%s\t%f\t%f\t%.2f %%  OUTSIDE (%f --- %f) %s %s"%(p, minuit.values[p], minuit.errors[p], 100*(minuit.errors[p]/minuit.values[p]), rng_low[num], rng_high[num], isf, isl)
+        in_out = " inside" if (rok or not num in rng) else "OUTSIDE"
+        print "%s\t%f\t%f\t%.2f %%   %s  (%f --- %f) %s %s" % (p, minuit.values[p], minuit.errors[p],
+                                                               100*(minuit.errors[p]/minuit.values[p]),
+                                                               in_out, pmins[num], pmaxs[num], isf, isl)
 
 
 ## Write out result
@@ -196,24 +192,24 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end
     ## Limits
     lstring = ""
-    for p in mpnames:
+    for p in PNAMES:
         if limits.has_key(p):
-            lstring += "#\t%s\t%f %f\n"%(p, limits[p][0], limits[p][1])
+            lstring += "#\t%s\t%f %f\n" % (p, limits[p][0], limits[p][1])
     f.write("# Limits: \n%s" % lstring)
     # Fixed parameters
     fstring = ""
-    for p in mpnames:
+    for p in PNAMES:
         if fixed.has_key(p):
             fstring += "#\t%s\t%f\n" % (p, fixed[p])
     f.write("# Fixed: \n%s" % fstring)
 
     ## The tuned parameter values
-    for p in mpnames:
-        f.write("%s\t%f\n" % (p, minuit.values[p]))
+    for i, p in enumerate(PNAMES):
+        f.write("%s\t%f\n" % (p, minuit.values[ANAMES[i]]))
 
 
 ## Write out ipolhistos
-result = [minuit.values[name] for name in mpnames]
+result = [minuit.values[name] for name in ANAMES]
 with open("%s_ipolhistos.yoda" % opts.OUTPUT, "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
         f.write(IHISTOS[k].toDataHisto(result).toYODA())
