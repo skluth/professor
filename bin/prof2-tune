@@ -127,6 +127,9 @@ funcdef, ANAMES = prof.mk_fitfunc("simpleGOF", PNAMES)
 exec funcdef in locals()
 if opts.DEBUG:
     print "Built GoF wrapper from:\n  '%s'" % funcdef
+print "Parameter translation:"
+for i in xrange(len(PNAMES)):
+    print " ", PNAMES[i], "->", ANAMES[i]
 
 
 ## Ignition
@@ -154,6 +157,9 @@ for i, p in enumerate(PNAMES):
 ## Lift off
 minuit.migrad()
 
+
+## Now process the result:
+
 ## Goodness of fit
 if not opts.QUIET:
     chi2 = minuit.fval
@@ -161,11 +167,9 @@ if not opts.QUIET:
     print "chi2: %.2f" % chi2
     print "Ndf : %i" % ndof
 
-
 ## Check if result is in validity range
 result = [minuit.values[a] for a in ANAMES]
 rok, rng = prof.is_inrange(result, pmins, pmaxs)
-
 
 ## Print results to screen
 for num, p in enumerate(PNAMES):
@@ -178,10 +182,9 @@ for num, p in enumerate(PNAMES):
         if p in limits.keys():
             isl = "L"
         in_out = " inside" if (rok or not num in rng) else "OUTSIDE"
-        print "%s\t%f\t%f\t%.2f %%   %s  (%f --- %f) %s %s" % (p, minuit.values[p], minuit.errors[p],
-                                                               100*(minuit.errors[p]/minuit.values[p]),
+        print "%s\t%f\t%f\t%.2f %%   %s  (%f --- %f) %s %s" % (p, minuit.values[ANAMES[num]], minuit.errors[ANAMES[num]],
+                                                               100*(minuit.errors[ANAMES[num]]/minuit.values[ANAMES[num]]),
                                                                in_out, pmins[num], pmaxs[num], isf, isl)
-
 
 ## Write out result
 with open("%s_results.txt" % opts.OUTPUT,"w") as f:
@@ -215,21 +218,3 @@ with open("%s_ipolhistos.yoda" % opts.OUTPUT, "w") as f:
         f.write(IHISTOS[k].toDataHisto(result).toYODA())
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
-
-
-# ## Pull histograms
-# if opts.PULLS:
-#     pulls = []
-#     for a in available:
-#         ikey=a[0]
-#         dkey=a[1]
-#         ib = IHISTOS[ikey].bins
-#         db =  HISTOS[dkey].bins
-#         pb = []
-#         for i in xrange(len(ib)):
-#             py = prof.pull(db[i], ib[i], result)
-#             pb.append(prof.DataBin(db[i].xmin, db[i].xmax, py, 0))
-#         pulls.append(prof.Histo(pb, ikey))
-
-#     with open("%s_pulls.yoda"%opts.OUTPUT, "w") as f:
-#         [f.write(h.toYODA()) for h in pulls]
