@@ -1,5 +1,7 @@
 2015-11-24  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Set minimizer initial step size = prange/10.
+
 	* Add automatic determination of maximum MC errors in prof-tune,
 	and use them to regularize interpolated errs which could distort
 	the fit.

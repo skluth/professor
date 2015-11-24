@@ -160,14 +160,16 @@ minuit = prof.mk_minuit(profGoF)
 # TODO: reconsider this default... it's *slow*
 minuit.strategy = 2
 
-## Starting point --- use center
+## Initial conditions --- use pos = center of hypercube, and step = range/10
 # TODO: Optionally make an initial brute force scan to choose the Minuit starting point, using prof.scangrid
 pmins = [float(x) for x in METADATA["MinParamVals"].split()]
 pmaxs = [float(x) for x in METADATA["MaxParamVals"].split()]
 assert len(pmins) == len(pmaxs)
 pmids = [(pmins[i] + pmaxs[i])/2. for i in xrange(len(pmins))]
+pranges = [(pmaxs[i] - pmins[i]) for i in xrange(len(pmins))]
 for i, aname in enumerate(ANAMES):
     minuit.values[aname] = pmids[i]
+    minuit.errors[aname] = pranges[i] / 10.
 
 ## Fix parameters, set limits (with pname translation)
 limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
