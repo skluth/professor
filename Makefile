@@ -1,6 +1,6 @@
 ## Makefile for Professor 2.x
 # TODO: automatically pass the version into the C++ and Python sources
-VERSION := "2.1.0"
+VERSION := "2.1.1"
 
 
 ## Default values for user-specifiable build variables
