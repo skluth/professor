@@ -1,5 +1,7 @@
 2015-11-24  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Fix prof2-predict YODA writing, and improve DataHisto.toYODA.
+
 	* Change parameter rescaling from using the [0,1] range to instead
 	use [1,2], to avoid arbitrarily scaled param numbers. BREAKS IPOL
 	FILE COMPATIBILITY!!

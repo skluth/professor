@@ -37,26 +37,16 @@ class DataHisto(Histo):
     def __init__(self, dbins=None, path=None):
         Histo.__init__(self, dbins, path)
 
-    # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell. And anyway look at the mess required to make this work
-    def toYODA(self, ppoint=None, manpath=None):
-        if self.path is None and not manpath is None:
-            path = manpath
-        elif self.path is not None and manpath is None:
-            path = self.path
-        elif self.path is not None and manpath is not None:
-            path = manpath
-        else:
-            print "No path given!"
-            return ""
+    # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell.
+    def toYODAStr(self, manpath=self.path):
+        path = manpath
         s = "# BEGIN YODA_SCATTER2D %s\n" % path
         s += "Path=%s\n" % path
         s += "Type=Scatter2D\n"
         s += "# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
         for b in self.bins:
-            if ppoint is not None:
-                s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
-            else:
-                s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid, b.val, b.err, b.err)
+            s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid,
+                                               b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
         s += "# END YODA_SCATTER2D\n"
         return s
 
