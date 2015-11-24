@@ -45,6 +45,6 @@ else:
 ## Write out ipolhistos
 with open(opts.OUTPUT + "_prediction.yoda", "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
-        f.write(IHISTOS[k].toYODA(PARAMS, k))
+        f.write(IHISTOS[k].toDataHisto(PARAMS).toYODA(k))
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")
