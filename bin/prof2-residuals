@@ -77,6 +77,8 @@ hresvaltot = yoda.Histo1D(*hargsval, path="/TOT/resval")
 hreserrtot = yoda.Histo1D(*hargserr, path="/TOT/reserr")
 aos = [hresvaltot, hreserrtot]
 
+from matplotlib import pyplot as plt
+
 
 ## Loop over histograms and compute residuals histos
 for hn, mchistos in HISTOS.iteritems():
@@ -109,11 +111,11 @@ for hn, mchistos in HISTOS.iteritems():
     aos += [hresval, hreserr]
 
     f, _ = yoda.plot(hresval, "res_val_" + hnstr, plotkeys={"Title": hn})
-    del f
+    plt.close(f)
     print hn, "value:", "mean =", hresval.xMean(), "stddev =", hresval.xStdDev()
 
-    yoda.plot(hreserr, "res_err_" + hnstr, plotkeys={"Title": hn})
-    del f
+    f, _ = yoda.plot(hreserr, "res_err_" + hnstr, plotkeys={"Title": hn})
+    plt.close(f)
     print hn, "error:", "mean =", hreserr.xMean(), "stddev =", hreserr.xStdDev()
 
     print
