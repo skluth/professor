@@ -156,7 +156,7 @@ class IpolBin(Bin):
      * Allow ipol'd error handling, with wrapped relative error parameterisation as an option?
     """
 
-    __slots__ = ["ival", "ierrs"]
+    __slots__ = ["ival", "ierrs", "__dict__"]
 
     def __init__(self, xmin, xmax, ival=None, ierrs=None):
         Bin.__init__(self, xmin, xmax)

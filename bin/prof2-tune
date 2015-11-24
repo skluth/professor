@@ -130,7 +130,7 @@ if opts.DEBUG:
 
 
 ## Ignition
-minuit = prof.Minuit(profGoF)
+minuit = prof.Minuit(profGoF) #< TODO: set the starting position (and step size = range/10) right here in the ctor
 minuit.strategy = 2
 
 ## Starting point --- use center
@@ -138,7 +138,7 @@ minuit.strategy = 2
 pmins = [float(x) for x in metadata["MinParamVals"].split()]
 pmaxs = [float(x) for x in metadata["MaxParamVals"].split()]
 assert len(pmins) == len(pmaxs)
-pmids = [(pmins[i] + pmaxs[i])/2. for i in len(pmins)]
+pmids = [(pmins[i] + pmaxs[i])/2. for i in xrange(len(pmins))]
 for i, aname in enumerate(ANAMES):
     minuit.values[aname] = pmids[i]
 
