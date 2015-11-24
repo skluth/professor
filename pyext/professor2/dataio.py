@@ -107,14 +107,14 @@ def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
     """
     params, histos = {}, {}
     import os, glob, re
-    re_pfname = re.compile(pfname)
+    re_pfname = re.compile(pfname) if pfname else None
     for num, d in enumerate(dirs):
         run = os.path.basename(d)
         files = glob.glob(os.path.join(d, "*"))
         for f in files:
             ## Params file
             #if os.path.basename(f) == pfname:
-            if re_pfname.search(os.path.basename(f)):
+            if re_pfname and re_pfname.search(os.path.basename(f)):
                 params[run] = read_paramsfile(f)
             ## Histo file
             else:
@@ -126,9 +126,13 @@ def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
                         histos.setdefault(path, {})[run] = hist
                 except:
                     pass #< skip files that can't be read as histos
-        ## Check that a params file was found and read in this dir
-        if run not in params.keys():
-            raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))
+
+        ## Check that a params file was found and read in this dir... or that no attempt was made to find one
+        if pfname:
+            if run not in params.keys():
+                raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))
+        else:
+            params = None
     return params, histos
 
 # TODO: remove this alias

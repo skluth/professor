@@ -152,7 +152,7 @@ class IpolBin(Bin):
     A bin containing a value interpolation and its error(s)
 
     TODO:
-     * Provide ierr and ierrs getter/setter pairs cf. err/errs on DataBin? They can't be averaged, so not sure it makes sense...
+     * Provide ierr and ierrs getter/setter pairs cf. err/errs on DataBin? They can't be averaged (?), so not sure it makes sense...
      * Allow ipol'd error handling, with wrapped relative error parameterisation as an option?
     """
 
@@ -166,12 +166,14 @@ class IpolBin(Bin):
     #def val(self, *params, vmin=None, vmax=None): #< needs Python3
     #    return self.ival.value(*params, vmin=vmin, vmax=vmax)
     def val(self, *params, **vminmax):
+        "Get the interpolated value of this bin"
         vmin = vminmax.get("vmin", None)
         vmax = vminmax.get("vmax", None)
         return self.ival.value(*params, vmin=vmin, vmax=vmax)
 
     #def err(self, *params, emin=0, emax=None): #< needs Python3
     def err(self, *params, **eminmax):
+        "Get a single interpolated error, perhaps averaged, for this bin"
         emin = eminmax.get("emin", 0)
         emax = eminmax.get("emax", None)
         if self.ierrs is None:
@@ -184,6 +186,7 @@ class IpolBin(Bin):
 
     #def errs(self, params, emin=0, emax=None): #< needs Python3
     def errs(self, *params, **eminmax):
+        "Get a pair of interpolated errors for this bin"
         emin = eminmax.get("emin", 0)
         emax = eminmax.get("emax", None)
         if self.ierrs is None:
@@ -194,6 +197,17 @@ class IpolBin(Bin):
         else:
             e = self.ierrs.value(*params, vmin=emin, vmax=emax)
             return (e, e)
+
+    @property
+    def has_const_err():
+        "Determine whether this bin's errors are fixed or variable -- the latter requires regularisation"
+        if self.ierrs is None:
+            return True
+        if hasattr(self.ierrs, "__len__"):
+            assert len(self.ierrs) == 2
+            return (self.ierrs[0].order == 0 and self.ierrs[1].order == 0)
+        else:
+            return self.ierrs.order == 0
 
     #def toDataBin(self, *params, vmin=None, vmax=None, emin=0, emax=None): #< needs Python3
     def toDataBin(self, *params, **veminmax): #< needs Python3

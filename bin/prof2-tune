@@ -1,10 +1,14 @@
 #! /usr/bin/env python
 
 """\
-%prog <refdir> [<ipolfile>=ipol.dat] [opts]
+%prog <refdir> [<ipolfile>=ipol.dat] [<runsdir>=<refdir>/../mc] [opts]
 
 Use the interpolations stored in <ipolfile> to find optimised parameters with
 the reference histograms found in the <refdir> as the optimisation target.
+
+The <runsdir> is used to calculate the maximum error value seen for each bin,
+to regularise interpolated errors which could otherwise blow up, leading to
+an unrepresentative small chi2 (and hence fit result) outside the sampled ranges.
 
 TODO:
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
@@ -14,10 +18,7 @@ import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file to specify unequal chi2 weights of each bin in the fit (default: %default)")
 op.add_option("--output", dest="OUTPUT", default="tunes", help="Prefix for outputs (default: %default)")
-# TODO: ipol fit limits are in the ipol datfile... automatically use them / warn if result is outside?
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
-# TODO: Really a core feature? Define "pull". REMOVE
-# op.add_option("--pulls", dest="PULLS", action="store_true", default=False, help="Output pull histograms after minimisation")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -30,8 +31,14 @@ if len(args) < 1:
     sys.exit(1)
 REFDIR = args[0]
 IFILE = "ipol.dat"
+RUNSDIR = os.path.join(REFDIR, "..", "mc")
 if len(args) >= 2:
     IFILE = args[1]
+if len(args) >= 3:
+    RUNSDIR = args[2]
+
+
+# TODO: ipol fit limits are in the ipol datfile... automatically use them / warn if result is outside?
 
 
 ## Load Professor and show the standard banner
@@ -41,15 +48,23 @@ if not opts.QUIET:
 
 
 ## Read persisted interpolations to re-create the ipol Histos
-metadata, IHISTOS = prof.read_ipolhistos(IFILE)
-
+METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
 
 ## Read reference data histos
 import os, sys, glob
-HISTOS = {}
-reffiles = glob.glob(os.path.join(REFDIR,  "*"))
-for rf in reffiles:
-    HISTOS.update(prof.read_histos(rf))
+DHISTOS = {}
+REFFILES = glob.glob(os.path.join(REFDIR, "*"))
+for rf in REFFILES:
+    DHISTOS.update(prof.read_histos(rf))
+
+## Try to read run histos and extract maximum errors
+MAXERRDICT = None
+try:
+    rundirs = glob.glob(os.path.join(RUNSDIR, "*"))
+    _, RUNHISTOS = prof.read_rundata(rundirs, None) #< don't care about reading params files
+    MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
+except:
+    print "Could not read run data for error regularisation -- chi2 may be unstable"
 
 ## Weight file parsing
 matchers = prof.read_pointmatchers(opts.WFILE) if opts.WFILE else None
@@ -73,25 +88,31 @@ for ihn in IHISTOS.keys():
         for ib in IHISTOS[ihn].bins:
             posmatch_matchers = [(m,wstr) for (m,wstr) in pathmatch_matchers if m.match_pos(ib)]
             ib.w = float(posmatch_matchers[-1][1]) if posmatch_matchers else 0 #< NB. using last match
-    for rhn in HISTOS.keys():
-        if ihn in rhn: #< short for rhn = "/REF/"+ihn ?
+    for rhn in DHISTOS.keys():
+        if ihn in rhn: #< TODO: short for rhn = "/REF/"+ihn ?
+            # TODO: we should eliminate this potential mismatch of ref and MC hnames
             available.append([ihn,rhn])
             break #< TODO: ok?
 
 
 ## Prepare lists of ibins and dbins
-ibins, dbins = [], []
+IBINS, DBINS, MAXERRS = [], [], []
 for a in available:
     # TODO: print out the available observables
-    #print a, len(IHISTOS[a[0]].bins) == len(HISTOS[a[1]].bins)
-    ibins.extend(IHISTOS[a[0]].bins)
-    dbins.extend( HISTOS[a[1]].bins)
+    IBINS.extend(IHISTOS[a[0]].bins)
+    DBINS.extend(DHISTOS[a[1]].bins)
+    if MAXERRDICT:
+        MAXERRS.extend(MAXERRS[a[0]])
+if not MAXERRS:
+    MAXERRS = None
+
 
 ## Sanity checks
-assert(len(ibins) == len(dbins))
-if not ibins:
+assert len(IBINS) == len(DBINS)
+if not IBINS:
     print "No bins ..., exiting"
     sys.exit(1)
+assert MAXERRS is None or len(IBINS) == len(MAXERRS)
 
 
 def simpleGOF(params):
@@ -99,17 +120,19 @@ def simpleGOF(params):
     Very straightforward goodness-of-fit measure
     """
     chi2 = 0.0
-    for num, ibin in enumerate(ibins):
+    for num, ibin in enumerate(IBINS):
         ## Weight is attached to the ipol bin (default to 1.0)
         w = ibin.w if hasattr(ibin, "w") else 1.0
         ## Get ipol & ref bin values and compute their difference
         ival = ibin.val(params)
-        dval = dbins[num].val
+        dval = DBINS[num].val
         diff = dval - ival
         ## Data error
-        err2 = dbins[num].err**2
+        err2 = DBINS[num].err**2
         ## Plus interpolation error added in quadrature
-        err2 += ibin.err(params)**2 # TODO: compute asymm error for appropriate deviation direction cf. sum([e**2 for e in ibin.ierrs])
+        maxierr = MAXERRS[ibin] if MAXERRS else None
+        err2 += ibin.err(params, emax=maxierr)**2
+        # TODO: compute asymm error for appropriate deviation direction cf. sum([e**2 for e in ibin.ierrs])
         if not err2:
             raise prof.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
         # TODO: should we square w too, so it penalised deviations _linearly_?
@@ -118,9 +141,9 @@ def simpleGOF(params):
 
 
 ## Take parameter names directly from ifile, or fallback
-PNAMES = metadata["ParamNames"].split()
+PNAMES = METADATA["ParamNames"].split()
 if not PNAMES:
-    PNAMES = ["A%03i" % i for i in xrange(int(metadata["Dimension"]))]
+    PNAMES = ["A%03i" % i for i in xrange(int(METADATA["Dimension"]))]
 
 ## Function definition wrapper
 funcdef, ANAMES = prof.mk_fitfunc("simpleGOF", PNAMES)
@@ -133,13 +156,14 @@ for i in xrange(len(PNAMES)):
 
 
 ## Ignition
-minuit = prof.Minuit(profGoF) #< TODO: set the starting position (and step size = range/10) right here in the ctor
+minuit = prof.mk_minuit(profGoF)
+# TODO: reconsider this default... it's *slow*
 minuit.strategy = 2
 
 ## Starting point --- use center
 # TODO: Optionally make an initial brute force scan to choose the Minuit starting point, using prof.scangrid
-pmins = [float(x) for x in metadata["MinParamVals"].split()]
-pmaxs = [float(x) for x in metadata["MaxParamVals"].split()]
+pmins = [float(x) for x in METADATA["MinParamVals"].split()]
+pmaxs = [float(x) for x in METADATA["MaxParamVals"].split()]
 assert len(pmins) == len(pmaxs)
 pmids = [(pmins[i] + pmaxs[i])/2. for i in xrange(len(pmins))]
 for i, aname in enumerate(ANAMES):
@@ -163,7 +187,7 @@ minuit.migrad()
 ## Goodness of fit
 if not opts.QUIET:
     chi2 = minuit.fval
-    ndof = len(dbins) - (len(PNAMES) - len(fixed.keys()))
+    ndof = len(DBINS) - (len(PNAMES) - len(fixed.keys()))
     print "chi2: %.2f" % chi2
     print "Ndf : %i" % ndof
 

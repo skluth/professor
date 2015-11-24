@@ -1,5 +1,9 @@
 2015-11-24  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Add automatic determination of maximum MC errors in prof-tune,
+	and use them to regularize interpolated errs which could distort
+	the fit.
+
 	* Separate internal Minuit function names (with syntax
 	restrictions) from the free-form external param names.
 
