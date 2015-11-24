@@ -1,5 +1,9 @@
 2015-11-24  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Change parameter rescaling from using the [0,1] range to instead
+	use [1,2], to avoid arbitrarily scaled param numbers. BREAKS IPOL
+	FILE COMPATIBILITY!!
+
 	* Set minimizer initial step size = prange/10.
 
 	* Add automatic determination of maximum MC errors in prof-tune,

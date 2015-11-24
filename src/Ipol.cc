@@ -12,10 +12,14 @@ namespace Professor {
   using namespace Eigen;
 
 
-  // Scaling function to map x from [a,b] into [0,1]
-  // NB. Not a member function
-  double scale(double x, double a, double b) {
-    return (x-a)/(b-a);
+  namespace { //< hide this symbol, since not in API
+
+    // Scaling function to map x from [a,b] into [1,2].
+    // NB. Target range does not touch 0, e.g. [0,1] to avoid raising very small numbers to large powers.
+    double map_prange(double x, double a, double b) {
+      return 1 + (x-a)/(b-a);
+    }
+
   }
 
 
@@ -64,7 +68,7 @@ namespace Professor {
     for (int p = 0; p < origpoints.size(); ++p) {
       std::vector<double> temp;
       for (int i = 0; i < pts.dim(); ++i) {
-        temp.push_back(scale(origpoints[p][i], minPV[i], maxPV[i]));
+        temp.push_back(map_prange(origpoints[p][i], minPV[i], maxPV[i]));
       }
       scaledpoints.push_back(temp);
     }
@@ -181,7 +185,7 @@ namespace Professor {
     vector<double> sparams = params;
     if (!_minPV.empty() && !_maxPV.empty()) {
       for (size_t i = 0; i < dim(); ++i)
-        sparams[i] = scale(params[i], _minPV[i], _maxPV[i]);
+        sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
     }
 
     // Dot product for value
