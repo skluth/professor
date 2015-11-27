@@ -38,8 +38,8 @@ class DataHisto(Histo):
         Histo.__init__(self, dbins, path)
 
     # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell.
-    def toYODAStr(self, manpath=self.path):
-        path = manpath
+    def toYODAStr(self, manpath=None):
+        path = manpath if manpath is not None else self.path
         s = "# BEGIN YODA_SCATTER2D %s\n" % path
         s += "Path=%s\n" % path
         s += "Type=Scatter2D\n"

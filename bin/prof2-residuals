@@ -26,10 +26,13 @@ import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 #op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
 op.add_option("--pname", "--pfile", dest="PNAME", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
-op.add_option("--xrange", dest="XRANGE", default=0.1, type=float, help="the +- range of relative deviation to display (default: %default)")
-op.add_option("--nbins", dest="NBINS", default=30, type=int, help="number of bins to use in each of the  (default: %default)")
-op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
-op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--xrange", "--rerange", dest="XRANGE", default=0.1, type=float, help="the +- range of relative deviation to display (default: %default)")
+op.add_option("--nbins", dest="NBINS", default=30, type=int, help="number of bins in relative residuals histograms (default: %default)")
+op.add_option("--no-plots", dest="NO_PLOTS", action="store_true", default=False, help="don't write histogram PDFs (default: %default)")
+op.add_option("--tot-only", dest="ONLY_TOT", action="store_true", default=False, help="only make total residuals histograms, not per-observable (default: %default)")
+op.add_option("--logx", dest="LOG_BINS", action="store_true", default=False, help="use a symmetric log binning for better resolution around 0 (default: %default)")
+op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="turn on some debug messages")
+op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="turn off messages")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -70,22 +73,39 @@ except Exception, e:
 IMETA, IHISTOS = prof.read_ipolhistos(IFILE)
 
 
-## Set up total histograms
-hargsval = (opts.NBINS, -opts.XRANGE, opts.XRANGE)
-hargserr = (opts.NBINS, -opts.XRANGE, opts.XRANGE)
-hresvaltot = yoda.Histo1D(*hargsval, path="/TOT/resval")
-hreserrtot = yoda.Histo1D(*hargserr, path="/TOT/reserr")
+## Set up residuals histo binnings
+hedges = None
+if opts.LOG_BINS:
+    ## Determine central linear bin (half) size:
+    ## dx1 == exp(ln(xmin) + (ln(xmax) - ln(xmin))/nbins) - xmin
+    ##  => set xmin <= dx1 for monotonic bin sizes:
+    ##  => ln(2*xmin) == ln(xmin)(1 - 1/nbins) + ln(xmax)/nbins
+    ##  => ln(xmin) == ln(xmax) - ln(2)*nbins
+    ##  => xmin == exp( ln(xmax) - ln(2)*nbins )
+    from math import exp, log
+    eps = exp(log(opts.XRANGE) - log(2)*opts.NBINS//2)
+    edges1 = yoda.logspace(opts.NBINS//2, eps, opts.XRANGE)
+    hedges = [-e for e in reversed(edges1)] + edges1
+else:
+    hedges = yoda.linspace(opts.NBINS, -opts.XRANGE, opts.XRANGE)
+if opts.DEBUG:
+    print "Histogram bin edges = ", hedges
+
+## Set up total residuals histograms
+hresvaltot = yoda.Histo1D(hedges, path="/TOT/resval")
+hreserrtot = yoda.Histo1D(hedges, path="/TOT/reserr")
 aos = [hresvaltot, hreserrtot]
 
-from matplotlib import pyplot as plt
 
+if not opts.NO_PLOTS:
+    from matplotlib import pyplot as plt
 
 ## Loop over histograms and compute residuals histos
 for hn, mchistos in HISTOS.iteritems():
     hnstr = hn.replace("/", "_").strip("_")
 
-    hresval = yoda.Histo1D(*hargsval, path=hn+"/resval")
-    hreserr = yoda.Histo1D(*hargserr, path=hn+"/reserr")
+    hresval = yoda.Histo1D(hedges, path=hn+"/resval")
+    hreserr = yoda.Histo1D(hedges, path=hn+"/reserr")
 
     ihisto = IHISTOS[hn]
     for irun, run in enumerate(RUNS):
@@ -95,6 +115,7 @@ for hn, mchistos in HISTOS.iteritems():
 
             ## Value residuals
             absres = ihisto.bins[ib].val(PARAMSLIST[irun]) - mchisto.bins[ib].val
+            # print irun, ib, absres
             if mchisto.bins[ib].val != 0:
                 relres = absres / mchisto.bins[ib].val
                 hresval.fill(relres)
@@ -108,22 +129,32 @@ for hn, mchistos in HISTOS.iteritems():
                 hreserr.fill(relres)
                 hreserrtot.fill(relres)
 
-    aos += [hresval, hreserr]
+    if not opts.ONLY_TOT:
+        aos += [hresval, hreserr]
 
-    f, _ = yoda.plot(hresval, "res_val_" + hnstr, plotkeys={"Title": hn})
-    plt.close(f)
-    print hn, "value:", "mean =", hresval.xMean(), "stddev =", hresval.xStdDev()
+        if hresval.numEntries() > 0:
+            print hn, "value:", "mean =", hresval.xMean(), "stddev =", hresval.xStdDev()
+            if not opts.NO_PLOTS:
+                f, _ = yoda.plot(hresval, "res_val_" + hnstr, plotkeys={"Title": hn})
+                plt.close(f)
 
-    f, _ = yoda.plot(hreserr, "res_err_" + hnstr, plotkeys={"Title": hn})
-    plt.close(f)
-    print hn, "error:", "mean =", hreserr.xMean(), "stddev =", hreserr.xStdDev()
+        if hreserr.numEntries() > 0:
+            print hn, "error:", "mean =", hreserr.xMean(), "stddev =", hreserr.xStdDev()
+            if not opts.NO_PLOTS:
+                f, _ = yoda.plot(hreserr, "res_err_" + hnstr, plotkeys={"Title": hn})
+                plt.close(f)
 
-    print
+        if hresval.numEntries() > 0 or hreserr.numEntries() > 0:
+            print
 
-yoda.plot(hresvaltot, "res_val_tot")
-print "Tot val", "mean =", hresvaltot.xMean(), "stddev =", hresvaltot.xStdDev()
+if hresvaltot.numEntries() > 0:
+    print "Tot val", "mean =", hresvaltot.xMean(), "stddev =", hresvaltot.xStdDev()
+    if not opts.NO_PLOTS:
+        yoda.plot(hresvaltot, "res_val_tot")
 
-yoda.plot(hreserrtot, "res_err_tot")
-print "Tot err", "mean =", hreserrtot.xMean(), "stddev =", hreserrtot.xStdDev()
+if hreserrtot.numEntries() > 0:
+    print "Tot err", "mean =", hreserrtot.xMean(), "stddev =", hreserrtot.xStdDev()
+    if not opts.NO_PLOTS:
+        yoda.plot(hreserrtot, "res_err_tot")
 
 yoda.write(aos, "res.yoda")
