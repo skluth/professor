@@ -1,5 +1,7 @@
 2015-11-28  Andy Buckley  <andy.buckley@cern.ch>
 
+	* Version 2.1.2
+
 	* Revert range shift in Ipol.cc, since it produced (small)
 	numerical errors rather than improved stability. To be
 	understood...
