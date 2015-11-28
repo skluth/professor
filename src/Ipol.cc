@@ -17,7 +17,7 @@ namespace Professor {
     // Scaling function to map x from [a,b] into [1,2].
     // NB. Target range does not touch 0, e.g. [0,1] to avoid raising very small numbers to large powers.
     double map_prange(double x, double a, double b) {
-      return 1 + (x-a)/(b-a);
+      return (x-a)/(b-a);
     }
 
   }
