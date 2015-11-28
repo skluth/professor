@@ -82,8 +82,9 @@ if opts.LOG_BINS:
     ##  => ln(2*xmin) == ln(xmin)(1 - 1/nbins) + ln(xmax)/nbins
     ##  => ln(xmin) == ln(xmax) - ln(2)*nbins
     ##  => xmin == exp( ln(xmax) - ln(2)*nbins )
-    from math import exp, log
-    eps = exp(log(opts.XRANGE) - log(2)*opts.NBINS//2)
+    #from math import exp, log
+    #eps = exp(log(opts.XRANGE) - log(2)*opts.NBINS//2)
+    eps = opts.XRANGE*(3**-(opts.NBINS//2))
     edges1 = yoda.logspace(opts.NBINS//2, eps, opts.XRANGE)
     hedges = [-e for e in reversed(edges1)] + edges1
 else:
