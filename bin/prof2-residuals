@@ -16,10 +16,9 @@ overfitting, by comparing residuals distributions between the set of runs used
 to make the fit (via prof-ipol) and an equivalent set not included in the fit.
 
 TODO:
- * Add an option to write out the .yoda file only
- * Add options for total-only, and value-only (no err) residuals
+ * Allow control over the output filenames / directory.
+ * Add an option for value-only (no err) residuals
  * Support runcomb filtering
- * Allow control over the output filenames.
 """
 
 import optparse, os, sys
@@ -136,13 +135,13 @@ for hn, mchistos in HISTOS.iteritems():
         if hresval.numEntries() > 0:
             print hn, "value:", "mean =", hresval.xMean(), "stddev =", hresval.xStdDev()
             if not opts.NO_PLOTS:
-                f, _ = yoda.plot(hresval, "res_val_" + hnstr, plotkeys={"Title": hn})
+                f, _ = yoda.plot(hresval, "res_val_" + hnstr + ".pdf", plotkeys={"Title": hn})
                 plt.close(f)
 
         if hreserr.numEntries() > 0:
             print hn, "error:", "mean =", hreserr.xMean(), "stddev =", hreserr.xStdDev()
             if not opts.NO_PLOTS:
-                f, _ = yoda.plot(hreserr, "res_err_" + hnstr, plotkeys={"Title": hn})
+                f, _ = yoda.plot(hreserr, "res_err_" + hnstr + ".pdf", plotkeys={"Title": hn})
                 plt.close(f)
 
         if hresval.numEntries() > 0 or hreserr.numEntries() > 0:
@@ -151,11 +150,11 @@ for hn, mchistos in HISTOS.iteritems():
 if hresvaltot.numEntries() > 0:
     print "Tot val", "mean =", hresvaltot.xMean(), "stddev =", hresvaltot.xStdDev()
     if not opts.NO_PLOTS:
-        yoda.plot(hresvaltot, "res_val_tot")
+        yoda.plot(hresvaltot, "res_val_tot.pdf")
 
 if hreserrtot.numEntries() > 0:
     print "Tot err", "mean =", hreserrtot.xMean(), "stddev =", hreserrtot.xStdDev()
     if not opts.NO_PLOTS:
-        yoda.plot(hreserrtot, "res_err_tot")
+        yoda.plot(hreserrtot, "res_err_tot.pdf")
 
 yoda.write(aos, "res.yoda")
