@@ -97,7 +97,7 @@ def read_histos(path):
     return histos
 
 
-def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
+def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,aida,flat"):
     """
     Read interpolation anchor point data from a provided set of run directory paths.
 
@@ -108,8 +108,12 @@ def read_rundata(dirs, pfname="params.dat"): #, formats="yoda,root,aida,flat"):
     params, histos = {}, {}
     import os, glob, re
     re_pfname = re.compile(pfname) if pfname else None
-    for num, d in enumerate(dirs):
+    numruns = len(dirs)
+    for num, d in enumerate(sorted(dirs)):
         run = os.path.basename(d)
+        if verbosity >= 2 or (verbosity >= 1 and (num % 50 == 0 or num == numruns)):
+            pct = 100*num/float(numruns)
+            print "Reading run '%s' data: %d/%d = %2.0f%%" % (run, num, numruns, pct)
         files = glob.glob(os.path.join(d, "*"))
         for f in files:
             ## Params file
