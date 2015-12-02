@@ -41,7 +41,7 @@ endif
 DISTNAME := Professor-$(VERSION)
 
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
-HAVE_CYTHON := $(shell which $(CYTHON) 2> /dev/null)
+HAVE_CYTHON := $(shell which cython &> /dev/null && test $(cython --version 2>&1 | sed -e 's/Cython version \([0-9\.]\+\)/\1/' | cut -d. -f2) -ge 20)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
@@ -77,7 +77,7 @@ pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
 else
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
-	$(error "Cython not available; can't build $@")
+	$(error "Cython >= 0.20 not available; can't build $@")
 endif
 
 pyext/professor2/core.so: pyext/professor2/core.cpp
