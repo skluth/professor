@@ -82,6 +82,9 @@ namespace Professor {
     /// Get the value of the parametrisation at point p
     double value(const std::vector<double>& p) const;
 
+    /// Get the value of the derivative of the parametrisation at point p
+    double derivative(const std::vector<double>& p) const;
+
     /// Get the vector of coefficients, calculated lazily and cached
     const std::vector<double>& coeffs() const { return _coeffs; }
 
