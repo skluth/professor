@@ -113,7 +113,7 @@ if not opts.QUIET:
     print()
 
 ## Loop over histograms and compute residuals histos
-for hn, mchistos in HISTOS.iteritems():
+for hn, mchistos in sorted(HISTOS.iteritems()):
     hnstr = hn.replace("/", "_").strip("_")
 
     hresval = yoda.Histo1D(hedges, path=hn+"/resval")
