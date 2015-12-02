@@ -46,7 +46,7 @@ class DataHisto(Histo):
         s += "# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
         for b in self.bins:
             s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid,
-                                               b.val(ppoint), b.errs(ppoint)[0], b.errs(ppoint)[1])
+                                               b.val, b.errs[0], b.errs[1])
         s += "# END YODA_SCATTER2D\n"
         return s
 
