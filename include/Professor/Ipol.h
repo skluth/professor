@@ -57,11 +57,11 @@ namespace Professor {
       _dim = pts.dim();
       _order = order;
       _name = name;
-      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold);
       if (doscaling) {
         _minPV = pts.ptmins();
         _maxPV = pts.ptmaxs();
       }
+      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold);
     };
 
     /// Constructor to read ipol from file (one string for each object)

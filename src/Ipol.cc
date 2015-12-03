@@ -19,7 +19,6 @@ namespace Professor {
     double map_prange(double x, double a, double b) {
       return (x-a)/(b-a);
     }
-
   }
 
 
@@ -77,7 +76,6 @@ namespace Professor {
     // Populate the matrix to be inverted
     vector<double> tempLV;
     for (int a = 0; a < pts.numPoints(); ++a) {
-      //tempLV = mkLongVector(origpoints[a], order);
       tempLV = mkLongVector(scaledpoints[a], order);
       for (size_t i = 0; i < tempLV.size(); ++i) {
         DP(a, i) = tempLV[i];
@@ -140,7 +138,7 @@ namespace Professor {
   }
 
   // NB. Not a member function
-  vector<double> mkLongVectorDerivative(const vector<double>& p, int order) {
+  vector<double> mkLongVectorDerivative(const vector<double>& p, int order, vector<double> minPV, vector<double> maxPV) {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
@@ -167,7 +165,7 @@ namespace Professor {
           if (c==i) {  // d/dx x*y*z
             temp2*=v[i];
             if (v[c]==0) continue;
-            else temp2*=std::pow(p[i], v[i]-1);
+            else temp2*=std::pow(p[i], v[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
           }
           else {
             temp2*=      std::pow(p[i], v[i] );
@@ -227,8 +225,9 @@ namespace Professor {
     // Param scaling into [0,1] ranges defined by sampling limits (if set)
     vector<double> sparams = params;
     if (!_minPV.empty() && !_maxPV.empty()) {
-      for (size_t i = 0; i < dim(); ++i)
+      for (size_t i = 0; i < dim(); ++i) {
         sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
+      }
     }
 
     // Dot product for value
@@ -252,12 +251,13 @@ namespace Professor {
     // Param scaling into [0,1] ranges defined by sampling limits (if set)
     vector<double> sparams = params;
     if (!_minPV.empty() && !_maxPV.empty()) {
-      for (size_t i = 0; i < dim(); ++i)
+      for (size_t i = 0; i < dim(); ++i) {
         sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
+      }
     }
 
     // Dot product for value
-    const vector<double> lv = mkLongVectorDerivative(sparams, order());
+    const vector<double> lv = mkLongVectorDerivative(sparams, order(), _minPV, _maxPV);
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 1; i < lv.size(); ++i) {
