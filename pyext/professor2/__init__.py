@@ -14,9 +14,6 @@ from professor2.params import *
 from professor2.sampling import *
 from professor2.weights import *
 
-# TODO: DEFUNCT & REMOVE?
-# from professor2.generator import *
-# from professor2.param import *
 
 
 # TODO: move to a stats submodule, or similar
