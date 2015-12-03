@@ -157,6 +157,10 @@ class IpolBin(Bin):
         vmax = vminmax.get("vmax", None)
         return self.ival.value(*params, vmin=vmin, vmax=vmax)
 
+    def der(self, *params, **vminmax):
+        "Get the derivative according to the parametrisation"
+        return self.ival.der(*params)
+
     #def err(self, *params, emin=0, emax=None): #< needs Python3
     def err(self, *params, **eminmax):
         "Get a single interpolated error, perhaps averaged, for this bin"
