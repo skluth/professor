@@ -2,12 +2,14 @@
 
 import numpy as np
 def f(x):
+    #return x**3
     return 3*x**3 -4*x**2 + 2*x +1
 def fprime(x):
+    #return 3*x**2
     return 9*x**2 -8*x + 2
 # TODO: also try a non-polynomial function, e.g. sin
 
-A = np.linspace(0, 10, 20)
+A = np.linspace(0, 20, 20)
 Y = f(A)
 dY = fprime(A)
 
@@ -17,6 +19,8 @@ ipol = prof.Ipol(X, Y, 3, "order3")
 Z  = [ipol.val(x) for x in X]
 dZ = [ipol.der(x) for x in X]
 
+#from IPython import embed
+#embed()
 
 import pylab
 pylab.plot(A, Y, "ro", label="Anchors")
