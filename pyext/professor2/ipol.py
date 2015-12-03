@@ -36,20 +36,33 @@ def mk_ipolinputs(params):
     return runs, paramnames, paramslist
 
 
-def mk_ipolhisto(histos, runs, paramslist, order, errmode="none"):
+def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
     """\
     Make a prof.IpolHisto from a dict of prof.DataHistos and the corresponding
     runs and params lists, at the given polynomial order.
 
     If errs is non-null, the data histo errors will also be interpolated.
 
+    If errmode is None or 'none', uncertainties will not be parameterised and
+    will return 0 if queried; 'mean' and 'median' will use fixed values derived
+    from the anchor points; 'symm' will parameterise the average of the + and -
+    errors of each bin at the polynomial order given by errorder. If errorder is
+    None, the same order as for the value parameterisation will be used.
+
     Parameter range scaling will be applied, so a DoParamScaling=true flag will
     need to be written to the metadata when persisting the resulting IpolHisto.
+
     """
+    if errmode is None:
+        errmode = "none"
+    if errorder is None:
+        errorder = order
+    #
     nbins = len(histos.itervalues().next().bins)
     ibins = []
     for n in xrange(nbins):
         ## Check that the bin edges are consistent and extract their values
+        # TODO: move bin edge consistency checking into the Histo base class
         xmins = set([histos[run].bins[n].xmin for run in runs])
         xmaxs = set([histos[run].bins[n].xmax for run in runs])
         assert len(xmins) == len(xmaxs) == 1

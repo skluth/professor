@@ -9,6 +9,7 @@ from the usual data directory structure $datadir/mc/{rundirs}
 TODO:
  * Use weight file position matches to exclude some bins, as well as path matching
  * Handle run combination file/string (write a hash of the run list into the ipol filename?)
+ * Support asymm error parameterisation
 """
 
 import optparse, os, sys
@@ -16,8 +17,10 @@ op = optparse.OptionParser(usage=__doc__)
 op.add_option("--pname", "--pfile", dest="PNAME", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict ipol building to a subset of bins (default: %default)")
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
-op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median, symm, or asymm (default: %default)") #< add rel
-# TODO: Change to instead (optionally) specify the max number of parallel threads/procs
+op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median, symm (default: %default)") #< add rel, asymm
+op.add_option("--eorder", dest="ERR_ORDER", default=None, type=int, help="Global order of polynomials for uncertainty interpolation (default: same as from --order)")
+# TODO: Add a no-scale option
+# TODO: Change to instead (optionally) specify the max number of parallel threads/procs. Use by default if ncores > 1?
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description of this fit to be written to the ipol output file")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
@@ -55,6 +58,7 @@ except Exception, e:
 
 ## Some useful announcements about the data loaded and the interpolation planned
 if not opts.QUIET:
+    print
     print "Building %dD interpolations in %d params: require at least %d runs" % \
         (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
     print "Loaded %d distinct observables from %d runs" % (len(HISTOS), len(RUNS))
@@ -113,7 +117,7 @@ def worker(q, rdict):
             break
         hn = q.get()
         histos = HISTOS[hn]
-        ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
+        ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR, opts.ERR_ORDER)
         del HISTOS[hn] #< pro-actively clear up memory
         s = ""
         for i, ib in enumerate(ih.bins):
@@ -126,7 +130,6 @@ def worker(q, rdict):
         rdict[hn] = zlib.compress(s, 9) #< save some memory
         del s
         del histos
-
 
 print "\n\nInterpolating\n"
 import time, multiprocessing

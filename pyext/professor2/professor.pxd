@@ -5,6 +5,10 @@ from libcpp cimport bool
 from libcpp.string cimport string
 
 
+cdef extern from "Professor/Professor.h" namespace "Professor":
+    string version()
+
+
 cdef extern from "Professor/ParamPoints.h" namespace "Professor":
     cdef cppclass ParamPoints:
         ParamPoints(const vector[ vector[double] ]&) except +

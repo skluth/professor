@@ -1,6 +1,5 @@
 ## Makefile for Professor 2.x
-# TODO: automatically pass the version into the C++ and Python sources
-VERSION := 2.1.2
+VERSION := 2.1.3a
 
 
 ## Default values for user-specifiable build variables
@@ -46,7 +45,7 @@ HAVE_CYTHON := $(shell which cython &> /dev/null && test `cython --version 2>&1 
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
-LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Counter Ipol)
+LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Counter Ipol Version)
 TESTSOURCES := $(wildcard test/*.cc test/testPython*)
 TESTPROGS  := test/testParamPoints test/testIpol
 BINPROGS := $(wildcard bin/*)
@@ -68,7 +67,7 @@ lib/libProfessor2.so: $(LIBOBJECTS)
 
 obj/%.o: src/%.cc $(LIBHEADERS)
 	mkdir -p obj
-	$(CXX) -std=$(CXXSTD) -Iinclude $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -o $@
+	$(CXX) -std=$(CXXSTD) -DPROF_VERSION="$(VERSION)" -Iinclude $(CPPFLAGS) $(CXXFLAGS) -c -fPIC $< -o $@
 
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	$(PYTHON) pyext/setup.py install --prefix=.
@@ -82,7 +81,7 @@ pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 endif
 
 pyext/professor2/core.so: pyext/professor2/core.cpp
-	$(PYTHON) pyext/setup.py build_ext -i --force
+	PROF_VERSION=$(VERSION) $(PYTHON) pyext/setup.py build_ext -i --force
 
 tests: cxxtests pytests
 	@true

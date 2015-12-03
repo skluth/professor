@@ -53,7 +53,7 @@ namespace Professor {
     /// instability.
     ///
     Ipol(const ParamPoints& pts, const std::vector<double>& ptvals, int order,
-         const std::string& name="", double svdthreshold=1e-15, bool doscaling=true) {
+         const std::string& name="", double svdthreshold=1e-20, bool doscaling=true) {
       _dim = pts.dim();
       _order = order;
       _name = name;

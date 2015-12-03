@@ -1,5 +1,6 @@
 ## Import Cython wrappings on the C++ core library
 from professor2.core import *
+__version__ = version()
 
 ## Import high-level Python functionality
 # TODO: be more selective, to speed up import?
@@ -48,16 +49,14 @@ def mk_timestamp():
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     return st
 
-def mk_versionstring():
-    """
-    Get version from setup.py, courtesy of
-    http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package
-    """
-    import pkg_resources  # part of setuptools
-    return pkg_resources.require("professor2")[0].version
-
-
-__version__ = mk_versionstring()
+# def mk_versionstring():
+#     """
+#     Get version from setup.py, courtesy of
+#     http://stackoverflow.com/questions/2058802/how-can-i-get-the-version-defined-in-setup-py-setuptools-in-my-package
+#     """
+#     import pkg_resources  # part of setuptools
+#     return pkg_resources.require("professor2")[0].version
+# __version__ = mk_versionstring()
 
 
 logo = \
@@ -75,4 +74,4 @@ Please cite arXiv:0907.2973 [hep-ph]
  Andy Buckley, Holger Schulz                          v%s
  Copyright 2015
 
-""" % (mk_timestamp(), mk_versionstring())
+""" % (mk_timestamp(), version())

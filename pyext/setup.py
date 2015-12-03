@@ -19,8 +19,9 @@ ext = Extension("professor2.core",
                 runtime_library_dirs=[],
                 libraries=["Professor2"])
 
+v = os.environ.get("PROF_VERSION", "X.Y.Z")
 setup(name = "professor2",
-      version="2.0.0",
+      version=v,
       ext_modules = [ext],
       packages = ["professor2"],
       package_dir = {"": "pyext"},

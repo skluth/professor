@@ -4,6 +4,12 @@ cimport professor as c
 cimport cython.operator.dereference as deref
 
 
+def version(astuple=False):
+    "Professor version code, as a string by default or a tuple on request"
+    v = c.version()
+    return v.split(".") if astuple else v
+
+
 cdef class ParamPoints:
     cdef c.ParamPoints* _ptr
 
