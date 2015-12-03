@@ -1,3 +1,10 @@
+2015-12-03  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Make derivative calculation work also when scaling params
+	
+	* Let YODA write YODA
+
+
 2015-12-02  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Derivative calculation

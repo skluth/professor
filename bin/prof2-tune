@@ -237,10 +237,8 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
         f.write("%s\t%f\n" % (p, minuit.values[ANAMES[i]]))
 
 
-## Write out ipolhistos
+## Write out ipolhistos TODO catch import error?
+import yoda
 result = [minuit.values[name] for name in ANAMES]
-with open("%s_ipolhistos.yoda" % opts.OUTPUT, "w") as f:
-    for num, k in enumerate(sorted(IHISTOS.keys())):
-        f.write(IHISTOS[k].toDataHisto(result).toYODA())
-        if num+1 < len(IHISTOS.keys()):
-            f.write("\n")
+scatters=[IHISTOS[k].toDataHisto(result).toScatter2D() for k in sorted(IHISTOS.keys())]
+yoda.writeYODA(scatters, "%s_ipolhistos.yoda" % opts.OUTPUT)
