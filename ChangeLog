@@ -2,6 +2,8 @@
 
 	* Use __all__ in __init__.py 
 
+	* Started sphinx documentation
+
 
 2015-12-03  Holger Schulz  <holger.schulz@cern.ch>
 
