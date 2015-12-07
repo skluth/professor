@@ -43,31 +43,32 @@ if len(args) >= 3:
 
 ## Load Professor and show the standard banner
 import professor2 as prof
+from professor2 import ui
 if not opts.QUIET:
-    print prof.logo
+    print prof.ui.logo
 
 
 ## Read persisted interpolations to re-create the ipol Histos
-METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
+METADATA, IHISTOS = prof.ui.read_ipolhistos(IFILE)
 
 ## Read reference data histos
 import os, sys, glob
 DHISTOS = {}
 REFFILES = glob.glob(os.path.join(REFDIR, "*"))
 for rf in REFFILES:
-    DHISTOS.update(prof.read_histos(rf))
+    DHISTOS.update(prof.ui.read_histos(rf))
 
 ## Try to read run histos and extract maximum errors
 MAXERRDICT = None
 try:
     rundirs = glob.glob(os.path.join(RUNSDIR, "*"))
-    _, RUNHISTOS = prof.read_rundata(rundirs, None) #< don't care about reading params files
-    MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
+    _, RUNHISTOS = prof.ui.read_rundata(rundirs, None) #< don't care about reading params files
+    MAXERRDICT = prof.ui.find_maxerrs(RUNHISTOS)
 except:
     print "Could not read run data for error regularisation -- chi2 may be unstable"
 
 ## Weight file parsing
-matchers = prof.read_pointmatchers(opts.WFILE) if opts.WFILE else None
+matchers = prof.ui.read_pointmatchers(opts.WFILE) if opts.WFILE else None
 
 
 ## Find things available in both ipol and ref data, and in the weight file if there is one
@@ -115,7 +116,7 @@ if not IBINS:
 assert MAXERRS is None or len(IBINS) == len(MAXERRS)
 
 
-def simpleGOF(params):
+def simpleGoF(params):
     """
     Very straightforward goodness-of-fit measure
     """
@@ -134,7 +135,7 @@ def simpleGOF(params):
         err2 += ibin.err(params, emax=maxierr)**2
         # TODO: compute asymm error for appropriate deviation direction cf. sum([e**2 for e in ibin.ierrs])
         if not err2:
-            raise prof.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
+            raise prof.ui.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
         # TODO: should we square w too, so it penalised deviations _linearly_?
         chi2 += w * diff**2 / err2
     return chi2
@@ -146,8 +147,12 @@ if not PNAMES:
     PNAMES = ["A%03i" % i for i in xrange(int(METADATA["Dimension"]))]
 
 ## Function definition wrapper
-funcdef, ANAMES = prof.mk_fitfunc("simpleGOF", PNAMES)
+funcdef, ANAMES = prof.ui.mk_fitfunc("simpleGoF", PNAMES)
 exec funcdef in locals()
+
+#from IPython import embed
+#embed()
+
 if opts.DEBUG:
     print "Built GoF wrapper from:\n  '%s'" % funcdef
 print "Parameter translation:"
@@ -155,10 +160,18 @@ for i in xrange(len(PNAMES)):
     print " ", PNAMES[i], "->", ANAMES[i]
 
 
+try:
+    from iminuit import Minuit
+except ImportError, e:
+    print "Unable to import iminuit, exiting", e
+    import sys
+    sys.exit(1)
+
 ## Ignition
-minuit = prof.mk_minuit(profGoF)
-# TODO: reconsider this default... it's *slow*
-minuit.strategy = 2
+# This is a dummy for now
+dumminuit = Minuit(simpleGoF, pedantic=False, print_level=2)#, forced_parameters=pnames)
+# Dummy fitargs
+FARG=dumminuit.fitarg
 
 ## Initial conditions --- use pos = center of hypercube, and step = range/10
 # TODO: Optionally make an initial brute force scan to choose the Minuit starting point, using prof.scangrid
@@ -168,24 +181,34 @@ assert len(pmins) == len(pmaxs)
 pmids = [(pmins[i] + pmaxs[i])/2. for i in xrange(len(pmins))]
 pranges = [(pmaxs[i] - pmins[i]) for i in xrange(len(pmins))]
 for i, aname in enumerate(ANAMES):
-    minuit.values[aname] = pmids[i]
-    minuit.errors[aname] = pranges[i] / 10.
+    FARG[aname] = pmids[i]
+    FARG['error_%s'%aname] = pranges[i] / 10.
 
 ## Fix parameters, set limits (with pname translation)
-limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
-for i, p in enumerate(PNAMES):
-    if p in limits.keys():
-        minuit.limits[ANAMES[i]] = limits[p]
-    if p in fixed.keys():
-        minuit.values[ANAMES[i]] = fixed[p]
-        minuit.fixed[ANAMES[i]] = True
+limits, fixed = prof.ui.read_limitsandfixed(opts.LIMITS)
 
+for i, pname in enumerate(PNAMES):
+    aname=ANAMES[i]
+    if pname in limits.keys():
+        FARG['limit_%s'%aname] = limits[pname]
+    if pname in fixed.keys():
+        print "Fixing", pname, "= %f"%fixed[PNAMES[i]]
+        FARG[aname] = fixed[PNAMES[i]]
+        FARG['fix_%s'%aname] = True
+
+
+FARG.pop('error_params')
+FARG.pop('params')
+FARG.pop('fix_params')
+FARG.pop('limit_params')
+# TODO: errordef, strategy CL params?
+minuit = Minuit(profGoF, errordef=1, forced_parameters=ANAMES, **FARG)
+minuit.strategy = 0
 ## Lift off
 minuit.migrad()
 
 
-## Now process the result:
-
+### Now process the result:
 ## Goodness of fit
 if not opts.QUIET:
     chi2 = minuit.fval
@@ -195,7 +218,7 @@ if not opts.QUIET:
 
 ## Check if result is in validity range
 result = [minuit.values[a] for a in ANAMES]
-rok, rng = prof.is_inrange(result, pmins, pmaxs)
+rok, rng = prof.ui.is_inrange(result, pmins, pmaxs)
 
 ## Print results to screen
 for num, p in enumerate(PNAMES):
@@ -203,7 +226,7 @@ for num, p in enumerate(PNAMES):
     if opts.QUIET:
         print "%s\t%f" % (p, minuit.values[ANAMES[num]])
     else:
-        if p in fixed.keys():
+        if p in fixed.keys() or ANAMES[num] in fixed.keys():
             isf = "F"
         if p in limits.keys():
             isl = "L"
@@ -211,27 +234,30 @@ for num, p in enumerate(PNAMES):
         print "%s\t%f\t%f\t%.2f %%   %s  (%f --- %f) %s %s" % (p, minuit.values[ANAMES[num]], minuit.errors[ANAMES[num]],
                                                                100*(minuit.errors[ANAMES[num]]/minuit.values[ANAMES[num]]),
                                                                in_out, pmins[num], pmaxs[num], isf, isl)
+#from IPython import embed
+#embed()
 
 ## Write out result
 with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     ## Meta info
-    f.write("# ProfVersion: %s\n" % prof.mk_versionstring())
-    f.write("# Date: %s\n" % prof.mk_timestamp())
+    f.write("# ProfVersion: %s\n" % prof.ui.mk_versionstring())
+    f.write("# Date: %s\n" % prof.ui.mk_timestamp())
     f.write("# InterpolationFile: %s\n" % os.path.abspath(IFILE))
+    f.write("# DataDirectory: %s\n" % os.path.abspath(REFDIR))
     # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end
     ## Limits
     lstring = ""
     for p in PNAMES:
         if limits.has_key(p):
-            lstring += "#\t%s\t%f %f\n" % (p, limits[p][0], limits[p][1])
-    f.write("# Limits: \n%s" % lstring)
+            lstring += "\n#\t%s\t%f %f" % (p, limits[p][0], limits[p][1])
+    f.write("#\n# Limits: %s" % lstring)
     # Fixed parameters
     fstring = ""
     for p in PNAMES:
         if fixed.has_key(p):
-            fstring += "#\t%s\t%f\n" % (p, fixed[p])
-    f.write("# Fixed: \n%s" % fstring)
-
+            fstring += "\n#\t%s\t%f" % (p, fixed[p])
+    f.write("\n#\n# Fixed: %s\n" % fstring)
+    f.write("#\n# Minimisation result:\n#\n")
     ## The tuned parameter values
     for i, p in enumerate(PNAMES):
         f.write("%s\t%f\n" % (p, minuit.values[ANAMES[i]]))

@@ -5,8 +5,6 @@
 
 Write out yoda file at parampoint P
 
-TODO:
-    * stuff
 """
 
 import optparse
@@ -20,8 +18,9 @@ opts, args = op.parse_args()
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
+from professor2 import ui
 if not opts.QUIET:
-    print prof.logo
+    print prof.ui.logo
 
 import os, sys
 if not os.path.exists(opts.IFILE):
@@ -29,7 +28,7 @@ if not os.path.exists(opts.IFILE):
     sys.exit(1)
 
 ## Read in meta data and ipol histos
-META, IHISTOS = prof.read_ipolhistos(opts.IFILE)
+META, IHISTOS = prof.ui.read_ipolhistos(opts.IFILE)
 
 ## This is the Parameter point bit
 if len(args) == 1:
@@ -43,6 +42,11 @@ else:
     PARAMS = [float(a) for a in args]
 
 ## Write out ipolhistos TODO catch import error?
-import yoda
+try:
+    import yoda
+except ImportError:
+    print "Can't import YODA, exiting..."
+    import sys
+    sys.exit(1)
 scatters=[IHISTOS[k].toDataHisto(PARAMS).toScatter2D() for k in sorted(IHISTOS.keys())]
 yoda.writeYODA(scatters, "%s_prediction.yoda" % opts.OUTPUT)

@@ -51,6 +51,10 @@ namespace Professor {
       stringstream ss;
       ss << "Ipol: not enough (" << ncoeff << " vs. " << pts.numPoints() << ") anchor points "
          << "for interpolating with " << pts.dim() << " params at order " << order;
+      for (unsigned int i_order=1;i_order<order;i_order++) {
+        if (numCoeffs(pts.dim(), i_order)<=pts.numPoints())
+          ss << "\n Order " << i_order  << " requires " << numCoeffs(pts.dim(), i_order) << " anchors";
+      }
       throw IpolError(ss.str());
     }
 

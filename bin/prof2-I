@@ -28,12 +28,14 @@ if len(args) >= 2:
 
 ## Load the Professor machinery
 import professor2 as prof
+from professor2 import ui, misc
+
 if not opts.QUIET:
-    print prof.logo
+    print prof.ui.logo
 
 
 ## Read in ipol histos
-METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
+METADATA, IHISTOS = prof.ui.read_ipolhistos(IFILE)
 
 ## List of rivet analysis paths in IHISTOS
 # TODO: Urgh, avoid this sort of noise-code!
@@ -46,7 +48,7 @@ HISTOS = {}
 if REFDIR is not None:
     reffiles = glob.glob(os.path.join(REFDIR, "*"))
     for rf in reffiles:
-        HISTOS.update(prof.read_histos(rf))
+        HISTOS.update(prof.ui.read_histos(rf))
 
     ## Find things available in both
     available = []
@@ -156,7 +158,7 @@ def mk_pull(obs, ppoint, prefix="/REF"):
     for num, b in enumerate(IHISTOS[obs].bins):
         X.append(b.xmin)
         X.append(b.xmax)
-        p=prof.pull(HISTOS[prefix+obs].bins[num], b, ppoint)
+        p=prof.misc.pull(HISTOS[prefix+obs].bins[num], b, ppoint)
         Y.append(p)
         Y.append(p)
     return X, Y

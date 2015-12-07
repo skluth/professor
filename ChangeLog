@@ -3,6 +3,10 @@
 	* Use __all__ in __init__.py 
 
 	* Started sphinx documentation
+	
+	* Support only iminuit, bump version to 2.2.alpha, restructure imports
+
+	* Sanity checks when calling parametrisation
 
 
 2015-12-03  Holger Schulz  <holger.schulz@cern.ch>
