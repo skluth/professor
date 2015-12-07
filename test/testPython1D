@@ -9,8 +9,9 @@ A = np.linspace(0, 10, 20)
 Y = f(A)
 
 import professor2 as prof
+from professor2 import ui
 X = np.array([[a] for a in A])
-ipols = [prof.Ipol(X, Y, i, "order%i" % i) for i in xrange(0,7)]
+ipols = [prof.ui.Ipol(X, Y, i, "order%i" % i) for i in xrange(0,7)]
 Z = [[i.value(x) for x in X] for i in ipols]
 
 import pylab
