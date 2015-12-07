@@ -1,19 +1,15 @@
+import sys
+pyversion = sys.version_info
+if sys.version_info[0] < 2 or (sys.version_info[0] == 2 and sys.version_info[1] < 6):
+    raise Exception("Professor2 requires Python 2.6 or greater")
+
 ## Import Cython wrappings on the C++ core library
 from professor2.core import *
 
 ## Import high-level Python functionality
 # TODO: be more selective, to speed up import?
-from professor2.errors import *
-from professor2.dataio import *
-from professor2.histos import *
-from professor2.ipolio import *
-from professor2.ipol import *
-from professor2.minimize import *
-from professor2.paramsio import *
-from professor2.params import *
-from professor2.sampling import *
-from professor2.weights import *
-
+#
+__all__ = ["errors", "dataio", "histos", "ipolio", "ipol", "minimize", "paramsio", "params", "sampling", "weights"]
 
 
 # TODO: move to a stats submodule, or similar
