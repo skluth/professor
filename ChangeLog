@@ -1,3 +1,8 @@
+2015-12-09  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Can specify PREFIX when calling make
+
+
 2015-12-07  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Use __all__ in __init__.py 

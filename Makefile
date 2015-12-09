@@ -5,7 +5,9 @@ VERSION := 2.1.2
 
 ## Default values for user-specifiable build variables
 
-PREFIX := /usr/local
+ifndef PREFIX
+  PREFIX := /usr/local
+endif
 
 CXXSTD := c++11
 
