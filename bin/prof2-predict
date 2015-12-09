@@ -50,7 +50,9 @@ else:
 
 
 ## Write out ipolhistos
-with open(opts.OUTPUT + "_prediction.yoda", "w") as f:
+ofile = opts.OUTPUT + "_prediction.yoda"
+print "Writing predicted histograms to", ofile
+with open(ofile, "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
         f.write(IHISTOS[k].toDataHisto(PARAMS).toYODAStr(k))
         if num+1 < len(IHISTOS.keys()):
