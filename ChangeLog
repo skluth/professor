@@ -1,3 +1,11 @@
+2015-12-09  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Improve prof2-predict UI.
+
+	* Add metadata printing in prof2-lsipol debug mode.
+
+	* Add -v and -q flag shortcuts to all scripts.
+
 2015-12-03  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Provide a version() function in the C++ library, and map it into

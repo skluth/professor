@@ -23,8 +23,8 @@ op.add_option("--eorder", dest="ERR_ORDER", default=None, type=int, help="Global
 # TODO: Change to instead (optionally) specify the max number of parallel threads/procs. Use by default if ncores > 1?
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description of this fit to be written to the ipol output file")
-op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
-op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -131,12 +131,12 @@ def worker(q, rdict):
         del s
         del histos
 
-print "\n\nInterpolating\n"
+
 import time, multiprocessing
 num_cores = multiprocessing.cpu_count()
 time1 = time.time()
-if num_cores > 1 and opts.MULTI:
-    ## A shared memory object is required for retrieval coefficients
+if opts.MULTI and num_cores > 1:
+    ## A shared memory object is required for coefficient retrieval
     from multiprocessing import Manager
     manager = Manager()
     tempDict = manager.dict()
@@ -157,15 +157,10 @@ if num_cores > 1 and opts.MULTI:
 # TODO: Remove duplication: either multiprocess or don't, but don't make us have to support both ways!
 else:
     for num, hn in enumerate(HNAMES):
-        if opts.DEBUG:
-            print "\n\nInterpolating " + hn
-        else:
-            print "\r%.1f per cent interpolated" % ((float(num+1)/len(HNAMES))*100),
+        print "Interpolating %s... %d/%d (%.1f%%)" % (hn, num+1, len(HNAMES), 100*(float(num+1)/len(HNAMES)))
         histos = HISTOS[hn]
-        print hn
         IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
-
 
 ## Timing
 time2 = time.time()
@@ -182,7 +177,7 @@ with open(IFILE, "w") as f:
     if opts.SUMMARY is not None:
         f.write("Summary: %s\n" % opts.SUMMARY)
     #f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
-    f.write("ProfVersion: %s\n" % prof.mk_versionstring())
+    f.write("ProfVersion: %s\n" % prof.version())
     f.write("Date: %s\n" % prof.mk_timestamp())
     f.write("DataFormat: binned 1\n") # This tells the reader how to treat the coefficients that follow
     # Format and write out parameter names
@@ -200,8 +195,8 @@ with open(IFILE, "w") as f:
     maxstring = "MaxParamVals:"
     for v in prof.mk_maxvals(PARAMSLIST):
         maxstring += " %f" % v
-    f.write("DoParamScaling: 1\n")
     f.write(maxstring + "\n")
+    f.write("DoParamScaling: 1\n")
     # Number of inputs per bin
     f.write("NumInputs: %i\n" % len(PARAMSLIST))
     f.write("---\n")

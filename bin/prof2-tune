@@ -20,8 +20,8 @@ op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file
 op.add_option("--output", dest="OUTPUT", default="tunes", help="Prefix for outputs (default: %default)")
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
-op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
-op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -215,7 +215,7 @@ for num, p in enumerate(PNAMES):
 ## Write out result
 with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     ## Meta info
-    f.write("# ProfVersion: %s\n" % prof.mk_versionstring())
+    f.write("# ProfVersion: %s\n" % prof.version())
     f.write("# Date: %s\n" % prof.mk_timestamp())
     f.write("# InterpolationFile: %s\n" % os.path.abspath(IFILE))
     # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end
@@ -241,6 +241,6 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
 result = [minuit.values[name] for name in ANAMES]
 with open("%s_ipolhistos.yoda" % opts.OUTPUT, "w") as f:
     for num, k in enumerate(sorted(IHISTOS.keys())):
-        f.write(IHISTOS[k].toDataHisto(result).toYODA())
+        f.write(IHISTOS[k].toDataHisto(result).toYODAStr())
         if num+1 < len(IHISTOS.keys()):
             f.write("\n")

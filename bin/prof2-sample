@@ -28,6 +28,8 @@ op.add_option("-p", "--pfile", dest="PARAMSFILE", metavar="FILE", default="param
 op.add_option("-P", "--no-pfile", dest="PARAMSFILE", action="store_const", const=None, help="do not write a params file for each sample point")
 op.add_option("-s", "--seed", dest="SEED", metavar="VAL", default=None, help="specify a random seed for the sampler (default: use system time)")
 op.add_option("--veto", dest="VETOFN", metavar="FILE", default=None, help="specify a file from which to read the definition of a Python sample point-vetoing function, prof_sample_veto(paramsdict). Return True means 'veto point'")
+op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="turn on some debug messages")
+op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="turn off messages")
 opts, args = op.parse_args()
 assert opts.OUTMODE in ("hier", "flat", "table")
 

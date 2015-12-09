@@ -32,8 +32,8 @@ op.add_option("--nbins", dest="NBINS", default=30, type=int, help="number of bin
 op.add_option("--no-plots", dest="NO_PLOTS", action="store_true", default=False, help="don't write histogram PDFs (default: %default)")
 op.add_option("--tot-only", dest="ONLY_TOT", action="store_true", default=False, help="only make total residuals histograms, not per-observable (default: %default)")
 op.add_option("--logx", dest="LOG_BINS", action="store_true", default=False, help="use a symmetric log binning for better resolution around 0 (default: %default)")
-op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="turn on some debug messages")
-op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="turn off messages")
+op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="turn on some debug messages")
+op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="turn off messages")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
