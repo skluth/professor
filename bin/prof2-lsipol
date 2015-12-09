@@ -9,8 +9,8 @@ List the interpolations stored in <ipolfile>. Useful for writing a default weigh
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file to write to")
-#op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
-op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
+op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -28,15 +28,22 @@ if not opts.QUIET:
 
 
 ## Read persisted interpolations to re-create the ipol Histos
-metadata, IHISTOS = prof.read_ipolhistos(IFILE)
+META, IHISTOS = prof.read_ipolhistos(IFILE)
 maxlen = max(len(h) for h in IHISTOS.keys())
 hfmt = "{0:%ds}" % maxlen
 
 
 ## Print!
 if not opts.QUIET:
+    if opts.DEBUG:
+        print "Metadata:"
+        for k, v in sorted(META.iteritems()):
+            print " ", k, "=", v
+        print "\n"
+    print "Histos:"
     for path, h in sorted(IHISTOS.iteritems()):
-        print hfmt.format(path) #+ "  " + ...
+        print " ", hfmt.format(path) #+ "  " + ...
+
 
 ## Write!
 if opts.WFILE:
