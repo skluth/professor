@@ -14,9 +14,8 @@ Y = f(A)
 dY = fprime(A)
 
 import professor2 as prof
-from professor2 import ui
 X = np.array([[a] for a in A])
-ipol = prof.ui.Ipol(X, Y, 3, "order3")
+ipol = prof.Ipol(X, Y, 3, "order3")
 Z  = [ipol.val(x) for x in X]
 dZ = [ipol.der(x) for x in X]
 

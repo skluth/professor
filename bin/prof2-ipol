@@ -37,9 +37,8 @@ if len(args) >= 2:
 
 ## Load the Professor machinery
 import professor2 as prof
-from professor2 import ui
 if not opts.QUIET:
-    print prof.ui.logo
+    print prof.logo
 
 
 ## Load MC run histos and params
@@ -47,8 +46,8 @@ import glob
 # TODO: add runcomb file parsing to select a runs subset
 INDIRS = glob.glob(os.path.join(RUNSDIR, "*"))
 try:
-    PARAMS, HISTOS = prof.ui.read_rundata(INDIRS, opts.PNAME)
-    RUNS, PARAMNAMES, PARAMSLIST = prof.ui.mk_ipolinputs(PARAMS)
+    PARAMS, HISTOS = prof.read_rundata(INDIRS, opts.PNAME)
+    RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 except Exception, e:
     print e
     sys.exit(1)
@@ -56,23 +55,23 @@ except Exception, e:
 
 ## Some useful announcements about the data loaded and the interpolation planned
 if not opts.QUIET:
-    if (len(RUNS) < prof.ui.min_runs(opts.ORDER, len(PARAMNAMES))):
+    if (len(RUNS) < prof.min_runs(opts.ORDER, len(PARAMNAMES))):
         print "Not enough runs for order %i polynomials"%opts.ORDER
         for i in xrange(1, opts.ORDER):
-            if (prof.ui.min_runs(opts.ORDER -i, len(PARAMNAMES)) <= len(RUNS)):
-                print "Try order %i (min %i runs)"%(opts.ORDER -i, prof.ui.min_runs(opts.ORDER -i, len(PARAMNAMES)))
+            if (prof.min_runs(opts.ORDER -i, len(PARAMNAMES)) <= len(RUNS)):
+                print "Try order %i (min %i runs)"%(opts.ORDER -i, prof.min_runs(opts.ORDER -i, len(PARAMNAMES)))
         import sys
         sys.exit(1)
 
     else:
         print "Building %dD interpolations in %d params: require at least %d runs" % \
-            (opts.ORDER, len(PARAMNAMES), prof.ui.min_runs(opts.ORDER, len(PARAMNAMES)))
+            (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
         print "Loaded %d distinct observables from %d runs" % (len(HISTOS), len(RUNS))
 
 
 ## Weight file parsing to select a histos subset
 if opts.WFILE:
-    matchers = prof.ui.read_pointmatchers(opts.WFILE)
+    matchers = prof.read_pointmatchers(opts.WFILE)
     for hn in HISTOS.keys():
         if not any(m.match_path(hn) for m in matchers.keys()):
             del HISTOS[hn]
@@ -123,7 +122,7 @@ def worker(q, rdict):
             break
         hn = q.get()
         histos = HISTOS[hn]
-        ih = prof.ui.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
+        ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
         s = ""
         for i, ib in enumerate(ih.bins):
@@ -170,7 +169,7 @@ else:
             print "\r%.1f per cent interpolated" % ((float(num+1)/len(HNAMES))*100),
         histos = HISTOS[hn]
         print hn
-        IHISTOS[hn] = prof.ui.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
+        IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
 
 
@@ -189,8 +188,8 @@ with open(IFILE, "w") as f:
     if opts.SUMMARY is not None:
         f.write("Summary: %s\n" % opts.SUMMARY)
     #f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
-    f.write("ProfVersion: %s\n" % prof.ui.mk_versionstring())
-    f.write("Date: %s\n" % prof.ui.mk_timestamp())
+    f.write("ProfVersion: %s\n" % prof.mk_versionstring())
+    f.write("Date: %s\n" % prof.mk_timestamp())
     f.write("DataFormat: binned 1\n") # This tells the reader how to treat the coefficients that follow
     # Format and write out parameter names
     pstring = "ParamNames:"
@@ -201,11 +200,11 @@ with open(IFILE, "w") as f:
     f.write("Dimension: %i\n" % len(PARAMNAMES))
     # Interpolation validity (hypercube edges)
     minstring = "MinParamVals:"
-    for v in prof.ui.mk_minvals(PARAMSLIST):
+    for v in prof.mk_minvals(PARAMSLIST):
         minstring += " %f" % v
     f.write(minstring + "\n")
     maxstring = "MaxParamVals:"
-    for v in prof.ui.mk_maxvals(PARAMSLIST):
+    for v in prof.mk_maxvals(PARAMSLIST):
         maxstring += " %f" % v
     f.write("DoParamScaling: 1\n")
     f.write(maxstring + "\n")

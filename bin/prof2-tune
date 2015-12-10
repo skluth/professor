@@ -43,32 +43,31 @@ if len(args) >= 3:
 
 ## Load Professor and show the standard banner
 import professor2 as prof
-from professor2 import ui
 if not opts.QUIET:
-    print prof.ui.logo
+    print prof.logo
 
 
 ## Read persisted interpolations to re-create the ipol Histos
-METADATA, IHISTOS = prof.ui.read_ipolhistos(IFILE)
+METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
 
 ## Read reference data histos
 import os, sys, glob
 DHISTOS = {}
 REFFILES = glob.glob(os.path.join(REFDIR, "*"))
 for rf in REFFILES:
-    DHISTOS.update(prof.ui.read_histos(rf))
+    DHISTOS.update(prof.read_histos(rf))
 
 ## Try to read run histos and extract maximum errors
 MAXERRDICT = None
 try:
     rundirs = glob.glob(os.path.join(RUNSDIR, "*"))
-    _, RUNHISTOS = prof.ui.read_rundata(rundirs, None) #< don't care about reading params files
-    MAXERRDICT = prof.ui.find_maxerrs(RUNHISTOS)
+    _, RUNHISTOS = prof.read_rundata(rundirs, None) #< don't care about reading params files
+    MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
 except:
     print "Could not read run data for error regularisation -- chi2 may be unstable"
 
 ## Weight file parsing
-matchers = prof.ui.read_pointmatchers(opts.WFILE) if opts.WFILE else None
+matchers = prof.read_pointmatchers(opts.WFILE) if opts.WFILE else None
 
 
 ## Find things available in both ipol and ref data, and in the weight file if there is one
@@ -135,7 +134,7 @@ def simpleGoF(params):
         err2 += ibin.err(params, emax=maxierr)**2
         # TODO: compute asymm error for appropriate deviation direction cf. sum([e**2 for e in ibin.ierrs])
         if not err2:
-            raise prof.ui.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
+            raise prof.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
         # TODO: should we square w too, so it penalised deviations _linearly_?
         chi2 += w * diff**2 / err2
     return chi2
@@ -147,7 +146,7 @@ if not PNAMES:
     PNAMES = ["A%03i" % i for i in xrange(int(METADATA["Dimension"]))]
 
 ## Function definition wrapper
-funcdef, ANAMES = prof.ui.mk_fitfunc("simpleGoF", PNAMES)
+funcdef, ANAMES = prof.mk_fitfunc("simpleGoF", PNAMES)
 exec funcdef in locals()
 
 #from IPython import embed
@@ -185,7 +184,7 @@ for i, aname in enumerate(ANAMES):
     FARG['error_%s'%aname] = pranges[i] / 10.
 
 ## Fix parameters, set limits (with pname translation)
-limits, fixed = prof.ui.read_limitsandfixed(opts.LIMITS)
+limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
 
 for i, pname in enumerate(PNAMES):
     aname=ANAMES[i]
@@ -218,7 +217,7 @@ if not opts.QUIET:
 
 ## Check if result is in validity range
 result = [minuit.values[a] for a in ANAMES]
-rok, rng = prof.ui.is_inrange(result, pmins, pmaxs)
+rok, rng = prof.is_inrange(result, pmins, pmaxs)
 
 ## Print results to screen
 for num, p in enumerate(PNAMES):
@@ -240,8 +239,8 @@ for num, p in enumerate(PNAMES):
 ## Write out result
 with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     ## Meta info
-    f.write("# ProfVersion: %s\n" % prof.ui.mk_versionstring())
-    f.write("# Date: %s\n" % prof.ui.mk_timestamp())
+    f.write("# ProfVersion: %s\n" % prof.mk_versionstring())
+    f.write("# Date: %s\n" % prof.mk_timestamp())
     f.write("# InterpolationFile: %s\n" % os.path.abspath(IFILE))
     f.write("# DataDirectory: %s\n" % os.path.abspath(REFDIR))
     # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end

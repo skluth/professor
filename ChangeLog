@@ -1,3 +1,10 @@
+2015-12-19  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Undo ui madness
+
+	* Remove numpy dependence (except sampling.py)
+
+
 2015-12-09  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Can specify PREFIX when calling make

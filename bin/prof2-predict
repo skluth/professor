@@ -18,9 +18,8 @@ opts, args = op.parse_args()
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
-from professor2 import ui
 if not opts.QUIET:
-    print prof.ui.logo
+    print prof.logo
 
 import os, sys
 if not os.path.exists(opts.IFILE):
@@ -28,7 +27,7 @@ if not os.path.exists(opts.IFILE):
     sys.exit(1)
 
 ## Read in meta data and ipol histos
-META, IHISTOS = prof.ui.read_ipolhistos(opts.IFILE)
+META, IHISTOS = prof.read_ipolhistos(opts.IFILE)
 
 ## This is the Parameter point bit
 if len(args) == 1:
