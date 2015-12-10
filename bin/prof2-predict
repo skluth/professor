@@ -43,7 +43,7 @@ if "=" not in PARAMSTR:
     PARAMS = [float(x) for x in PARAMSTR.split(",")]
 else:
     pdict = dict([x.split("=", 1) for x in PARAMSTR.split(",")])
-    PARAMS = [pdict[p] for p in PNAMES]
+    PARAMS = [float(pdict[p]) for p in PNAMES]
 # if os.path.exists(args[0]):
 #     with open(args[0]) as f:
 #         PARAMS = [float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
