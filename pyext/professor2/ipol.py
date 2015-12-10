@@ -10,11 +10,10 @@ def min_runs(order, dim):
     Calculate min number of runs (number of coefficients)
     for polynomial of order in dim dimensions.
     """
-    # TODO: do we *need* numpy?
-    import numpy
+    import math
     Nc = 1
     for i in xrange(1, order+1):
-        t = 1./numpy.math.factorial(i)
+        t = 1./math.factorial(i)
         for j in xrange(i):
             t *= (dim+j)
         Nc += t

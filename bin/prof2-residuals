@@ -119,27 +119,28 @@ for hn, mchistos in sorted(HISTOS.iteritems()):
     hresval = yoda.Histo1D(hedges, path=hn+"/resval")
     hreserr = yoda.Histo1D(hedges, path=hn+"/reserr")
 
-    ihisto = IHISTOS[hn]
-    for irun, run in enumerate(RUNS):
-        mchisto = mchistos[run]
-        assert mchisto.nbins == ihisto.nbins
-        for ib in xrange(ihisto.nbins):
+    if hn in IHISTOS.keys():
+        ihisto = IHISTOS[hn]
+        for irun, run in enumerate(RUNS):
+            mchisto = mchistos[run]
+            assert mchisto.nbins == ihisto.nbins
+            for ib in xrange(ihisto.nbins):
 
-            ## Value residuals
-            absres = ihisto.bins[ib].val(PARAMSLIST[irun]) - mchisto.bins[ib].val
-            # print(irun, ib, absres)
-            if mchisto.bins[ib].val != 0:
-                relres = absres / mchisto.bins[ib].val
-                hresval.fill(relres)
-                hresvaltot.fill(relres)
+                ## Value residuals
+                absres = ihisto.bins[ib].val(PARAMSLIST[irun]) - mchisto.bins[ib].val
+                # print(irun, ib, absres)
+                if mchisto.bins[ib].val != 0:
+                    relres = absres / mchisto.bins[ib].val
+                    hresval.fill(relres)
+                    hresvaltot.fill(relres)
 
-            ## Error residuals
-            # print(ihisto.bins[ib].err(PARAMSLIST[irun]) , mchisto.bins[ib].err)
-            absres = ihisto.bins[ib].err(PARAMSLIST[irun]) - mchisto.bins[ib].err
-            if mchisto.bins[ib].err != 0:
-                relres = absres / mchisto.bins[ib].err
-                hreserr.fill(relres)
-                hreserrtot.fill(relres)
+                ## Error residuals
+                # print(ihisto.bins[ib].err(PARAMSLIST[irun]) , mchisto.bins[ib].err)
+                absres = ihisto.bins[ib].err(PARAMSLIST[irun]) - mchisto.bins[ib].err
+                if mchisto.bins[ib].err != 0:
+                    relres = absres / mchisto.bins[ib].err
+                    hreserr.fill(relres)
+                    hreserrtot.fill(relres)
 
     if not opts.ONLY_TOT:
         aos += [hresval, hreserr]

@@ -1,3 +1,13 @@
+2015-12-19  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Undo ui madness
+
+	* Remove numpy dependence (except sampling.py)
+
+2015-12-09  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Can specify PREFIX when calling make
+
 2015-12-09  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Improve prof2-predict UI.
@@ -6,6 +16,16 @@
 
 	* Add -v and -q flag shortcuts to all scripts.
 
+2015-12-07  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Use __all__ in __init__.py 
+
+	* Started sphinx documentation
+	
+	* Support only iminuit, bump version to 2.2.alpha, restructure imports
+
+	* Sanity checks when calling parametrisation
+
 2015-12-03  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Provide a version() function in the C++ library, and map it into
@@ -13,6 +33,16 @@
 	Makefile at build time.
 
 	* Reduce SVD fitting threshold to 1e-20.
+
+2015-12-03  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Make derivative calculation work also when scaling params
+	
+	* Let YODA write YODA
+
+2015-12-02  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Derivative calculation
 
 2015-11-28  Andy Buckley  <andy.buckley@cern.ch>
 

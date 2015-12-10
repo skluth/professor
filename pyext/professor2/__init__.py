@@ -1,9 +1,12 @@
+import sys
+pyversion = sys.version_info
+if sys.version_info[0] < 2 or (sys.version_info[0] == 2 and sys.version_info[1] < 6):
+    raise Exception("Professor2 requires Python 2.6 or greater")
+
 ## Import Cython wrappings on the C++ core library
 from professor2.core import *
 __version__ = version()
 
-## Import high-level Python functionality
-# TODO: be more selective, to speed up import?
 from professor2.errors import *
 from professor2.dataio import *
 from professor2.histos import *
@@ -12,32 +15,9 @@ from professor2.ipol import *
 from professor2.minimize import *
 from professor2.paramsio import *
 from professor2.params import *
+## This one is the only module which requires NumPy
 from professor2.sampling import *
 from professor2.weights import *
-
-# TODO: DEFUNCT & REMOVE?
-# from professor2.generator import *
-# from professor2.param import *
-
-
-# TODO: move to a stats submodule, or similar
-def pull(dbin, cbin, ppoint=None):
-    """
-    Pull between databin dbin and comparison bin (cbin).
-    If ppoint is None, assume mc bins, otherwise assume ipol bin.
-
-    TODO: "assume XXXX bins" is a nasty design: it would be better to compute the pull on the results list from the val calls
-    """
-    if dbin.err > 0:
-        if ppoint is not None:
-            return (dbin.val - cbin.val(ppoint))/dbin.err
-        else:
-            return (dbin.val - cbin.val)/dbin.err
-    else:
-        return 0
-
-
-# TODO: move the functions below to prof2.ui or similar?
 
 def mk_timestamp():
     """

@@ -37,18 +37,14 @@ class DataHisto(Histo):
     def __init__(self, dbins=None, path=None):
         Histo.__init__(self, dbins, path)
 
-    # TODO: NO!!! Only YODA should write YODA format... or we're back into consistency hell.
-    def toYODAStr(self, manpath=None):
+
+    def toScatter2D(self, manpath=None):
         path = manpath if manpath is not None else self.path
-        s = "# BEGIN YODA_SCATTER2D %s\n" % path
-        s += "Path=%s\n" % path
-        s += "Type=Scatter2D\n"
-        s += "# xval   xerr-   xerr+   yval    yerr-   yerr+\n"
-        for b in self.bins:
-            s += "%e\t%e\t%e\t%e\t%e\t%e\n" % (b.xmid, b.xmid-b.xmin, b.xmax-b.xmid,
-                                               b.val, b.errs[0], b.errs[1])
-        s += "# END YODA_SCATTER2D\n"
-        return s
+        points = [(self.bins[i].xmid, self.bins[i].val,
+                   [self.bins[i].xmid-self.bins[i].xmin, self.bins[i].xmax-self.bins[i].xmid],
+                   self.bins[i].errs) for i in xrange(len(self.bins))]
+        import yoda
+        return yoda.Scatter2D(points, path, path)
 
 
 class IpolHisto(Histo):
@@ -160,6 +156,10 @@ class IpolBin(Bin):
         vmin = vminmax.get("vmin", None)
         vmax = vminmax.get("vmax", None)
         return self.ival.value(*params, vmin=vmin, vmax=vmax)
+
+    def der(self, *params, **vminmax):
+        "Get the derivative according to the parametrisation"
+        return self.ival.der(*params)
 
     #def err(self, *params, emin=0, emax=None): #< needs Python3
     def err(self, *params, **eminmax):

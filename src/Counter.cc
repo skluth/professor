@@ -32,7 +32,7 @@ namespace Professor {
 
   void Counter::print() {
     for (int n : _data)
-      cout << n;
+      cout << n << " ";
     cout << endl;
   }
 

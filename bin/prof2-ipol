@@ -59,9 +59,17 @@ except Exception, e:
 ## Some useful announcements about the data loaded and the interpolation planned
 if not opts.QUIET:
     print
-    print "Building %dD interpolations in %d params: require at least %d runs" % \
-        (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
-    print "Loaded %d distinct observables from %d runs" % (len(HISTOS), len(RUNS))
+    if (len(RUNS) < prof.min_runs(opts.ORDER, len(PARAMNAMES))):
+        print "Not enough runs for order %i polynomials"%opts.ORDER
+        for i in xrange(1, opts.ORDER):
+            if (prof.min_runs(opts.ORDER -i, len(PARAMNAMES)) <= len(RUNS)):
+                print "Try order %i (min %i runs)"%(opts.ORDER -i, prof.min_runs(opts.ORDER -i, len(PARAMNAMES)))
+        import sys
+        sys.exit(1)
+    else:
+        print "Building %dD interpolations in %d params: require at least %d runs" % \
+            (opts.ORDER, len(PARAMNAMES), prof.min_runs(opts.ORDER, len(PARAMNAMES)))
+        print "Loaded %d distinct observables from %d runs" % (len(HISTOS), len(RUNS))
 
 
 ## Weight file parsing to select a histos subset
@@ -132,6 +140,7 @@ def worker(q, rdict):
         del histos
 
 
+#print "\n\nInterpolating\n"
 import time, multiprocessing
 num_cores = multiprocessing.cpu_count()
 time1 = time.time()
@@ -159,6 +168,7 @@ else:
     for num, hn in enumerate(HNAMES):
         print "Interpolating %s... %d/%d (%.1f%%)" % (hn, num+1, len(HNAMES), 100*(float(num+1)/len(HNAMES)))
         histos = HISTOS[hn]
+        #print hn
         IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
         del HISTOS[hn] #< pro-actively clear up memory
 

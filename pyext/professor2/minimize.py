@@ -1,25 +1,5 @@
 # -*- python -*-
 
-## Provide faff-free Minuit objects
-Minuit, MinuitError = None, Exception
-try:
-    from iminuit import Minuit, MinuitError
-    def mk_minuit(fn, verbosity=2):
-        return Minuit(fn, pedantic=False, print_level=verbosity)
-except ImportError:
-    try:
-        from minuit import Minuit, MinuitError
-    except ImportError:
-        try:
-            from minuit2 import Minuit2 as Minuit
-            from minuit2 import MinuitError
-        except ImportError:
-            pass #print "Couldn't import a minimizer"
-    def mk_minuit(fn, verbosity=2):
-        try:
-            return Minuit(fn) #, print_level=verbosity)
-        except:
-            return None
 
 
 def mk_fitfunc(fname, pnames):

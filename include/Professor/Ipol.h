@@ -57,11 +57,11 @@ namespace Professor {
       _dim = pts.dim();
       _order = order;
       _name = name;
-      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold);
       if (doscaling) {
         _minPV = pts.ptmins();
         _maxPV = pts.ptmaxs();
       }
+      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold);
     };
 
     /// Constructor to read ipol from file (one string for each object)
@@ -81,6 +81,9 @@ namespace Professor {
 
     /// Get the value of the parametrisation at point p
     double value(const std::vector<double>& p) const;
+
+    /// Get the value of the derivative of the parametrisation at point p
+    double derivative(const std::vector<double>& p) const;
 
     /// Get the vector of coefficients, calculated lazily and cached
     const std::vector<double>& coeffs() const { return _coeffs; }

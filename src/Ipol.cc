@@ -19,7 +19,6 @@ namespace Professor {
     double map_prange(double x, double a, double b) {
       return (x-a)/(b-a);
     }
-
   }
 
 
@@ -52,6 +51,10 @@ namespace Professor {
       stringstream ss;
       ss << "Ipol: not enough (" << ncoeff << " vs. " << pts.numPoints() << ") anchor points "
          << "for interpolating with " << pts.dim() << " params at order " << order;
+      for (unsigned int i_order=1;i_order<order;i_order++) {
+        if (numCoeffs(pts.dim(), i_order)<=pts.numPoints())
+          ss << "\n Order " << i_order  << " requires " << numCoeffs(pts.dim(), i_order) << " anchors";
+      }
       throw IpolError(ss.str());
     }
 
@@ -138,6 +141,48 @@ namespace Professor {
     return rtn;
   }
 
+  // NB. Not a member function
+  vector<double> mkLongVectorDerivative(const vector<double>& p, int order, vector<double> minPV, vector<double> maxPV) {
+    if (order < 0)
+      throw IpolError("Polynomial order " + to_string(order) + " not implemented");
+
+    const int N = p.size();
+    vector<vector<int> > temp;
+
+    for (unsigned int i = 0; i <= order; ++i) {
+      Professor::Counter c(N,i);
+      while (c.next(N-1)) {
+        if (c.sum() == i) {
+          temp.push_back(c.data());
+        }
+      }
+    }
+
+    vector<double> rtn;
+    rtn.push_back(0.0); // Derivative of constant term
+    for (const vector<int>& v : temp) {
+      double part = 0.0;
+      // Differentiate x^a*y^b*z^c*...
+      for (unsigned int c = 0; c < v.size(); c++) { // d/dx, d/dy, d/dz, ...
+        double temp2=1.0;
+        for (unsigned int i = 0; i <v.size(); i++) { // x, y, z
+          if (c==i) {  // d/dx x*y*z
+            temp2*=v[i];
+            if (v[c]==0) continue;
+            else temp2*=std::pow(p[i], v[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
+          }
+          else {
+            temp2*=      std::pow(p[i], v[i] );
+          }
+        }
+        part +=temp2;
+      }
+      rtn.push_back(part);
+    }
+
+    return rtn;
+  }
+
 
 
   ///////////////////////////////////////////////////////
@@ -184,8 +229,9 @@ namespace Professor {
     // Param scaling into [0,1] ranges defined by sampling limits (if set)
     vector<double> sparams = params;
     if (!_minPV.empty() && !_maxPV.empty()) {
-      for (size_t i = 0; i < dim(); ++i)
+      for (size_t i = 0; i < dim(); ++i) {
         sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
+      }
     }
 
     // Dot product for value
@@ -193,6 +239,32 @@ namespace Professor {
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 0; i < lv.size(); ++i) {
+      v += lv[i] * coeff(i);
+    }
+    return v;
+  }
+
+  double Ipol::derivative(const vector<double>& params) const {
+    if (params.size() != dim()) {
+      stringstream ss;
+      ss << "Incorrect number of parameters passed to Ipol::derivative ("
+         << dim() << " params required, " << params.size() << " supplied)";
+      throw IpolError(ss.str());
+    }
+
+    // Param scaling into [0,1] ranges defined by sampling limits (if set)
+    vector<double> sparams = params;
+    if (!_minPV.empty() && !_maxPV.empty()) {
+      for (size_t i = 0; i < dim(); ++i) {
+        sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
+      }
+    }
+
+    // Dot product for value
+    const vector<double> lv = mkLongVectorDerivative(sparams, order(), _minPV, _maxPV);
+    assert(lv.size() == coeffs().size());
+    double v = 0.0;
+    for (size_t i = 1; i < lv.size(); ++i) {
       v += lv[i] * coeff(i);
     }
     return v;
