@@ -1,7 +1,5 @@
 # -*- python -*-
 
-# TODO: remove numpy dependence... or have a pure-Python fall back?
-import numpy as np
 
 def scangrid(*args, **kwargs):
     """
@@ -17,7 +15,7 @@ def scangrid(*args, **kwargs):
     if args:
         # print "@", len(args) #, args
         var, npts, low, high = args[0]
-        for val in np.linspace(low, high, npts):
+        for val in [low + i*(high-low)/(npts-1.) for i in xrange(npts)]:
             newargs = args[1:]
             newvec = vec + [(var, val)]
             newkwargs = kwargs
@@ -31,15 +29,17 @@ def scangrid(*args, **kwargs):
 
 
 def mk_minvals(anchors):
-    from numpy import array
-    a = array(anchors)
-    mins = [a[:,i].min() for i in xrange(len(a[0]))]
+    dim=len(anchors[0])
+    mins=[]
+    for i in xrange(dim):
+        mins.append(min([a[i] for a in anchors]))
     return mins
 
 def mk_maxvals(anchors):
-    from numpy import array
-    a = array(anchors)
-    maxs = [a[:,i].max() for i in xrange(len(a[0]))]
+    dim=len(anchors[0])
+    maxs=[]
+    for i in xrange(dim):
+        maxs.append(max([a[i] for a in anchors]))
     return maxs
 
 def mk_center(anchors):
