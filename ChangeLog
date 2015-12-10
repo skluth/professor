@@ -4,6 +4,8 @@
 
 	* Remove numpy dependence (except sampling.py)
 
+	* Add prof-sens for sensitivity plotting exploting derivatives
+
 2015-12-09  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Can specify PREFIX when calling make
