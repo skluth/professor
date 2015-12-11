@@ -11,4 +11,4 @@ def mk_fitfunc(fname, pnames):
     """
     fargs = ["A%03i" % i for i in xrange(len(pnames))]
     funcdef = "def profGoF({fargs}): return {fname}([{fargs}])".format(fargs=", ".join(fargs), fname=fname)
-    return funcdef, fargs
+    return funcdef

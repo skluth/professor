@@ -1,4 +1,11 @@
-2015-12-19  Holger Schulz  <holger.schulz@cern.ch>
+2015-12-11  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Minimiser tweaks --- no more need for param translation,
+	make strategy steerable (--strategy or -s), -q suppresses
+	iminuit output now, calculation and writing of correlation
+	matrix into results, dump weights into results file
+
+2015-12-10  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Undo ui madness
 

@@ -22,6 +22,7 @@ op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file wi
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("-s", "--strategy", dest="STRATEGY",  default=1, type=int, help="Set Minuit strategy [0 fast, 1 default, 2 slow]")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -146,13 +147,10 @@ if not PNAMES:
     PNAMES = ["A%03i" % i for i in xrange(int(METADATA["Dimension"]))]
 
 ## Function definition wrapper
-funcdef, ANAMES = prof.mk_fitfunc("simpleGoF", PNAMES)
+funcdef = prof.mk_fitfunc("simpleGoF", PNAMES)
 exec funcdef in locals()
 if opts.DEBUG:
     print "Built GoF wrapper from:\n  '%s'" % funcdef
-print "Parameter translation:"
-for i in xrange(len(PNAMES)):
-    print " ", PNAMES[i], "->", ANAMES[i]
 
 
 try:
@@ -163,10 +161,8 @@ except ImportError, e:
     sys.exit(1)
 
 ## Ignition
-# This is a dummy for now
-dumminuit = Minuit(simpleGoF, pedantic=False, print_level=2)#, forced_parameters=pnames)
-# Dummy fitargs
-FARG=dumminuit.fitarg
+## Dictionary fitarg for iminuit
+FARG=dict()
 
 ## Initial conditions --- use pos = center of hypercube, and step = range/10
 # TODO: Optionally make an initial brute force scan to choose the Minuit starting point, using prof.scangrid
@@ -175,7 +171,7 @@ pmaxs = [float(x) for x in METADATA["MaxParamVals"].split()]
 assert len(pmins) == len(pmaxs)
 pmids = [(pmins[i] + pmaxs[i])/2. for i in xrange(len(pmins))]
 pranges = [(pmaxs[i] - pmins[i]) for i in xrange(len(pmins))]
-for i, aname in enumerate(ANAMES):
+for i, aname in enumerate(PNAMES):
     FARG[aname] = pmids[i]
     FARG['error_%s'%aname] = pranges[i] / 10.
 
@@ -183,22 +179,19 @@ for i, aname in enumerate(ANAMES):
 limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
 
 for i, pname in enumerate(PNAMES):
-    aname=ANAMES[i]
     if pname in limits.keys():
-        FARG['limit_%s'%aname] = limits[pname]
+        FARG['limit_%s'%pname] = limits[pname]
     if pname in fixed.keys():
-        print "Fixing", pname, "= %f"%fixed[PNAMES[i]]
-        FARG[aname] = fixed[PNAMES[i]]
-        FARG['fix_%s'%aname] = True
+        if not opts.QUIET:
+            print "Fixing", pname, "= %f"%fixed[PNAMES[i]]
+        FARG[pname] = fixed[PNAMES[i]]
+        FARG['fix_%s'%pname] = True
 
 
-FARG.pop('error_params')
-FARG.pop('params')
-FARG.pop('fix_params')
-FARG.pop('limit_params')
-# TODO: errordef, strategy CL params?
-minuit = Minuit(profGoF, errordef=1, forced_parameters=ANAMES, **FARG)
-minuit.strategy = 0
+# TODO: errordef as CL params?
+PRINTLEVEL = 0 if opts.QUIET else 1
+minuit = Minuit(profGoF, errordef=1, print_level=PRINTLEVEL, forced_parameters=PNAMES, **FARG)
+minuit.strategy = opts.STRATEGY
 
 
 ## Lift off
@@ -206,32 +199,18 @@ minuit.migrad()
 
 
 ## Now process the result:
-
 ## Goodness of fit
 if not opts.QUIET:
     chi2 = minuit.fval
     ndof = len(DBINS) - (len(PNAMES) - len(fixed.keys()))
-    print "chi2: %.2f" % chi2
-    print "Ndf : %i" % ndof
+    print "'chi2': %.2f --- Ndf : %i" % (chi2, ndof)
 
 ## Check if result is in validity range
-result = [minuit.values[a] for a in ANAMES]
+result = [minuit.values[p] for p in PNAMES]
 rok, rng = prof.is_inrange(result, pmins, pmaxs)
 
-## Print results to screen
-for num, p in enumerate(PNAMES):
-    isl, isf = " ", " "
-    if opts.QUIET:
-        print "%s\t%f" % (p, minuit.values[ANAMES[num]])
-    else:
-        if p in fixed.keys() or ANAMES[num] in fixed.keys():
-            isf = "F"
-        if p in limits.keys():
-            isl = "L"
-        in_out = " inside" if (rok or not num in rng) else "OUTSIDE"
-        print "%s\t%f\t%f\t%.2f %%   %s  (%f --- %f) %s %s" % (p, minuit.values[ANAMES[num]], minuit.errors[ANAMES[num]],
-                                                               100*(minuit.errors[ANAMES[num]]/minuit.values[ANAMES[num]]),
-                                                               in_out, pmins[num], pmaxs[num], isf, isl)
+# Max number of characters in any of parameter names --- for formatting (ljust)
+LMAX=max([len(p) for p in PNAMES])
 
 ## Write out result
 with open("%s_results.txt" % opts.OUTPUT,"w") as f:
@@ -240,27 +219,63 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
     f.write("# Date: %s\n" % prof.mk_timestamp())
     f.write("# InterpolationFile: %s\n" % os.path.abspath(IFILE))
     f.write("# DataDirectory: %s\n" % os.path.abspath(REFDIR))
-    # TODO: weights --- dump them all or just the file name? for consistency, probably better to dump them all at the end
     ## Limits
     lstring = ""
     for p in PNAMES:
         if limits.has_key(p):
-            lstring += "\n#\t%s\t%f %f" % (p, limits[p][0], limits[p][1])
+            lstring += "\n#\t%s\t%f %f" % (p.ljust(LMAX), limits[p][0], limits[p][1])
     f.write("#\n# Limits: %s" % lstring)
     # Fixed parameters
     fstring = ""
     for p in PNAMES:
         if fixed.has_key(p):
-            fstring += "\n#\t%s\t%f" % (p, fixed[p])
+            fstring += "\n#\t%s\t%f" % (p.ljust(LMAX), fixed[p])
     f.write("\n#\n# Fixed: %s\n" % fstring)
     f.write("#\n# Minimisation result:\n#\n")
     ## The tuned parameter values
     for i, p in enumerate(PNAMES):
-        f.write("%s\t%f\n" % (p, minuit.values[ANAMES[i]]))
+        f.write("%s\t%f\n" % (p.ljust(LMAX), minuit.values[PNAMES[i]]))
+
+    # Correlation matrix --- if params are fixed the covariance is not defined
+    # The keys of minuit.covariance are tuples of strings
+    f.write("#\n# Correlation matrix:\n#\n")
+    t1, t2 = zip(*minuit.covariance.keys())
+    l1=list(t1)
+    CNAMES=list(set(l1))
+
+    from math import sqrt
+    for i in PNAMES:
+        s="# %s"%i.ljust(LMAX)
+        for j in PNAMES:
+            if i in CNAMES and j in CNAMES:
+                if minuit.covariance[(i,j)] >=0:
+                    s+= "    %.2f"%(minuit.covariance[(i,j)]/(sqrt(minuit.covariance[(i,i)])*sqrt(minuit.covariance[(j,j)])))
+                else:
+                    s+= "   %.2f"%(minuit.covariance[(i,j)]/(sqrt(minuit.covariance[(i,i)])*sqrt(minuit.covariance[(j,j)])))
+            else:
+                s+= "    ---"
+        f.write(s+"\n")
+    # Weights ---  dump them all at the end
+    f.write("#\n#\n# Weights used\n#\n")
+    #
+    if matchers is None:
+        for k in IHISTOS.keys():
+            f.write("# %s\t1.0\n"%k)
+    else:
+        with open(opts.WFILE) as g:
+            for line in g:
+                l=line.strip()
+                if len(l)==0 or l.startswith("#"):
+                    continue
+                f.write("# %s\n"%l)
 
 
-## Write out ipolhistos TODO catch import error?
-import yoda
-result = [minuit.values[name] for name in ANAMES]
-scatters=[IHISTOS[k].toDataHisto(result).toScatter2D() for k in sorted(IHISTOS.keys())]
-yoda.writeYODA(scatters, "%s_ipolhistos.yoda" % opts.OUTPUT)
+
+## Write out ipolhistos
+try:
+    import yoda
+    result = [minuit.values[name] for name in PNAMES]
+    scatters=[IHISTOS[k].toDataHisto(result).toScatter2D() for k in sorted(IHISTOS.keys())]
+    yoda.writeYODA(scatters, "%s_ipolhistos.yoda" % opts.OUTPUT)
+except ImportError:
+    print "Unable to import yoda, not writing out ipolhistos"
