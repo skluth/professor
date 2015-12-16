@@ -1,3 +1,11 @@
+2015-12-16  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Only calculate polynomials structure once per instance
+	-> significant speed increase
+
+	* Add the brute force grid scan (--scan) to prof2-tune
+
+
 2015-12-11  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Minimiser tweaks --- no more need for param translation,
