@@ -25,10 +25,14 @@ namespace Professor {
   int numCoeffs(int dim, int order);
 
   /// Calculate parametrisation coefficients
-  std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order, double threshold);
+  std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order,
+      double threshold, std::vector<std::vector<int> > structure);
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
-  std::vector<double> mkLongVector(const std::vector<double>& p, int order);
+  // --- now split into two functions
+  std::vector< std::vector<int> > mkStructure(int dim, int order);
+  std::vector<double> mkLongVector(const std::vector<double>& p, int order,
+      std::vector< std::vector<int> > structure);
 
   //@}
 
@@ -57,11 +61,12 @@ namespace Professor {
       _dim = pts.dim();
       _order = order;
       _name = name;
+      _structure=mkStructure(_dim, _order);
       if (doscaling) {
         _minPV = pts.ptmins();
         _maxPV = pts.ptmaxs();
       }
-      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold);
+      _coeffs = calcCoeffs(pts, ptvals, _order, svdthreshold, _structure);
     };
 
     /// Constructor to read ipol from file (one string for each object)
@@ -115,6 +120,7 @@ namespace Professor {
   private:
 
     int _dim, _order;
+    std::vector<std::vector<int> > _structure;
     std::string _name;
     std::vector<double> _coeffs, _minPV, _maxPV;
 

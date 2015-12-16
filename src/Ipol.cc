@@ -34,7 +34,8 @@ namespace Professor {
 
 
   // NB. Not a member function
-  std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order, double threshold) {
+  // structure is the pre-calculated algebraic structure of the polynomial
+  std::vector<double> calcCoeffs(const ParamPoints& pts, const vector<double>& vals, int order, double threshold, vector<vector<int> > structure) {
 
     // Early exit if this is a trivial 0th order polynomial
     vector<double> rtn;
@@ -80,7 +81,7 @@ namespace Professor {
     // Populate the matrix to be inverted
     vector<double> tempLV;
     for (int a = 0; a < pts.numPoints(); ++a) {
-      tempLV = mkLongVector(scaledpoints[a], order);
+      tempLV = mkLongVector(scaledpoints[a], order, structure);
       for (size_t i = 0; i < tempLV.size(); ++i) {
         DP(a, i) = tempLV[i];
       }
@@ -112,26 +113,35 @@ namespace Professor {
 
 
   // NB. Not a member function
-  vector<double> mkLongVector(const vector<double>& p, int order) {
+  vector<vector<int> > mkStructure(int p, int order) {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
-    const int N = p.size();
+    const int N = p;
     const vector<int> zero(N, 0);
-    vector<vector<int> > temp;
-    temp.push_back(zero);
+    vector<vector<int> > rtn;
+    rtn.push_back(zero);
 
     for (unsigned int i = 0; i <= order; ++i) {
       Professor::Counter c(N,i);
       while (c.next(N-1)) {
         if (c.sum() == i) {
-          temp.push_back(c.data());
+          rtn.push_back(c.data());
         }
       }
     }
+    return rtn;
+  }
+
+
+  // NB. Not a member function
+  vector<double> mkLongVector(const vector<double>& p, int order, vector< vector<int> > structure) {
+    if (order < 0)
+      throw IpolError("Polynomial order " + to_string(order) + " not implemented");
+
 
     vector<double> rtn;
-    for (const vector<int>& v : temp) {
+    for (const vector<int>& v : structure) {
       double prod = 1.0;
       for (size_t i = 0; i < v.size(); ++i) {
         prod *= std::pow(p[i],v[i]);
@@ -141,8 +151,9 @@ namespace Professor {
     return rtn;
   }
 
+
   // NB. Not a member function
-  vector<double> mkLongVectorDerivative(const vector<double>& p, int order, vector<double> minPV, vector<double> maxPV) {
+  vector<double> mkLongVectorDerivative(const vector<double>& p, int order, vector<double> minPV, vector<double> maxPV, vector<vector<int> > structure) {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
@@ -215,6 +226,7 @@ namespace Professor {
       ncoeffs += 1;
     }
     assert(ncoeffs == numCoeffs(dim(),order()));
+    _structure = mkStructure(dim(), order());
   }
 
 
@@ -235,7 +247,7 @@ namespace Professor {
     }
 
     // Dot product for value
-    const vector<double> lv = mkLongVector(sparams, order());
+    const vector<double> lv = mkLongVector(sparams, order(), _structure);
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 0; i < lv.size(); ++i) {
@@ -261,7 +273,7 @@ namespace Professor {
     }
 
     // Dot product for value
-    const vector<double> lv = mkLongVectorDerivative(sparams, order(), _minPV, _maxPV);
+    const vector<double> lv = mkLongVectorDerivative(sparams, order(), _minPV, _maxPV, _structure);
     assert(lv.size() == coeffs().size());
     double v = 0.0;
     for (size_t i = 1; i < lv.size(); ++i) {
