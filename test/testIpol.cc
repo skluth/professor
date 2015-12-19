@@ -18,6 +18,7 @@ int main() {
 
   pp.setNames(names);
 
+  cout << "Require " << Professor::numCoeffs(2,1) << endl;
   Professor::Ipol ip1(pp, vals, 1);
   cout << ip1.value(anchor1) << endl;
   cout << ip1.value(point) << endl;
