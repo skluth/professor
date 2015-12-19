@@ -35,7 +35,7 @@ def read_histos_root(path):
                 # TODO: allow 2D histos
                 if robj.InheritsFrom("TH2"):
                     continue
-                for ib in xrange(robj.GetBins()):
+                for ib in xrange(robj.GetNbinsX()):
                     xmin = robj.GetXaxis().GetBinLowEdge(ib+1)
                     xmax = robj.GetXaxis().GetBinUpEdge(ib+1)
                     y = robj.GetBinContent(ib+1)
