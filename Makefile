@@ -43,7 +43,7 @@ DISTNAME := Professor-$(VERSION)
 
 #SHELL := /bin/bash
 HAVE_ROOT := $(shell which root-config 2> /dev/null)
-HAVE_CYTHON := $(shell which cython &> /dev/null && test `cython --version 2>&1 | sed -e 's/Cython version \([0-9\.]\+\)/\1/' | cut -d. -f2` -ge 20)
+HAVE_CYTHON := $(test `cython --version 2>&1 | sed -e 's/Cython version \([0-9\.]\+\)/\1/' | cut -d. -f2` -ge 20)
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
@@ -128,7 +128,7 @@ dist: all
        $(LIBSOURCES) \
        $(BINPROGS) \
        $(TESTSOURCES) \
-       $(PYTHONSOURCES) pyext/setup.py \
+       $(PYTHONSOURCES) pyext/setup.py pyext/professor2/misc/*py \
        $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
        $(wildcard contrib/*) \
        $(DISTNAME)/
