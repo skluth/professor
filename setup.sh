@@ -6,6 +6,6 @@ profdir=`dirname ${fpath}`
 
 PYV=`python -c "import sys;v=sys.version_info[0:2];print '%i.%i'%(v)"`
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${profdir}/lib
-export PYTHONPATH=$PYTHONPATH:${profdir}/lib/python${PYV}/site-packages
-export PATH=$PATH:${profdir}/bin
+export LD_LIBRARY_PATH=${profdir}/local/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=${profdir}/local/lib/python${PYV}/site-packages:$PYTHONPATH
+export PATH=${profdir}/local/bin:$PATH
