@@ -69,6 +69,15 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
         ## Build the value interpolation
         vals = [histos[run].bins[n].val for run in runs]
         valipol = Ipol(paramslist, vals, order)
+
+        # nan check in coeffs
+        import math
+        if any([math.isnan(x) for x in valipol.coeffs]):
+            print "Error: nan coefficient encountered in %s"%histos.values()[0].path
+            print "Check inputs or remove from weights"
+            import sys
+            sys.exit(1)
+
         ## Build the error interpolation(s)
         if not errmode or errmode == "none":
             erripols = None
