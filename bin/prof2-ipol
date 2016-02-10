@@ -22,7 +22,7 @@ op.add_option("--eorder", dest="ERR_ORDER", default=None, type=int, help="Global
 op.add_option("--rc", dest="RUNCOMBS", default=None, help="Ru combination file")
 # TODO: Add a no-scale option
 # TODO: Change to instead (optionally) specify the max number of parallel threads/procs. Use by default if ncores > 1?
-op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
+op.add_option("-j", dest="MULTI", type=int, default=1, help="Number of threads to use")
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description to be written to the ipol output file")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -134,8 +134,8 @@ if not RUNS:
 
 IHISTOS = {}
 
-#from memory_profiler import profile
-#@profile
+import zlib
+
 def worker(q, rdict):
     "Function to make bin ipols and store ipol persistency strings for each histo"
     while True:
@@ -152,52 +152,39 @@ def worker(q, rdict):
             if ib.ierrs:
                 s += "  " + ib.ierrs.toString("err") + "\n"
         del ih #< pro-actively clear up memory
-        import zlib
         rdict[hn] = zlib.compress(s, 9) #< save some memory
         del s
         del histos
 
 
-#print "\n\nInterpolating\n"
+print "\n\nParametrising...\n"
 import time, multiprocessing
-num_cores = multiprocessing.cpu_count()
 time1 = time.time()
-if opts.MULTI and num_cores > 1:
-    ## A shared memory object is required for coefficient retrieval
-    from multiprocessing import Manager
-    manager = Manager()
-    tempDict = manager.dict()
 
-    ## The job queue
-    q = multiprocessing.Queue()
-    map(lambda x:q.put(x), HNAMES)
+## A shared memory object is required for coefficient retrieval
+from multiprocessing import Manager
+manager = Manager()
+tempDict = manager.dict()
 
-    ## Fire away
-    workers = [multiprocessing.Process(target=worker, args=(q, tempDict)) for i in range(num_cores)]
-    map(lambda x:x.start(), workers)
-    map(lambda x:x.join(),  workers)
+## The job queue
+q = multiprocessing.Queue()
+map(lambda x:q.put(x), HNAMES)
 
-    ## Finally copy the result dictionary into the object itself
-    for k in tempDict.keys():
-        IHISTOS[k] = tempDict[k]
+## Fire away
+workers = [multiprocessing.Process(target=worker, args=(q, tempDict)) for i in range(opts.MULTI)]
+map(lambda x:x.start(), workers)
+map(lambda x:x.join(),  workers)
 
-# TODO: Remove duplication: either multiprocess or don't, but don't make us have to support both ways!
-else:
-    for num, hn in enumerate(HNAMES):
-        print "Interpolating %s... %d/%d (%.1f%%)" % (hn, num+1, len(HNAMES), 100*(float(num+1)/len(HNAMES)))
-        histos = HISTOS[hn]
-        #print hn
-        IHISTOS[hn] = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR)
-        del HISTOS[hn] #< pro-actively clear up memory
+## Finally copy the result dictionary into the object itself
+for k in tempDict.keys():
+    IHISTOS[k] = tempDict[k]
 
 ## Timing
 time2 = time.time()
-print '\nInterpolation took %0.2f s' % ((time2-time1))
-
+print 'Parametrisation took %0.2f s' % ((time2-time1))
 
 ## Active memory clean-up
 del HISTOS
-
 
 ## Write out meta info
 # TODO: Move the format writing into the prof2 Python library
@@ -237,16 +224,7 @@ with open(IFILE, "w") as f:
 s = ""
 for hname in sorted(IHISTOS.keys()):
     ih = IHISTOS[hname]
-    # TODO: Remove duplication: either multiprocess or don't, but don't make us have to support both ways!
-    if type(ih) is str: ## detect results from multiprocessing
-        import zlib
-        s += zlib.decompress(ih)
-    else:
-        for i, ib in enumerate(ih.bins):
-            s += "%s#%d %.5e %.5e\n" % (hname, i, ib.xmin, ib.xmax)
-            s += "  " + ib.ival.toString("val") + "\n"
-            if ib.ierrs:
-                s += "  " + ib.ierrs.toString("err") + "\n"
+    s += zlib.decompress(ih)
 
 # Open file for write/append
 with open(IFILE, "a") as f:

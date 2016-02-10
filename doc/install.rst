@@ -90,3 +90,10 @@ options:
    will install the scripts in :file:`$HOME/local/bin` and the modules
    in :file:`$HOME/local/lib/python{XY}/site-packages/` where `XY` is
    the Python version available at this instance.
+
+gun-parallel
+============
+
+This is awesome::
+
+        seq 0 10 | parallel prof2-ipol download/ --pfile used_params  --order 3 ipol_test_rc_{} --wfile weights_eta --rc runcombs.dat:{}

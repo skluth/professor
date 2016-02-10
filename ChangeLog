@@ -7,6 +7,9 @@
 	Syntax is  --rc runcoms.dat[colon]5
 	(Minimally invasive addon)
 
+	* Code cull in prof2-ipol. Only support multiprocessing
+	version, default 1 thread. Changed CL switch to '-j'.
+
 
 2015-12-16  Holger Schulz  <holger.schulz@cern.ch>
 
