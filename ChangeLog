@@ -2,6 +2,10 @@
 
 	* First version of prof2-runcombs plus sampling functions
 	salvaged from Prof1, modified to have no scipy dependence
+	
+	* Add --rc switch to prof2-ipol to optionally read runcombs
+	Syntax is  --rc runcoms.dat[colon]5
+	(Minimally invasive addon)
 
 
 2015-12-16  Holger Schulz  <holger.schulz@cern.ch>

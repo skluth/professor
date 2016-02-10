@@ -19,10 +19,11 @@ op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
 op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median, symm (default: %default)") #< add rel, asymm
 op.add_option("--eorder", dest="ERR_ORDER", default=None, type=int, help="Global order of polynomials for uncertainty interpolation (default: same as from --order)")
+op.add_option("--rc", dest="RUNCOMBS", default=None, help="Ru combination file")
 # TODO: Add a no-scale option
 # TODO: Change to instead (optionally) specify the max number of parallel threads/procs. Use by default if ncores > 1?
 op.add_option("--multi", dest="MULTI", action="store_true", default=False, help="Run in multiprocessing mode")
-op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description of this fit to be written to the ipol output file")
+op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description to be written to the ipol output file")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
@@ -46,7 +47,6 @@ if not opts.QUIET:
 
 ## Load MC run histos and params
 import glob
-# TODO: add runcomb file parsing to select a runs subset
 INDIRS = glob.glob(os.path.join(RUNSDIR, "*"))
 try:
     PARAMS, HISTOS = prof.read_rundata(INDIRS, opts.PNAME)
@@ -54,6 +54,24 @@ try:
 except Exception, e:
     print e
     sys.exit(1)
+
+# TODO: add runcomb file parsing to select a runs subset
+# --rc runcombs.dat:4
+# would use the 4th line of the runcombs.dat file
+if opts.RUNCOMBS is not None:
+    f_rc, line = opts.RUNCOMBS.split(":")
+    with open(f_rc) as f:
+        temp=[l for l in f]
+    thisRC = temp[int(line)].split()
+
+    # Filtering and overwriting
+    thisRUNS, thisPARAMSLIST = [], []
+    for num, r in enumerate(RUNS):
+        if r in thisRC:
+            thisRUNS.append(r)
+            thisPARAMSLIST.append(PARAMSLIST[num])
+    RUNS=thisRUNS
+    PARAMSLIST=thisPARAMSLIST
 
 
 ## Some useful announcements about the data loaded and the interpolation planned
@@ -209,6 +227,10 @@ with open(IFILE, "w") as f:
     f.write("DoParamScaling: 1\n")
     # Number of inputs per bin
     f.write("NumInputs: %i\n" % len(PARAMSLIST))
+    s_runs = "Runs:"
+    for r in RUNS:
+        s_runs +=" %s"%r
+    f.write("%s\n"%s_runs)
     f.write("---\n")
 
 ## Write out numerical data for all interpolations
