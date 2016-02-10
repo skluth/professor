@@ -1,5 +1,33 @@
 # -*- python -*-
 
+
+
+# http://stackoverflow.com/questions/3025162/statistics-combinations-in-python
+def numCombs(n, k):
+    """
+    n choose k algorithm
+    """
+    from operator import mul
+    from fractions import Fraction
+    return int( reduce(mul, (Fraction(n-i, i+1) for i in range(k)), 1) )
+
+def xrandomUniqueCombinations(items, nchoose, howmany=None):
+    """ Generator-like function for n choose k items """
+    seencombs = []
+    # Max number safeguard against infinite loops
+    maxnum = numCombs(len(items), nchoose)
+    import random
+    if howmany is None or howmany > maxnum:
+        print "Only %i possible combinations"%maxnum
+        howmany = maxnum
+    while len(seencombs) < howmany:
+        temp = random.sample(items, nchoose)
+        temp.sort()
+        if not sorted(temp) in seencombs:
+            seencombs.append(temp)
+            yield temp
+
+
 ## Define a sampler type
 class Sampler(object):
 
