@@ -4,22 +4,6 @@ from professor2.core import *
 from professor2.histos import *
 
 
-# TODO: don't we already have this in the C++ library? We should move it there & map it if not
-def min_runs(order, dim):
-    """
-    Calculate min number of runs (number of coefficients)
-    for polynomial of order in dim dimensions.
-    """
-    import math
-    Nc = 1
-    for i in xrange(1, order+1):
-        t = 1./math.factorial(i)
-        for j in xrange(i):
-            t *= (dim+j)
-        Nc += t
-    return int(Nc)
-
-
 def mk_ipolinputs(params):
     """
     Make sorted run and parameter lists suitable for passing to prof.Ipol

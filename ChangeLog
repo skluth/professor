@@ -1,3 +1,9 @@
+2016-02-11  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Remove min_runs function, replace with numCoeffs
+	from C++ code
+	
+
 2016-02-10  Holger Schulz  <holger.schulz@cern.ch>
 
 	* First version of prof2-runcombs plus sampling functions

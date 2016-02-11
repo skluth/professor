@@ -10,6 +10,9 @@ def version(astuple=False):
     return v.split(".") if astuple else v
 
 
+def numCoeffs(dim, order):
+    return c.numCoeffs(dim, order)
+
 cdef class ParamPoints:
     cdef c.ParamPoints* _ptr
 
