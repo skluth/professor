@@ -15,6 +15,9 @@ op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False,
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 opts, args = op.parse_args()
 
+
+# TODO: add ipol envelope!
+
 ## Get mandatory arguments
 if len(args) < 1:
     print "Argument missing... exiting\n\n"

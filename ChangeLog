@@ -4,6 +4,9 @@
 	from C++ code
 
 	* Add prof2-envelopes script
+
+	* In prof-tune simplechi2 --- continue on weight==0
+	to allow some robustness when switching off bins
 	
 
 2016-02-10  Holger Schulz  <holger.schulz@cern.ch>

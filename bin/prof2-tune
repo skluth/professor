@@ -125,6 +125,8 @@ def simpleGoF(params):
     for num, ibin in enumerate(IBINS):
         ## Weight is attached to the ipol bin (default set to 1.0 above)
         w = ibin.w
+        if w == 0:
+            continue
         ## Get ipol & ref bin values and compute their difference
         ival = ibin.val(params)
         dval = DBINS[num].val
