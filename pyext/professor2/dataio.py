@@ -139,9 +139,6 @@ def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,
             params = None
     return params, histos
 
-# TODO: remove this alias
-load_rundata = read_rundata
-
 
 def find_maxerrs(histos):
     """
