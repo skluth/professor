@@ -9,13 +9,13 @@ professor
 Contents:
 
 .. toctree::
-   :maxdepth: 4
-   :hidden:
+    :maxdepth: 3
 
-   install
-    
-
-
+    install.rst
+    overview.rst
+    prof2-sample.rst
+    prof2-ipol.rst
+    prof2-ls.rst
 
 Indices and tables
 ==================
@@ -23,7 +23,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-Tutorial
---------

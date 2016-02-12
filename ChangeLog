@@ -1,3 +1,7 @@
+2016-02-12  Holger Schulz  <holger.schulz@cern.ch>
+
+        * Documentation including asciinema
+
 2016-02-11  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Remove min_runs function, replace with numCoeffs

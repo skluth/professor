@@ -25,14 +25,9 @@ packages:
 
 `cython <http://cython.org/>`_
     For the Python extensions
-    
 
-`Numpy <http://numpy.scipy.org>`_
-    The numpy datatypes are used for most numerical calculations.
-
-
-`iMinuit <https://github.com/iminuit>`_ or `PyMinuit <https://github.com/jpivarski/pyminuit>`_
-    iMinuit (preferred) or PyMinuit are used to interface with the well known MINUIT package.
+`iMinuit <https://github.com/iminuit>`_
+    iMinuit is used to interface with the well known MINUIT package.
 
 `Matplotlib <http://matplotlib.sourceforge.net>`_
     Some plotting tools require matplotlib to produce output.
@@ -91,9 +86,3 @@ options:
    in :file:`$HOME/local/lib/python{XY}/site-packages/` where `XY` is
    the Python version available at this instance.
 
-gun-parallel
-============
-
-This is awesome::
-
-        seq 0 10 | parallel prof2-ipol download/ --pfile used_params  --order 3 ipol_test_rc_{} --wfile weights_eta --rc runcombs.dat:{}
