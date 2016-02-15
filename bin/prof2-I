@@ -14,6 +14,7 @@ import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict plotting to a subset of histograms (default: %default)")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
 
@@ -36,6 +37,16 @@ if not opts.QUIET:
 
 ## Read in ipol histos
 METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
+
+## Weight file parsing
+if opts.WFILE:
+    matchers = prof.read_pointmatchers(opts.WFILE)
+    for hn in IHISTOS.keys():
+        if not any(m.match_path(hn) for m in matchers.keys()):
+            del IHISTOS[hn]
+    if len(IHISTOS.keys())==0:
+        print "Nothing left after weight file parsing, exiting"
+        sys.exit(0)
 
 ## List of rivet analysis paths in IHISTOS
 # TODO: Urgh, avoid this sort of noise-code!

@@ -2,6 +2,8 @@
 
         * prof2-sens: bugfix, add weight file usage, clean up CL
 
+	* prof2-I: add weight file usage
+
 2016-02-12  Holger Schulz  <holger.schulz@cern.ch>
 
         * Documentation including asciinema
