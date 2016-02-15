@@ -12,7 +12,7 @@ Gradient calculation to display sensitivity to parameter shifts
 import optparse
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict plotting to a subset of histograms (default: %default)")
-op.add_option("--output", dest="OUTPUT", default="sensitivities", help="Output directory (default: %default)")
+op.add_option("-o", "--output", dest="OUTPUT", default="sensitivities", help="Output directory (default: %default)")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
@@ -40,7 +40,6 @@ META, IHISTOS = prof.read_ipolhistos(IFILE)
 if opts.WFILE:
     matchers = prof.read_pointmatchers(opts.WFILE)
     for hn in IHISTOS.keys():
-        print hn
         if not any(m.match_path(hn) for m in matchers.keys()):
             del IHISTOS[hn]
     if len(IHISTOS.keys())==0:
