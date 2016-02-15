@@ -9,13 +9,37 @@ professor
 Contents:
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
     install.rst
     overview.rst
+
+Scripts for paramestrisation and tuning:
+
+.. toctree::
+    :maxdepth: 2
+    
     prof2-sample.rst
     prof2-ipol.rst
+    prof2-tune.rst
+
+Scripts for visualisation
+
+.. toctree::
+    :maxdepth: 2
+    
+    prof2-envelopes.rst
+    prof2-sens.rst
+    prof2-I.rst
+
+Scripts for other purposes
+
+.. toctree::
+    :maxdepth: 2
+    
     prof2-ls.rst
+    prof2-runcombs.rst
+    prof2-predict.rst
 
 Indices and tables
 ==================
