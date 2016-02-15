@@ -3,19 +3,29 @@
 """\
 %prog <param1,param2,param3> [<ipolfile>=ipol.dat]
 
+%prog PARAMFILE [<ipolfile>=ipol.dat]
+
 Write out interpolated histograms at a given parameter point.
 
-TODO:
- * Support a param point file argument
 """
 
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
-op.add_option("--prefix", "--output", dest="OUTPUT", default="prof2", help="Prefix for outputs (default: %default)")
+op.add_option("--prefix", "--output", dest="OUTPUT", default="predictions", help="Prefix for outputs (default: %default)")
+op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict output to a subset of histograms (default: %default)")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
-# TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
+
+
+try:
+    import yoda
+except ImportError:
+    "YODA not found, exiting"
+    import sys
+    sys.exit(1)
+
+
 
 ## Get mandatory arguments
 if len(args) < 1:
@@ -36,24 +46,33 @@ if not opts.QUIET:
 META, IHISTOS = prof.read_ipolhistos(IFILE)
 PNAMES = META["ParamNames"].split()
 
+## Weight file parsing
+if opts.WFILE:
+    matchers = prof.read_pointmatchers(opts.WFILE)
+    for hn in IHISTOS.keys():
+        if not any(m.match_path(hn) for m in matchers.keys()):
+            del IHISTOS[hn]
+    if len(IHISTOS.keys())==0:
+        print "Nothing left after weight file parsing, exiting"
+        sys.exit(0)
 
 ## Parse the param point argument
 PARAMS = None
-if "=" not in PARAMSTR:
-    PARAMS = [float(x) for x in PARAMSTR.split(",")]
+if os.path.exists(PARAMSTR):
+    with open(args[0]) as f:
+        PARAMS = [float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
 else:
-    pdict = dict([x.split("=", 1) for x in PARAMSTR.split(",")])
-    PARAMS = [float(pdict[p]) for p in PNAMES]
-# if os.path.exists(args[0]):
-#     with open(args[0]) as f:
-#         PARAMS = [float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
+    if "=" not in PARAMSTR:
+        PARAMS = [float(x) for x in PARAMSTR.split(",")]
+    else:
+        pdict = dict([x.split("=", 1) for x in PARAMSTR.split(",")])
+        PARAMS = [float(pdict[p]) for p in PNAMES]
 
 
 ## Write out ipolhistos
 ofile = opts.OUTPUT + "_prediction.yoda"
-print "Writing predicted histograms to", ofile
-with open(ofile, "w") as f:
-    for num, k in enumerate(sorted(IHISTOS.keys())):
-        f.write(IHISTOS[k].toDataHisto(PARAMS).toYODAStr(k))
-        if num+1 < len(IHISTOS.keys()):
-            f.write("\n")
+scatters=[IHISTOS[k].toDataHisto(PARAMS).toScatter2D() for k in sorted(IHISTOS.keys())]
+yoda.writeYODA(scatters, ofile)
+
+if not opts.QUIET:
+    print "Wrote output to", ofile

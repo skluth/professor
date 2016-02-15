@@ -4,6 +4,8 @@
 
 	* prof2-I: add weight file usage
 
+	* prof2-predict: add weight file usage, fix output writing
+
 2016-02-12  Holger Schulz  <holger.schulz@cern.ch>
 
         * Documentation including asciinema
