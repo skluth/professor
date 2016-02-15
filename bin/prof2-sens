@@ -11,7 +11,7 @@ Gradient calculation to display sensitivity to parameter shifts
 
 import optparse
 op = optparse.OptionParser(usage=__doc__)
-op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
+op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict plotting to a subset of histograms (default: %default)")
 op.add_option("--output", dest="OUTPUT", default="sensitivities", help="Output directory (default: %default)")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -24,12 +24,28 @@ if not opts.QUIET:
     print prof.logo
 
 import os, sys
-if not os.path.exists(opts.IFILE):
-    print "Error: specified interpolation file %s not found, exiting." % opts.IFILE
+if len(args) <1:
+    print "No interpolation file given, exiting"
+    sys.exit(1)
+
+IFILE = args[0]
+if not os.path.exists(IFILE):
+    print "Error: specified interpolation file %s not found, exiting." % IFILE
     sys.exit(1)
 
 ## Read in meta data and ipol histos
-META, IHISTOS = prof.read_ipolhistos(opts.IFILE)
+META, IHISTOS = prof.read_ipolhistos(IFILE)
+
+## Weight file parsing
+if opts.WFILE:
+    matchers = prof.read_pointmatchers(opts.WFILE)
+    for hn in IHISTOS.keys():
+        print hn
+        if not any(m.match_path(hn) for m in matchers.keys()):
+            del IHISTOS[hn]
+    if len(IHISTOS.keys())==0:
+        print "Nothing left after weight file parsing, exiting"
+        sys.exit(0)
 
 ## Center of the Parameter space
 minPV = map(float, META["MinParamVals"].split())
@@ -58,7 +74,7 @@ for P in xrange(len(C)):
             for j in xrange(len(Y)):
                 c = minPV[P] + j/float(len(x))*(maxPV[P]- minPV[P])
                 C[P] = c
-                Z[i,j] = IHISTOS[k].bins[i].der(C) # The derivative
+                Z[j,i] = IHISTOS[k].bins[i].der(C) # The derivative
 
         # Plotting
         import matplotlib.pyplot as plt
