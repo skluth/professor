@@ -1,5 +1,5 @@
 ## Makefile for Professor 2.x
-VERSION := 2.1.3a
+VERSION := 2.1.3
 
 
 ## Default values for user-specifiable build variables

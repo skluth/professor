@@ -1,3 +1,7 @@
+2016-02-16  Holger Schulz  <holger.schulz@cern.ch>
+        
+	* Bump to version 2.1.3
+
 2016-02-15  Holger Schulz  <holger.schulz@cern.ch>
 
         * prof2-sens: bugfix, add weight file usage, clean up CL

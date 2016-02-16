@@ -52,6 +52,6 @@ Please cite arXiv:0907.2973 [hep-ph]
  |_|  |_|  \___/|_| \___||___/___/\___/|_|     |_____|_____|
 
  Andy Buckley, Holger Schulz                          v%s
- Copyright 2015
+ Copyright 2015, 2016
 
 """ % (mk_timestamp(), version())
