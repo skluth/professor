@@ -91,8 +91,12 @@ for a in args:
                 if line:
                     parts = line.split()
                     name = parts[0]
-                    sampler = Sampler(*parts[1:])
-                    samplers[name] = sampler
+                    if "PROFGRID" in parts[1:]:
+                        import professor2 as prof
+                        samplers[name] = prof.scangrid([name, opts.NUMPOINTS, float(parts[-3]), float(parts[-2])])
+                    else:
+                        sampler = Sampler(*parts[1:])
+                        samplers[name] = sampler
 
 ## Load a point veto function if supplied by the user
 if opts.VETOFN:
@@ -118,7 +122,10 @@ for n in xrange(opts.NUMPOINTS):
         params = OrderedDict()
         ## Sample a point
         for name, s in samplers.iteritems():
-            params[name] = s()
+            try:
+                params[name] = s()
+            except:
+                params[name] =s.next()[0][1]
         ## Allow a user function to veto the point
         if opts.VETOFN and opts.VETOFN(params):
             continue #< try sampling again
