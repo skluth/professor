@@ -98,7 +98,7 @@ try:
     params = {
         'backend': 'pdf',
         'axes.labelsize' : 16,
-        'text.fontsize' : 16,
+        'text.size' : 16,
         'legend.fontsize' : 16,
         'axes.titlesize' : 16,
         'xtick.labelsize' : 16,
@@ -184,29 +184,33 @@ class ParamFrame(wx.Frame):
         wx.Frame.__init__(self, None,  title='Prof-I: Parameter control')#, style=no_sys_menu)
         self.params = METADATA["ParamNames"].split()
         self.panel = wx.Panel(self)
-        self.panel.SetBackgroundColour('#eeefff')
         self.parent = parent
         self.sliders = {}
 
         ## Parameter sliders and buttons
-        controlgrid = wx.GridBagSizer()
+        controlgrid = wx.GridBagSizer(hgap=5, vgap=2)
 
+        font = wx.Font(10, wx.MODERN, wx.NORMAL, wx.BOLD)
         ## Build the sliders and related objects
         for i, param in enumerate(self.params):
             ### Add param names
-            controlgrid.Add(wx.StaticText(self.panel, -2, param), pos=(i,0))
+            t=wx.StaticText(self.panel, -1, param)
+            t.SetFont(font)
+            controlgrid.Add(t, pos=(i,0))
             ## Sliders
             #http://www.wxpython.org/docs/api/wx.lib.agw.floatspin-module.html
             from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
             pmin = float(METADATA["MinParamVals"].split()[i])
             pmax = float(METADATA["MaxParamVals"].split()[i])
-            slider = FloatSpin(self.panel, -3, style=0, value=pmin + 0.5*(pmax-pmin),
-                               min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50)
+            
+            from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
+            slider = FloatSpin(self.panel, -1, style=0, value=pmin + 0.5*(pmax-pmin),
+                               min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50., size=(160,30))
             controlgrid.Add(slider, pos=(i,2))
             self.sliders[param] = slider
-        controlgrid.Fit(self)
         self.Bind(EVT_FLOATSPIN, self.parent.sliderUpdate)
         self.panel.SetSizer(controlgrid)
+        controlgrid.Fit(self)
 
 
 class ProfIFrame(wx.Frame):
@@ -239,7 +243,6 @@ class ProfIFrame(wx.Frame):
         """
         self.dpi=50
         self.panel = wx.Panel(self)
-        self.panel.SetBackgroundColour('white')
 
         ## Panel for observable diplay
         self.fig = Figure((10.0, 4.0), dpi=self.dpi, facecolor="white")
@@ -455,6 +458,6 @@ class ProfIFrame(wx.Frame):
                     pass
 
 ## Run GUI application
-app = wx.PySimpleApp()
+app = wx.App()
 ProfIFrame().Show()
 app.MainLoop()
