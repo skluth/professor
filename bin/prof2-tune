@@ -20,7 +20,7 @@ op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file
 op.add_option("--output", dest="OUTPUT", default="tunes", help="Prefix for outputs (default: %default)")
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 op.add_option("--scan", dest="SCAN", default=None, type=int, help="Perform a brute force scan of SCAN points to find minimiser start point")
-# TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
+op.add_option("-g", "--gradient", dest="GRADIENT", action="store_true", default=False, help="Run minimisation with analytic gradient (EXPERIMENTAL!)")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 op.add_option("-s", "--strategy", dest="STRATEGY",  default=1, type=int, help="Set Minuit strategy [0 fast, 1 default, 2 slow]")
@@ -143,6 +143,35 @@ def simpleGoF(params):
         chi2 += w * diff**2 / err2
     return chi2
 
+def simpleGoFGradient(params):
+    """
+    Very straightforward goodness-of-fit measure
+    """
+    dchi2 = [0 for x in params]
+    for num, ibin in enumerate(IBINS):
+        ## Weight is attached to the ipol bin (default set to 1.0 above)
+        w = ibin.w
+        if w == 0:
+            continue
+        ## Get ipol & ref bin values and compute their difference
+        ival = ibin.val(params)
+        dval = DBINS[num].val
+        diff = dval - ival
+        ## Data error
+        err2 = DBINS[num].err**2
+        ## Plus interpolation error added in quadrature
+        maxierr = MAXERRS[ibin] if MAXERRS else None
+        err2 += ibin.err(params, emax=maxierr)**2
+        # TODO: compute asymm error for appropriate deviation direction cf. sum([e**2 for e in ibin.ierrs])
+        if not err2:
+            raise prof.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
+        # TODO: should we square w too, so it penalised deviations _linearly_?
+        igrad = ibin.grad(params)
+        for p in xrange(len(params)):
+            dchi2[p] += 2 * w * diff * igrad[p] / err2
+    N=sum(dchi2)
+    return [x/N for x in dchi2]
+
 
 ## Take parameter names directly from ifile, or fallback
 PNAMES = METADATA["ParamNames"].split()
@@ -150,7 +179,7 @@ if not PNAMES:
     PNAMES = ["A%03i" % i for i in xrange(int(METADATA["Dimension"]))]
 
 ## Function definition wrapper
-funcdef = prof.mk_fitfunc("simpleGoF", PNAMES)
+funcdef = prof.mk_fitfunc("simpleGoF", PNAMES, "profGoF")
 exec funcdef in locals()
 if opts.DEBUG:
     print "Built GoF wrapper from:\n  '%s'" % funcdef
@@ -162,6 +191,13 @@ except ImportError, e:
     print "Unable to import iminuit, exiting", e
     import sys
     sys.exit(1)
+
+if not opts.QUIET:
+    print "\n"
+    print 66*"*"
+    print "* Using iminuit, please visit https://github.com/iminuit/iminuit *"
+    print 66*"*"
+    print "\n"
 
 ## Ignition
 ## Dictionary fitarg for iminuit
@@ -222,9 +258,14 @@ for i, pname in enumerate(PNAMES):
 
 # TODO: errordef as CL params?
 PRINTLEVEL = 0 if opts.QUIET else 1
-minuit = Minuit(profGoF, errordef=1, print_level=PRINTLEVEL, forced_parameters=PNAMES, **FARG)
-minuit.strategy = opts.STRATEGY
 
+if opts.GRADIENT:
+    graddef = prof.mk_fitfunc("simpleGoFGradient", PNAMES, "myGrad")
+    exec graddef in locals()
+    minuit = Minuit(profGoF, grad_fcn=myGrad, errordef=1, print_level=PRINTLEVEL, forced_parameters=PNAMES, **FARG)
+else:
+    minuit = Minuit(profGoF, errordef=1, print_level=PRINTLEVEL, forced_parameters=PNAMES, **FARG)
+minuit.strategy = opts.STRATEGY
 
 import time
 start_time = time.time()
