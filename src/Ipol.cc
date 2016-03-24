@@ -157,33 +157,30 @@ namespace Professor {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
-    const int N = p.size();
-    vector<vector<int> > temp;
-
-    for (unsigned int i = 0; i <= order; ++i) {
-      Professor::Counter c(N,i);
-      while (c.next(N-1)) {
-        if (c.sum() == i) {
-          temp.push_back(c.data());
-        }
-      }
-    }
 
     vector<double> rtn;
-    rtn.push_back(0.0); // Derivative of constant term
-    for (const vector<int>& v : temp) {
+    bool firstItem=true;
+    for (const vector<int>& s : structure) {
+
+
+      if (firstItem) {
+        rtn.push_back(0.0); // Derivative of constant term
+        firstItem=false;
+        continue;
+      }
       double part = 0.0;
       // Differentiate x^a*y^b*z^c*...
-      for (unsigned int c = 0; c < v.size(); c++) { // d/dx, d/dy, d/dz, ...
+      for (unsigned int c = 0; c < s.size(); c++) { // d/dx, d/dy, d/dz, ...
+
         double temp2=1.0;
-        for (unsigned int i = 0; i <v.size(); i++) { // x, y, z
+        for (unsigned int i = 0; i <s.size(); i++) { // x, y, z
           if (c==i) {  // d/dx x*y*z
-            temp2*=v[i];
-            if (v[c]==0) continue;
-            else temp2*=std::pow(p[i], v[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
+            temp2*=s[i];
+            if (s[c]==0) continue;
+            else temp2*=std::pow(p[i], s[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
           }
           else {
-            temp2*=      std::pow(p[i], v[i] );
+            temp2*=      std::pow(p[i], s[i] );
           }
         }
         part +=temp2;
@@ -194,6 +191,40 @@ namespace Professor {
     return rtn;
   }
 
+  // NB. Not a member function
+  vector<double> mkLongVectorGradient(const vector<double>& p, int coord, int order, vector<double> minPV, vector<double> maxPV, vector<vector<int> > structure) {
+    if (order < 0)
+      throw IpolError("Polynomial order " + to_string(order) + " not implemented");
+
+
+    vector<double> rtn;
+    bool firstItem=true;
+    for (const vector<int>& s : structure) {
+      if (firstItem) {
+        rtn.push_back(0.0); // Derivative of constant term
+        firstItem=false;
+        continue;
+      }
+
+      if (s[coord]==0) {
+        rtn.push_back(0);
+        continue;
+      }
+      double temp=1.0;
+      for (unsigned int i = 0; i <s.size(); i++) { // x, y, z
+        if (i==coord) {  // d/dx x*y*z
+          temp*=s[i];  // d/dx  x^a = a*x^(a-1)
+          temp*=std::pow(p[i], s[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
+        }
+        else {
+          temp*=      std::pow(p[i], s[i] );
+        }
+      }
+      rtn.push_back(temp);
+    }
+
+    return rtn;
+  }
 
 
   ///////////////////////////////////////////////////////
@@ -280,6 +311,39 @@ namespace Professor {
       v += lv[i] * coeff(i);
     }
     return v;
+  }
+  
+  vector<double> Ipol::gradient(const vector<double>& params) const {
+    if (params.size() != dim()) {
+      stringstream ss;
+      ss << "Incorrect number of parameters passed to Ipol::gradient ("
+         << dim() << " params required, " << params.size() << " supplied)";
+      throw IpolError(ss.str());
+    }
+
+    vector<double> grad;
+
+    // Param scaling into [0,1] ranges defined by sampling limits (if set)
+    vector<double> sparams = params;
+    if (!_minPV.empty() && !_maxPV.empty()) {
+      for (size_t i = 0; i < dim(); ++i) {
+        sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
+      }
+    }
+
+    for (int c=0; c< params.size(); c++) {
+      // Dot product for value
+      const vector<double> lv = mkLongVectorGradient(sparams, c, order(), _minPV, _maxPV, _structure);
+      assert(lv.size() == coeffs().size());
+      double v = 0.0;
+      for (size_t i = 1; i < lv.size(); ++i) {
+        v += lv[i] * coeff(i);
+      }
+      grad.push_back(v);
+
+    }
+
+    return grad;
   }
 
 
