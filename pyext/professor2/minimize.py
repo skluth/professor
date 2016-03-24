@@ -2,7 +2,8 @@
 
 
 
-def mk_fitfunc(fname, pnames):
+
+def mk_fitfunc(fname, pnames, globname):
     """
     Dynamically make a fit function for the given param names, to be passed to Minuit.
 
@@ -10,5 +11,5 @@ def mk_fitfunc(fname, pnames):
     generated internal arg names corresponding to pnames.
     """
     fargs = ["A%03i" % i for i in xrange(len(pnames))]
-    funcdef = "def profGoF({fargs}): return {fname}([{fargs}])".format(fargs=", ".join(fargs), fname=fname)
+    funcdef = "def {gname}({fargs}): return {fname}([{fargs}])".format(gname=globname, fargs=", ".join(fargs), fname=fname)
     return funcdef
