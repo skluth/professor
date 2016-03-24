@@ -161,6 +161,10 @@ class IpolBin(Bin):
         "Get the derivative according to the parametrisation"
         return self.ival.der(*params)
 
+    def grad(self, *params, **vminmax):
+        "Get the gradient according to the parametrisation"
+        return self.ival.grad(*params)
+
     #def err(self, *params, emin=0, emax=None): #< needs Python3
     def err(self, *params, **eminmax):
         "Get a single interpolated error, perhaps averaged, for this bin"

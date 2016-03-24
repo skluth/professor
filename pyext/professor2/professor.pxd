@@ -34,6 +34,7 @@ cdef extern from "Professor/Ipol.h" namespace "Professor":
         double value(const vector[double]&) except +
 
         double derivative(const vector[double]&) except +
+        const vector[double] gradient(const vector[double]&) except +
 
         string toString() except +
         string toString(const string&) except +

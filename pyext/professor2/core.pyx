@@ -125,6 +125,23 @@ cdef class Ipol:
 
     der = derivative
 
+    def gradient(self, *params):
+        import collections
+
+        ## Detect if the params have been passed as a single iterable and convert
+        if len(params) == 1 and isinstance(params[0], collections.Iterable):
+            params = params[0]
+            ## Further, detect if the params have been passed as a (ordered!) dict-like and extract the (ordered) values
+            if isinstance(params, collections.Mapping):
+                params = params.values()
+
+        ## Ensure that the param values are floats
+        params = [float(p) for p in params]
+        return  self._ptr.gradient(params)
+
+    grad = gradient
+
+
     def setParamLimits(self, pmins, pmaxs):
         "Set the minimum and maximum param values via 2 lists ordered cf. the param names. Used in SVD internal scaling."
         self._ptr.setParamLimits(pmins, pmaxs)
