@@ -22,6 +22,15 @@ opts, args = op.parse_args()
 
 
 
+colours = ["b", "r", "g", "k"]
+lstyles = ["-", "--", ":"]
+markers = ["o", "x"]
+STYLES= []
+for l in lstyles:
+    for c in colours:
+        for m in markers:
+            STYLES.append(l+c+m)
+
 def plotColourMap(x, y, Z, hname, pname):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
@@ -63,9 +72,10 @@ def plotGradient(X, Y, hname):
     ax.set_xlabel(hname)
     ax.set_ylabel("Sensitivity")
 
+
     pnames = sorted(Y.keys())
     for num, p in enumerate(pnames):
-        ax.plot(X, Y[p], label=p)
+        ax.plot(X, Y[p], STYLES[num], label=p)
     ax.legend(loc='best', prop={'size':6})
 
     # Nice and tight
@@ -128,8 +138,12 @@ if opts.GRAD:
         x = array([b.xmid for b in IHISTOS[k].bins])
         for i in xrange(len(x)):
             bin_grad = IHISTOS[k].bins[i].grad(C)
+            bin_val = IHISTOS[k].bins[i].val(C)
             for num, P in enumerate(params):
-                centgrad[P].append(bin_grad[num])
+                if abs(bin_val) > 0:
+                    centgrad[P].append(bin_grad[num]/bin_val)
+                else:
+                    centgrad[P].append(0)
         plotGradient(x, centgrad, k)
 
 elif opts.CMAP:
