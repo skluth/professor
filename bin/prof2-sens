@@ -15,8 +15,69 @@ op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file
 op.add_option("-o", "--output", dest="OUTPUT", default="sensitivities", help="Output directory (default: %default)")
 op.add_option("--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--grad", dest="GRAD", action="store_true", default=False, help="One dimensional sensitivity based on gradient")
+op.add_option("--cmap", dest="CMAP", action="store_true", default=False, help="Colour map plots")
 # TODO: Add weight file parsing to decide which histos (and bin subsets) to interpolate
 opts, args = op.parse_args()
+
+
+
+def plotColourMap(x, y, Z, hname, pname):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+
+    # Colour limits
+    from matplotlib import cm
+    lim = max(abs(Z.max()), abs(Z.min()))
+    cax = ax.imshow(Z, interpolation='nearest', cmap=cm.seismic, vmin=-lim, vmax=lim)
+    cbar = fig.colorbar(cax, ticks=[-lim, 0, lim])
+
+    # Ticks and labels
+    xticki = [int(i) for i in ax.xaxis.get_ticklocs()[1:]]
+    xtickl = [""]
+    xtickl.extend(["%.3f"%x[i] for i in xticki if i <len(Z[0])])
+    ax.set_xticklabels(xtickl, rotation=270)
+    yticki = [int(i) for i in ax.yaxis.get_ticklocs()[1:]]
+    ytickl = [""]
+    ytickl.extend(["%.3f"%y[i] for i in yticki if i <len(Z[:,0])])
+    ax.set_yticklabels(ytickl)
+    ax.set_xlabel(hname)
+    ax.set_ylabel(pname)
+
+    # Nice and tight
+    plt.tight_layout()
+
+    # Output
+    import os
+    if not os.path.exists(opts.OUTPUT):
+        os.makedirs(opts.OUTPUT)
+    fig.savefig(os.path.join(opts.OUTPUT, "sens_%s_p%s.pdf"%(hname.replace("/","_"), pname)))
+    plt.close(fig)
+    del fig
+
+def plotGradient(X, Y, hname):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+
+    # Ticks and labels
+    ax.set_xlabel(hname)
+    ax.set_ylabel("Sensitivity")
+
+    pnames = sorted(Y.keys())
+    for num, p in enumerate(pnames):
+        ax.plot(X, Y[p], label=p)
+    ax.legend(loc='best', prop={'size':6})
+
+    # Nice and tight
+    plt.tight_layout()
+
+    # Output
+    import os
+    if not os.path.exists(opts.OUTPUT):
+        os.makedirs(opts.OUTPUT)
+    fig.savefig(os.path.join(opts.OUTPUT, "sens_%s.pdf"%hname.replace("/","_")))
+    plt.close(fig)
+    del fig
 
 ## Read persisted interpolations to re-create the ipol Histos
 import professor2 as prof
@@ -56,54 +117,45 @@ params = META["ParamNames"].split()
 
 from numpy import array, linspace, empty, meshgrid
 
-# Iterate over parameters
-for P in xrange(len(C)):
+
+if opts.GRAD:
+    C = [minPV[m] + 0.5*(maxPV[m]-minPV[m]) for m in xrange(len(minPV))]
     # Iterate over observables
     for k in sorted(IHISTOS.keys()):
-        # Symmetric x (bins) and y (parmeter sub space) 
+        centgrad={}
+        for p in params:
+            centgrad[p] = []
         x = array([b.xmid for b in IHISTOS[k].bins])
-        y = linspace(minPV[P], maxPV[P], len(x))
-        X, Y = meshgrid(x, y)
-        Z = empty(X.shape)
-        # Iterate over bins
-        for i in xrange(len(X)):
-            # C is where the derivative is evaluated.
-            # We scan dimension i but set all parameters !=i to the center value
-            C = [minPV[m] + 0.5*(maxPV[m]-minPV[m]) for m in xrange(len(minPV))]
-            for j in xrange(len(Y)):
-                c = minPV[P] + j/float(len(x))*(maxPV[P]- minPV[P])
-                C[P] = c
-                Z[j,i] = IHISTOS[k].bins[i].der(C) # The derivative
+        for i in xrange(len(x)):
+            bin_grad = IHISTOS[k].bins[i].grad(C)
+            for num, P in enumerate(params):
+                centgrad[P].append(bin_grad[num])
+        plotGradient(x, centgrad, k)
 
-        # Plotting
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots()
+elif opts.CMAP:
+    # Iterate over observables
+    for k in sorted(IHISTOS.keys()):
+        # Iterate over parameters
+        x = array([b.xmid for b in IHISTOS[k].bins])
+        for P in xrange(len(C)):
+            # Symmetric x (bins) and y (parmeter sub space) 
+            y = linspace(minPV[P], maxPV[P], len(x))
+            X, Y = meshgrid(x, y)
+            Z = empty(X.shape)
+            # Iterate over bins
+            for i in xrange(len(X)):
+                # C is where the derivative is evaluated.
+                # We scan dimension i but set all parameters !=i to the center value
+                C = [minPV[m] + 0.5*(maxPV[m]-minPV[m]) for m in xrange(len(minPV))]
 
-        # Colour limits
-        from matplotlib import cm
-        lim = max(abs(Z.max()), abs(Z.min()))
-        cax = ax.imshow(Z, interpolation='nearest', cmap=cm.seismic, vmin=-lim, vmax=lim)
-        cbar = fig.colorbar(cax, ticks=[-lim, 0, lim])
+                for j in xrange(len(Y)):
+                    c = minPV[P] + j/float(len(x))*(maxPV[P]- minPV[P])
+                    C[P] = c
+                    sensitivity = IHISTOS[k].bins[i].der(C) # The derivative
+                    Z[j,i] = sensitivity
 
-        # Ticks and labels
-        xticki = [int(i) for i in ax.xaxis.get_ticklocs()[1:]]
-        xtickl = [""]
-        xtickl.extend(["%.3f"%x[i] for i in xticki if i <len(x)])
-        ax.set_xticklabels(xtickl, rotation=270)
-        yticki = [int(i) for i in ax.yaxis.get_ticklocs()[1:]]
-        ytickl = [""]
-        ytickl.extend(["%.3f"%y[i] for i in yticki if i <len(y)])
-        ax.set_yticklabels(ytickl)
-        ax.set_xlabel(k)
-        ax.set_ylabel(params[P])
+            # Colourmap Plotting
+            plotColourMap(x, y, Z, k, params[P])
 
-        # Nice and tight
-        plt.tight_layout()
-
-        # Output
-        import os
-        if not os.path.exists(opts.OUTPUT):
-            os.makedirs(opts.OUTPUT)
-        fig.savefig(os.path.join(opts.OUTPUT, "sens_%s_p%s.pdf"%(k.replace("/","_"), params[P])))
-        plt.close(fig)
-        del fig
+else:
+    print "Need to specify a plot option: --cmap or --grad"
