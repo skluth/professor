@@ -1,3 +1,8 @@
+2016-04-14  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Introduce 1D sensitivity based on gradient
+	* User needs to specify --cmap or --grad when running prof2-sens now
+
 2016-04-01  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Add a first version of the parametrisation using Machine Learning
