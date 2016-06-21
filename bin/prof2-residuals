@@ -25,9 +25,9 @@ from __future__ import print_function
 
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
-#op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
+#op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file from which to read the bin interpolations (default: %default)")
 op.add_option("--pname", "--pfile", dest="PNAME", default="params.dat", help="name of the params file to be found in each run directory (default: %default)")
-op.add_option("--xrange", "--rerange", dest="XRANGE", default=0.1, type=float, help="the +- range of relative deviation to display (default: %default)")
+op.add_option("--xrange", dest="XRANGE", default=0.5, type=float, help="the +- range of relative deviation to display (default: %default)")
 op.add_option("--nbins", dest="NBINS", default=30, type=int, help="number of bins in relative residuals histograms (default: %default)")
 op.add_option("--no-plots", dest="NO_PLOTS", action="store_true", default=False, help="don't write histogram PDFs (default: %default)")
 op.add_option("--tot-only", dest="ONLY_TOT", action="store_true", default=False, help="only make total residuals histograms, not per-observable (default: %default)")
