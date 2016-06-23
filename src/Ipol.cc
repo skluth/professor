@@ -148,7 +148,7 @@ namespace Professor {
 
 
   // NB. Not a member function
-  vector<double> mkLongVector(const vector<double>& p, int order, const vector< vector<int> >& structure) {
+  vector<double> mkLongVector(const vector<double>& params, int order, const vector< vector<int> >& structure) {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
@@ -157,7 +157,7 @@ namespace Professor {
       double prod = 1.0;
       for (size_t i = 0; i < v.size(); ++i) {
         /// @todo Can be speeded with (precomputable?) integer powers / exp-by-doubling?
-        prod *= std::pow(p[i],v[i]);
+        prod *= std::pow(params[i], v[i]);
       }
       rtn.push_back(prod);
     }
@@ -168,7 +168,7 @@ namespace Professor {
   // NB. Not a member function
   /// @todo Why the min/maxPV args?
   /// @todo Expose to API
-  vector<double> mkLongVectorDerivative(const vector<double>& p, int order,
+  vector<double> mkLongVectorDerivative(const vector<double>& params, int order,
                                         const vector<double>& minPV, const vector<double>& maxPV,
                                         const vector<vector<int> >& structure) {
     if (order < 0)
@@ -192,10 +192,9 @@ namespace Professor {
           if (c==i) {  // d/dx x*y*z
             temp2 *= s[i];
             if (s[c] == 0) continue;
-            else temp2 *= std::pow(p[i], s[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
-          }
-          else {
-            temp2 *= std::pow(p[i], s[i] );
+            else temp2 *= std::pow(params[i], s[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
+          } else {
+            temp2 *= std::pow(params[i], s[i] );
           }
         }
         part += temp2;
@@ -210,7 +209,7 @@ namespace Professor {
   // NB. Not a member function
   /// @todo Why the min/maxPV args?
   /// @todo Expose to API
-  vector<double> mkLongVectorGradient(const vector<double>& p, int coord, int order,
+  vector<double> mkLongVectorGradient(const vector<double>& params, int coord, int order,
                                       const vector<double>& minPV, const vector<double>& maxPV,
                                       const vector<vector<int> >& structure) {
     if (order < 0)
@@ -233,9 +232,9 @@ namespace Professor {
       for (unsigned int i = 0; i <s.size(); i++) { // x, y, z
         if (i == coord) {  // d/dx x*y*z
           temp *= s[i];  // d/dx  x^a = a*x^(a-1)
-          temp *= std::pow(p[i], s[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
+          temp *= std::pow(params[i], s[i]-1)/(maxPV[i]- minPV[i]); // Jacobian factor: 'd map_prange / dx' = 1./(b-a)
         } else {
-          temp *= std::pow(p[i], s[i] );
+          temp *= std::pow(params[i], s[i] );
         }
       }
       rtn.push_back(temp);

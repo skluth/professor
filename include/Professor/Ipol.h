@@ -26,11 +26,12 @@ namespace Professor {
 
   /// Calculate parametrisation coefficients
   /// @note structure is the pre-calculated algebraic structure of the polynomial
+  /// @todo Provide an (unscaled) arrays-only version with a vector<vector<double>> in place of ParamPoints
   std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order,
                                  double threshold, const std::vector<std::vector<int> >& structure);
 
   /// Calculate an interpolated value
-  double calcValue(const ParamPoint& pt, const std::vector<double>& vals,
+  double calcValue(const std::vector<double>& params,
                    const std::vector<double>& coeffs, int order,
                    const std::vector<std::vector<int> >& structure);
 
@@ -38,14 +39,14 @@ namespace Professor {
   std::vector< std::vector<int> > mkStructure(int dim, int order);
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
-  std::vector<double> mkLongVector(const std::vector<double>& p, int order,
+  std::vector<double> mkLongVector(const std::vector<double>& params, int order,
                                    const std::vector< std::vector<int> >& structure);
 
-  // vector<double> mkLongVectorDerivative(const vector<double>& p, int order,
+  // vector<double> mkLongVectorDerivative(const vector<double>& params, int order,
   //                                       const vector<double>& minPV, const vector<double>& maxPV,
   //                                       const vector<vector<int> >& structure);
 
-  // vector<double> mkLongVectorGradient(const vector<double>& p, int coord, int order,
+  // vector<double> mkLongVectorGradient(const vector<double>& params, int coord, int order,
   //                                     const vector<double>& minPV, const vector<double>& maxPV,
   //                                     const vector<vector<int> >& structure);
 
