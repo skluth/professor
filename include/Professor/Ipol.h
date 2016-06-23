@@ -25,14 +25,29 @@ namespace Professor {
   int numCoeffs(int dim, int order);
 
   /// Calculate parametrisation coefficients
+  /// @note structure is the pre-calculated algebraic structure of the polynomial
   std::vector<double> calcCoeffs(const ParamPoints& pts, const std::vector<double>& vals, int order,
-      double threshold, std::vector<std::vector<int> > structure);
+                                 double threshold, const std::vector<std::vector<int> >& structure);
+
+  /// Calculate an interpolated value
+  double calcValue(const ParamPoint& pt, const std::vector<double>& vals,
+                   const std::vector<double>& coeffs, int order,
+                   const std::vector<std::vector<int> >& structure);
+
+  /// Make the algebraic coefficient structure
+  std::vector< std::vector<int> > mkStructure(int dim, int order);
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
-  // --- now split into two functions
-  std::vector< std::vector<int> > mkStructure(int dim, int order);
   std::vector<double> mkLongVector(const std::vector<double>& p, int order,
-      std::vector< std::vector<int> > structure);
+                                   const std::vector< std::vector<int> >& structure);
+
+  // vector<double> mkLongVectorDerivative(const vector<double>& p, int order,
+  //                                       const vector<double>& minPV, const vector<double>& maxPV,
+  //                                       const vector<vector<int> >& structure);
+
+  // vector<double> mkLongVectorGradient(const vector<double>& p, int coord, int order,
+  //                                     const vector<double>& minPV, const vector<double>& maxPV,
+  //                                     const vector<vector<int> >& structure);
 
   //@}
 
@@ -61,7 +76,7 @@ namespace Professor {
       _dim = pts.dim();
       _order = order;
       _name = name;
-      _structure=mkStructure(_dim, _order);
+      _structure = mkStructure(_dim, _order);
       if (doscaling) {
         _minPV = pts.ptmins();
         _maxPV = pts.ptmaxs();
@@ -84,21 +99,37 @@ namespace Professor {
     void fromString(const std::string& s);
 
 
+    /// @name Calculations
+    //@{
+
     /// Get the value of the parametrisation at point p
     double value(const std::vector<double>& p) const;
 
     /// Get the value of the derivative of the parametrisation at point p
+    /// @todo Expose as a standalone calcDerivative function, cf. calcValue
     double derivative(const std::vector<double>& p) const;
-    
+
     /// Get the gradient of the parametrisation at point p
+    /// @todo Expose as a standalone calcGradient function, cf. calcValue
     std::vector<double> gradient(const std::vector<double>& p) const;
 
-    /// Get the vector of coefficients, calculated lazily and cached
+    //@}
+
+
+    /// @name Coefficient access
+    //@{
+
+    /// Get the vector of coefficients by const reference
     const std::vector<double>& coeffs() const { return _coeffs; }
 
-    /// Get a single coefficient, calculated lazily and cached
+    /// Get a single coefficient
     double coeff(size_t i) const { return coeffs()[i]; }
 
+    //@}
+
+
+    /// @name Basic ipol properties
+    //@{
 
     /// Accessor to the dimension of the param points
     int dim() const { return _dim; }
@@ -109,12 +140,19 @@ namespace Professor {
     /// Get the name of the parametrised object
     std::string name() const { return _name; }
 
+    //@}
+
+
+    /// @name Limit-setting
+    //@{
 
     void setParamLimits(const std::vector<double>& minpvs, const std::vector<double>& maxpvs) {
       setMinParamVals(minpvs);
       setMaxParamVals(maxpvs);
     }
+
     void setMinParamVals(const std::vector<double>& minpvs) { _minPV = minpvs; }
+
     void setMaxParamVals(const std::vector<double>& maxpvs) { _maxPV = maxpvs; }
 
     //@}

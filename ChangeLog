@@ -1,6 +1,13 @@
+2016-06-23  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Split 'dot product' part of ipol value calculation into a standalone calcValue function.
+
+	* Use const references when passing const vectors in C++ API.
+
 2016-04-14  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Introduce 1D sensitivity based on gradient
+
 	* User needs to specify --cmap or --grad when running prof2-sens now
 
 2016-04-01  Holger Schulz  <holger.schulz@cern.ch>
@@ -34,13 +41,13 @@
 
 	* In prof-tune simplechi2 --- continue on weight==0
 	to allow some robustness when switching off bins
-	
+
 
 2016-02-10  Holger Schulz  <holger.schulz@cern.ch>
 
 	* First version of prof2-runcombs plus sampling functions
 	salvaged from Prof1, modified to have no scipy dependence
-	
+
 	* Add --rc switch to prof2-ipol to optionally read runcombs
 	Syntax is  --rc runcoms.dat[colon]5
 	(Minimally invasive addon)
@@ -86,10 +93,10 @@
 
 2015-12-07  Holger Schulz  <holger.schulz@cern.ch>
 
-	* Use __all__ in __init__.py 
+	* Use __all__ in __init__.py
 
 	* Started sphinx documentation
-	
+
 	* Support only iminuit, bump version to 2.2.alpha, restructure imports
 
 	* Sanity checks when calling parametrisation
@@ -105,7 +112,7 @@
 2015-12-03  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Make derivative calculation work also when scaling params
-	
+
 	* Let YODA write YODA
 
 2015-12-02  Holger Schulz  <holger.schulz@cern.ch>
