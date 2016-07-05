@@ -165,18 +165,22 @@ class IpolBin(Bin):
         "Get the gradient according to the parametrisation"
         return self.ival.grad(*params)
 
+    # TODO: need uniform access to two ipols regardless of what's stored (and maybe also a way to make a single avg Ipol...)
+
     #def err(self, *params, emin=0, emax=None): #< needs Python3
     def err(self, *params, **eminmax):
-        "Get a single interpolated error, perhaps averaged, for this bin"
-        emin = eminmax.get("emin", 0)
-        emax = eminmax.get("emax", None)
-        if self.ierrs is None:
-            return 0.0
-        elif hasattr(self.ierrs, "__len__"):
-            assert len(self.ierrs) == 2
-            return (self.ierrs[0].value(*params, vmin=emin, vmax=emax) + self.ierrs[1].value(*params, vmin=emin, vmax=emax))/2.0
-        else:
-            return self.ierrs.value(*params, vmin=emin, vmax=emax)
+        "Get a single, averaged interpolated error for this bin"
+        # emin = eminmax.get("emin", 0)
+        # emax = eminmax.get("emax", None)
+        # if self.ierrs is None:
+        #     return 0.0
+        # elif hasattr(self.ierrs, "__len__"):
+        #     assert len(self.ierrs) == 2
+        #     return (self.ierrs[0].value(*params, vmin=emin, vmax=emax) + self.ierrs[1].value(*params, vmin=emin, vmax=emax))/2.0
+        # else:
+        #     return self.ierrs.value(*params, vmin=emin, vmax=emax)
+        es = self.errs(*params, **eminmax)
+        return (es[0] + es[1])/2.0
 
     #def errs(self, params, emin=0, emax=None): #< needs Python3
     def errs(self, *params, **eminmax):
