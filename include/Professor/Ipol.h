@@ -35,7 +35,15 @@ namespace Professor {
                    const std::vector<double>& coeffs, int order,
                    const std::vector<std::vector<int> >& structure);
 
-  /// Make the algebraic coefficient structure
+  /// Calculate an interpolated value
+  double calcValue(const std::vector<double>& paramslongvector,
+                   const std::vector<double>& coeffs);
+
+  /// @brief Make the algebraic coefficient structure
+  ///
+  /// The structure is a nested vector of ints, with each entry in the outer vector
+  /// representing a term in the polynomial and the inner vectors being the powers
+  /// to which each param should be raised in that term.
   std::vector< std::vector<int> > mkStructure(int dim, int order);
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order

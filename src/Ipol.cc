@@ -115,18 +115,23 @@ namespace Professor {
   double calcValue(const vector<double>& params,
                    const vector<double>& coeffs, int order,
                    const vector< vector<int> >& structure) {
-    // Dot product vs params long-vector -> value
     const vector<double> lv = mkLongVector(params, order, structure);
-    assert(lv.size() == coeffs.size());
+    return calcValue(lv, coeffs);
+  }
+
+
+  double calcValue(const vector<double>& paramslongvector,
+                   const vector<double>& coeffs) {
+    // Dot product of params long-vector with coeffs -> value
+    assert(paramslongvector.size() == coeffs.size());
     double v = 0.0;
-    for (size_t i = 0; i < lv.size(); ++i) {
-      v += lv[i] * coeffs[i];
+    for (size_t i = 0; i < paramslongvector.size(); ++i) {
+      v += paramslongvector[i] * coeffs[i];
     }
     return v;
   }
 
 
-  // NB. Not a member function
   vector<vector<int> > mkStructure(int dim, int order) {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
@@ -147,7 +152,6 @@ namespace Professor {
   }
 
 
-  // NB. Not a member function
   vector<double> mkLongVector(const vector<double>& params, int order, const vector< vector<int> >& structure) {
     if (order < 0)
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
@@ -156,6 +160,7 @@ namespace Professor {
     for (const vector<int>& v : structure) {
       double prod = 1.0;
       for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] == 0) continue;
         /// @todo Can be speeded with (precomputable?) integer powers / exp-by-doubling?
         prod *= std::pow(params[i], v[i]);
       }
@@ -165,7 +170,6 @@ namespace Professor {
   }
 
 
-  // NB. Not a member function
   /// @todo Why the min/maxPV args?
   /// @todo Expose to API
   vector<double> mkLongVectorDerivative(const vector<double>& params, int order,
@@ -206,7 +210,6 @@ namespace Professor {
   }
 
 
-  // NB. Not a member function
   /// @todo Why the min/maxPV args?
   /// @todo Expose to API
   vector<double> mkLongVectorGradient(const vector<double>& params, int coord, int order,
