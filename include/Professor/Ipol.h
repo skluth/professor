@@ -44,9 +44,17 @@ namespace Professor {
   /// The structure is a nested vector of ints, with each entry in the outer vector
   /// representing a term in the polynomial and the inner vectors being the powers
   /// to which each param should be raised in that term.
+  ///
+  /// @note In a given param space, the structure can be reused between any values
+  ///   or errors parameterised at the same polynomial order. So pre-computing
+  ///   structures at 3rd, 4th and 5th order would cover everything needed...
   std::vector< std::vector<int> > mkStructure(int dim, int order);
 
   /// Make the vector of polynomial terms to which the coeffs are to be applied, at the given order
+  ///
+  /// @note The same long vector can be used in any parameterised value calculation
+  ///    in the "active" parameter space, between values & errors and multiple bins.
+  ///    Just need to "dot" it with the appropriate fixed coefficient vector.
   std::vector<double> mkLongVector(const std::vector<double>& params, int order,
                                    const std::vector< std::vector<int> >& structure);
 
