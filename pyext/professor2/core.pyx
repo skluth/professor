@@ -66,6 +66,14 @@ cdef class Ipol:
         return self._ptr.coeffs()
 
     @property
+    def structure(self):
+        #rtn = []
+        return self._ptr.structure()
+
+    def longvector(self, params):
+        return self._ptr.longVector(params)
+
+    @property
     def dim(self):
         return self._ptr.dim()
 

@@ -11,9 +11,10 @@ cdef extern from "Professor/Professor.h" namespace "Professor":
 cdef extern from "Professor/Ipol.h" namespace "Professor":
     int numCoeffs(int dim, int order)
 
+
 cdef extern from "Professor/ParamPoints.h" namespace "Professor":
     cdef cppclass ParamPoints:
-        ParamPoints(const vector[ vector[double] ]&) except +
+        ParamPoints(const vector[vector[double]]&) except +
 
 
 cdef extern from "Professor/Ipol.h" namespace "Professor":
@@ -27,7 +28,10 @@ cdef extern from "Professor/Ipol.h" namespace "Professor":
         int dim() except +
 
         const vector[double]& coeffs() except +
-        double coeff(size_t) except +
+        const double& coeff(size_t) except +
+
+        const vector[vector[int]]& structure() except +
+        vector[double] longVector(const vector[double]&) except +
 
         const ParamPoints& params() except +
 

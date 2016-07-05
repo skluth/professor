@@ -126,7 +126,8 @@ namespace Professor {
     assert(paramslongvector.size() == coeffs.size());
     double v = 0.0;
     for (size_t i = 0; i < paramslongvector.size(); ++i) {
-      v += paramslongvector[i] * coeffs[i];
+      //cout << i << ": " << coeffs[i] << " * " << paramslongvector[i] << " = " << coeffs[i]*paramslongvector[i] << endl;
+      v += coeffs[i] * paramslongvector[i];
     }
     return v;
   }
@@ -281,10 +282,10 @@ namespace Professor {
   }
 
 
-  double Ipol::value(const vector<double>& params) const {
+  vector<double> Ipol::sparams(const vector<double>& params) const {
     if (params.size() != dim()) {
       stringstream ss;
-      ss << "Incorrect number of parameters passed to Ipol::value ("
+      ss << "Incorrect number of parameters given ("
          << dim() << " params required, " << params.size() << " supplied)";
       throw IpolError(ss.str());
     }
@@ -296,8 +297,12 @@ namespace Professor {
         sparams[i] = map_prange(params[i], _minPV[i], _maxPV[i]);
       }
     }
+    return sparams;
+  }
 
-    return calcValue(sparams, coeffs(), order(), _structure);
+
+  double Ipol::value(const vector<double>& params) const {
+    return calcValue(sparams(params), coeffs(), order(), _structure);
   }
 
 

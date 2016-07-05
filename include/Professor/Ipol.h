@@ -140,7 +140,24 @@ namespace Professor {
     const std::vector<double>& coeffs() const { return _coeffs; }
 
     /// Get a single coefficient
-    double coeff(size_t i) const { return coeffs()[i]; }
+    const double& coeff(size_t i) const { return coeffs()[i]; }
+
+    //@}
+
+
+    /// @name Polynomial term structure
+    //@{
+
+    /// Get the polynomial term exponent structure
+    const std::vector< std::vector<int> >& structure() const { return _structure; }
+
+    /// Convert params to scaled params
+    std::vector<double> sparams(const std::vector<double>& params) const;
+
+    /// Get a long vector of polynomial terms (sans coefficients) for the given param point
+    std::vector<double> longVector(const std::vector<double>& params) const {
+      return mkLongVector(sparams(params), order(), structure());
+    }
 
     //@}
 
