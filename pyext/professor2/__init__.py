@@ -18,6 +18,7 @@ from professor2.params import *
 ## This one is the only module which requires NumPy
 from professor2.sampling import *
 from professor2.weights import *
+from professor2 import chi2
 
 def mk_timestamp():
     """
