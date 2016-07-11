@@ -38,7 +38,7 @@ def chi2_hist(ihist, dhist, params, errmaxs=None):
     return chi2, ndf
 
 
-def chi2_tot(ihists, dhists, params, hnames=None, errmaxs={}):
+def simple_chi2(ihists, dhists, params, hnames=None, errmaxs={}):
     chi2_tot, ndf_tot = 0, 0
     if not hnames:
         hnames = ihists.keys()
@@ -47,3 +47,6 @@ def chi2_tot(ihists, dhists, params, hnames=None, errmaxs={}):
         chi2_tot += chi2_h
         ndf_tot += ndf_h
     return chi2_tot, ndf_tot
+
+# Alias
+chi2_tot = simple_chi2
