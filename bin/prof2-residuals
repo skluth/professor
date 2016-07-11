@@ -61,11 +61,9 @@ except ImportError:
 
 
 ## Load MC run histos and params
-import glob
 # TODO: add runcomb file parsing to select a runs subset
-INDIRS = glob.glob(os.path.join(RUNSDIR,"*"))
 try:
-    PARAMS, HISTOS = prof.read_rundata(INDIRS, opts.PNAME)
+    PARAMS, HISTOS = prof.read_all_rundata(RUNSDIR, opts.PNAME)
     RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 except Exception, e:
     print(e, file=sys.stderr)
