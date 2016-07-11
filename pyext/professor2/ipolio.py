@@ -5,30 +5,41 @@ from professor2.ipol import *
 from professor2.histos import *
 
 
+class IpolMeta(dict):
+    def __init__(self, ifile=None):
+        self.pnames = None
+        if ifile:
+            self.update(self.read_ipolmeta(ifile))
+            self.pnames = self["ParamNames"].split()
+
+    def read_ipolmeta(self, ifile):
+        """
+        Read in meta data from prof-ipol output 'ifile'
+        """
+        meta = {}
+        with open(ifile) as f:
+            for l in f:
+                ## Strip out comments
+                if "#" in l:
+                    l = l[:l.find("#")]
+                ## Ignore blank / pure whitespace lines
+                l = l.strip()
+                if not l:
+                    continue
+                ## Exit if we see the end-of-header indicator
+                if l == "---":
+                    break
+                ## Extract the key-value pair from the line
+                try:
+                    key, value = [str.strip(s) for s in l.split(":", 1)]
+                    meta[key] = value
+                except:
+                    print "Couldn't extract key-value pair from '%s'" % l
+        return meta
+
+
 def read_ipolmeta(ifile):
-    """
-    Read in meta data from prof-ipol output 'ifile'
-    """
-    meta = {}
-    with open(ifile) as f:
-        for l in f:
-            ## Strip out comments
-            if "#" in l:
-                l = l[:l.find("#")]
-            ## Ignore blank / pure whitespace lines
-            l = l.strip()
-            if not l:
-                continue
-            ## Exit if we see the end-of-header indicator
-            if l == "---":
-                break
-            ## Extract the key-value pair from the line
-            try:
-                key, value = [str.strip(s) for s in l.split(":", 1)]
-                meta[key] = value
-            except:
-                print "Couldn't extract key-value pair from '%s'" % l
-    return meta
+    return IpolMeta(ifile)
 
 
 def read_simpleipols(ifile, paramlimits=None):
