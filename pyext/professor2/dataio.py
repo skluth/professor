@@ -88,7 +88,7 @@ def read_histos_yoda(path):
     return histos
 
 
-def read_histos(filepath, stripref=False):
+def read_histos(filepath, stripref=True):
     """
     Load histograms from file, into a dict of path -> yoda.Histo[DataBin]
 
@@ -111,7 +111,7 @@ def read_histos(filepath, stripref=False):
     return histos
 
 
-def read_all_histos(dirpath, stripref=False):
+def read_all_histos(dirpath, stripref=True):
     """
     Load histograms from all files in the given dir, into a dict of path -> yoda.Histo[DataBin]
 
