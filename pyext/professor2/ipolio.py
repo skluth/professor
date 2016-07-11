@@ -13,6 +13,10 @@ class IpolMeta(dict):
             self.update(self.read_ipolmeta(ifile))
             self.pnames = self["ParamNames"].split()
 
+    @property
+    def dim(self):
+        return len(self.pnames)
+
     def read_ipolmeta(self, ifile):
         """
         Read in meta data from prof-ipol output 'ifile'
