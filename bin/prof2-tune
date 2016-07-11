@@ -53,13 +53,10 @@ if not opts.QUIET:
 METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
 
 ## Read reference data histos
-import os, sys, glob
-DHISTOS = {}
-REFFILES = glob.glob(os.path.join(REFDIR, "*"))
-for rf in REFFILES:
-    DHISTOS.update(prof.read_histos(rf))
+DHISTOS = read_all_histos(REFDIR)
 
 ## Try to read run histos and extract maximum errors
+import os, sys, glob
 MAXERRDICT = None
 try:
     rundirs = glob.glob(os.path.join(RUNSDIR, "*"))
@@ -231,7 +228,7 @@ if opts.SCAN is not None:
         if ((num+1)%100 ==0):
             print "%i/%i complete"%(num+1, npoints_per_dim**len(pmins))
 
-    # This sets the star point 
+    # This sets the star point
     #print "Using startpoint:"
     for i, aname in enumerate(PNAMES):
         assert(aname==winner[i][0])

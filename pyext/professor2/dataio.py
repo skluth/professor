@@ -2,6 +2,7 @@
 
 from professor2.histos import *
 from professor2.paramsio import *
+import os.path, glob
 
 
 def read_histos_root(path):
@@ -87,13 +88,22 @@ def read_histos_yoda(path):
     return histos
 
 
-def read_histos(path):
+def read_histos(filepath):
     "Load histograms from file, into a dict of path -> yoda.Histo[DataBin]"
     histos = {}
-    if path.endswith(".root"):
-        histos.update(read_histos_root(path))
+    if filepath.endswith(".root"):
+        histos.update(read_histos_root(filepath))
     elif any(path.endswith(ext) for ext in [".yoda", ".aida", ".flat"]):
-        histos.update(read_histos_yoda(path))
+        histos.update(read_histos_yoda(filepath))
+    return histos
+
+
+def read_all_histos(dirpath):
+    "Load histograms from all files in the given dir, into a dict of path -> yoda.Histo[DataBin]"
+    histos = {}
+    filepaths = glob.glob(os.path.join(dirpath, "*"))
+    for fp in filepaths:
+        histos.update(read_histos(fp))
     return histos
 
 
