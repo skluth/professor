@@ -49,18 +49,14 @@ if not opts.QUIET:
     print prof.logo
 
 
-## Read persisted interpolations to re-create the ipol Histos
-METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
-
-## Read reference data histos
+## Read interpolated and reference histos, and run data
+IHISTOS, METADATA = prof.read_ipoldata(IFILE)
 DHISTOS = read_all_histos(REFDIR)
 
 ## Try to read run histos and extract maximum errors
-import os, sys, glob
 MAXERRDICT = None
 try:
-    rundirs = glob.glob(os.path.join(RUNSDIR, "*"))
-    _, RUNHISTOS = prof.read_rundata(rundirs, None) #< don't care about reading params files
+    _, RUNHISTOS = prof.read_all_rundata(RUNSDIR, None) #< don't care about reading params files
     MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
 except:
     print "Could not read run data for error regularisation -- chi2 may be unstable"

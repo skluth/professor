@@ -168,6 +168,11 @@ def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,
     return params, histos
 
 
+def read_all_rundata(runsdir, pfname="params.dat", verbosity=1):
+    rundirs = glob.glob(os.path.join(runsdir, "*"))
+    return prof.read_rundata(rundirs, pfname, verbosity)
+
+
 def find_maxerrs(histos):
     """
     Helper function to find the maximum error values found for each bin in the histos double-dict.
