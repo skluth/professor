@@ -93,7 +93,7 @@ def read_histos(filepath):
     histos = {}
     if filepath.endswith(".root"):
         histos.update(read_histos_root(filepath))
-    elif any(path.endswith(ext) for ext in [".yoda", ".aida", ".flat"]):
+    elif any(filepath.endswith(ext) for ext in [".yoda", ".aida", ".flat"]):
         histos.update(read_histos_yoda(filepath))
     return histos
 
