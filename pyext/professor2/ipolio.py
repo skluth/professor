@@ -114,4 +114,6 @@ def read_ipoldata(ifile):
     return read_binnedipols(ifile, paramlimits), imeta
 
 # TODO: Backward compatibility alias: remove
-read_ipolhistos = read_ipoldata
+def read_ipolhistos(ifile):
+    hs, m = read_ipoldata(ifile)
+    return m, hs

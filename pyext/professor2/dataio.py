@@ -104,7 +104,7 @@ def read_histos(filepath, stripref=False):
         newhistos = {}
         for p, h in histos.iteritems():
             if p.startswith("/REF"):
-                p.replace("/REF", "", 1)
+                p = p.replace("/REF", "", 1)
                 h.path = p
             newhistos[p] = h
         histos = newhistos
