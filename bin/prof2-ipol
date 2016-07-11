@@ -46,10 +46,8 @@ if not opts.QUIET:
 
 
 ## Load MC run histos and params
-import glob
-INDIRS = glob.glob(os.path.join(RUNSDIR, "*"))
 try:
-    PARAMS, HISTOS = prof.read_rundata(INDIRS, opts.PNAME)
+    PARAMS, HISTOS = prof.read_all_rundata(RUNSDIR, opts.PNAME)
     RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 except Exception, e:
     print e
