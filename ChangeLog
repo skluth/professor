@@ -1,6 +1,8 @@
 2016-07-11  Andy Buckley  <andy.buckley@cern.ch>
 
-	* Add a built-in /REF-stripping option to data histo loading
+	* Add Ipol min/max param vals getters and map them into Python.
+
+	* Add a built-in /REF-stripping option to data histo loading.
 
 	* Improvements to the Python ipol metadata interface.
 

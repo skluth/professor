@@ -13,6 +13,7 @@ def version(astuple=False):
 def numCoeffs(dim, order):
     return c.numCoeffs(dim, order)
 
+
 cdef class ParamPoints:
     cdef c.ParamPoints* _ptr
 
@@ -117,6 +118,7 @@ cdef class Ipol:
     ## Alias
     val = value
 
+
     def derivative(self, *params):
         import collections
 
@@ -131,7 +133,9 @@ cdef class Ipol:
         params = [float(p) for p in params]
         return  self._ptr.derivative(params)
 
+    ## Alias
     der = derivative
+
 
     def gradient(self, *params):
         import collections
@@ -147,17 +151,25 @@ cdef class Ipol:
         params = [float(p) for p in params]
         return  self._ptr.gradient(params)
 
+    ## Alias
     grad = gradient
+
 
 
     def setParamLimits(self, pmins, pmaxs):
         "Set the minimum and maximum param values via 2 lists ordered cf. the param names. Used in SVD internal scaling."
         self._ptr.setParamLimits(pmins, pmaxs)
 
+    def minParamVals(self):
+        "Get the minimum param values used in SVD internal scaling."
+        return self._ptr.minParamVals()
     def setMinParamVals(self, pmins):
         "Set the minimum param values via a list of values ordered cf. the param names. Used in SVD internal scaling."
         self._ptr.setMinParamVals(pmins)
 
+    def maxParamVals(self):
+        "Get the maximum param values used in SVD internal scaling."
+        return self._ptr.maxParamVals()
     def setMaxParamVals(self, pmaxs):
         "Set the maximum param values via a list of values ordered cf. the param names. Used in SVD internal scaling."
         self._ptr.setMaxParamVals(pmaxs)

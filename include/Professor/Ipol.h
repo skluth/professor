@@ -185,8 +185,10 @@ namespace Professor {
       setMaxParamVals(maxpvs);
     }
 
-    void setMinParamVals(const std::vector<double>& minpvs) { _minPV = minpvs; }
+    const std::vector<double>& minParamVals() { return _minPV; }
+    const std::vector<double>& maxParamVals() { return _maxPV; }
 
+    void setMinParamVals(const std::vector<double>& minpvs) { _minPV = minpvs; }
     void setMaxParamVals(const std::vector<double>& maxpvs) { _maxPV = maxpvs; }
 
     //@}
