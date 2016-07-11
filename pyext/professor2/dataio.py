@@ -88,22 +88,40 @@ def read_histos_yoda(path):
     return histos
 
 
-def read_histos(filepath):
-    "Load histograms from file, into a dict of path -> yoda.Histo[DataBin]"
+def read_histos(filepath, stripref=False):
+    """
+    Load histograms from file, into a dict of path -> yoda.Histo[DataBin]
+
+    If stripref = True, remove any leading /REF prefix from the histo path
+    before putting it in the dictionary.
+    """
     histos = {}
     if filepath.endswith(".root"):
         histos.update(read_histos_root(filepath))
     elif any(filepath.endswith(ext) for ext in [".yoda", ".aida", ".flat"]):
         histos.update(read_histos_yoda(filepath))
+    if stripref:
+        newhistos = {}
+        for p, h in histos.iteritems():
+            if p.startswith("/REF"):
+                p.replace("/REF", "", 1)
+                h.path = p
+            newhistos[p] = h
+        histos = newhistos
     return histos
 
 
-def read_all_histos(dirpath):
-    "Load histograms from all files in the given dir, into a dict of path -> yoda.Histo[DataBin]"
+def read_all_histos(dirpath, stripref=False):
+    """
+    Load histograms from all files in the given dir, into a dict of path -> yoda.Histo[DataBin]
+
+    If stripref = True, remove any leading /REF prefix from the histo path
+    before putting it in the dictionary.
+    """
     histos = {}
     filepaths = glob.glob(os.path.join(dirpath, "*"))
     for fp in filepaths:
-        histos.update(read_histos(fp))
+        histos.update(read_histos(fp, stripref))
     return histos
 
 

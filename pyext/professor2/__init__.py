@@ -15,8 +15,7 @@ from professor2.ipol import *
 from professor2.minimize import *
 from professor2.paramsio import *
 from professor2.params import *
-## This one is the only module which requires NumPy
-from professor2.sampling import *
+from professor2.sampling import * #< the only module which requires NumPy
 from professor2.weights import *
 from professor2 import chi2
 

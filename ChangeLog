@@ -1,6 +1,8 @@
 2016-07-11  Andy Buckley  <andy.buckley@cern.ch>
 
-	* Improvements to the Python I/O interface.
+	* Add a built-in /REF-stripping option to data histo loading
+
+	* Improvements to the Python ipol metadata interface.
 
 2016-07-05  Andy Buckley  <andy.buckley@cern.ch>
 
