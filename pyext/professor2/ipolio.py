@@ -6,6 +6,7 @@ from professor2.histos import *
 
 
 class IpolMeta(dict):
+
     def __init__(self, ifile=None):
         self.pnames = None
         if ifile:
@@ -99,7 +100,7 @@ def read_binnedipols(ifile, paramlimits=None):
     return IHISTOS
 
 
-def read_ipolhistos(ifile):
+def read_ipoldata(ifile):
     "Return both the metadata object and collection of IpolHistos from a binned ipol file"
     imeta = read_ipolmeta(ifile)
     if not imeta["DataFormat"].startswith('binned'):
@@ -110,4 +111,7 @@ def read_ipolhistos(ifile):
         minparamvals = [float(s) for s in imeta["MinParamVals"].split()]
         maxparamvals = [float(s) for s in imeta["MaxParamVals"].split()]
         paramlimits = (minparamvals, maxparamvals)
-    return imeta, read_binnedipols(ifile, paramlimits)
+    return read_binnedipols(ifile, paramlimits), imeta
+
+# TODO: Backward compatibility alias: remove
+read_ipolhistos = read_ipoldata
