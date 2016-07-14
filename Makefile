@@ -73,7 +73,7 @@ endif
 ifdef HAVE_GOOD_CYTHON
   $(info Cython $(CYTHON_VERSION) found... will rebuild C++/Python interface)
 else
-  $(info Insufficient Cython (v$(CYTHON_VERSION)) found... will build C++/Python interface from bundled C file)
+  $(info Incompatible Cython $(CYTHON_VERSION) found... will build C++/Python interface from bundled C file)
 endif
 
 
