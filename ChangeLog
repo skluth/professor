@@ -1,3 +1,9 @@
+2016-07-14  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Release version 2.1.4
+
+	* Improve Makefile tests for ROOT and Cython versions.
+
 2016-07-11  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add Ipol min/max param vals getters and map them into Python.
