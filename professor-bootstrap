@@ -1,0 +1,82 @@
+#! /usr/bin/env bash
+
+test -z "$BUILD_PREFIX"      && BUILD_PREFIX="$PWD"
+test -z "$INSTALL_PREFIX"    && INSTALL_PREFIX="$PWD/local"
+
+test -z "$INSTALL_EIGEN3"    &&    INSTALL_EIGEN3="1"
+test -z "$INSTALL_CYTHON"    &&    INSTALL_CYTHON="1"
+test -z "$INSTALL_IMINUIT"   &&   INSTALL_IMINUIT="1"
+test -z "$INSTALL_PROFESSOR" && INSTALL_PROFESSOR="1"
+
+test -z "$PYTHON_VERSION"    && PYTHON_VERSION="2.7"
+test -z "$EIGEN3_VERSION"    && EIGEN3_VERSION="2.7"
+test -z "$CYTHON_VERSION"    && CYTHON_VERSION="0.23.4"
+test -z "$IMINUIT_VERSION"   && IMINUIT_VERSION="1.2"
+test -z "$PROFESSOR_VERSION" && PROFESSOR_VERSION="2.1.4"
+
+
+
+echo "Running Professor 2 bootstrap script"
+echo "Building Professor $PROFESSOR_VERSION, EIGEN3 $EIGEN3_VERSION"
+
+
+## Immediate exit on a command (group) failure and optional debug mode
+set -e
+test -n "$DEBUG" && set -x
+export PATH=$INSTALL_PREFIX/bin:$PATH
+
+function wget_untar { wget --no-check-certificate $1 -O- | tar xz; }
+
+
+## Make installation directory, with an etc subdir so Rivet etc. will install bash completion scripts
+mkdir -p $INSTALL_PREFIX
+
+
+## Install Eigen3
+if [[ "$INSTALL_EIGEN3" -eq "1" ]]; then
+    cd $BUILD_PREFIX
+    test -f 3.$EIGEN3_VERSION.tar.gz || wget http://bitbucket.org/eigen/eigen/get/3.${EIGEN3_VERSION}.tar.gz
+    mkdir -p $INSTALL_PREFIX/include
+    rm -rf $INSTALL_PREFIX/include/Eigen
+    tar xf 3.$EIGEN3_VERSION.tar.gz -C $INSTALL_PREFIX/include --wildcards */Eigen/ --strip=1
+    EIGEN3PATH=$INSTALL_PREFIX
+fi
+
+## Install cython
+if [[ "$INSTALL_CYTHON" -eq "1" ]]; then
+    cd $BUILD_PREFIX
+    wget_untar http://cython.org/release/Cython-${CYTHON_VERSION}.tar.gz
+    cd Cython-$CYTHON_VERSION
+    mkdir -p $INSTALL_PREFIX/lib/python${PYTHON_VERSION}/site-packages
+    mkdir -p $INSTALL_PREFIX/lib64/python${PYTHON_VERSION}/site-packages
+    python setup.py build
+    export PYTHONPATH=$PYTHONPATH:$INSTALL_PREFIX/lib/python${PYTHON_VERSION}/site-packages
+    export PYTHONPATH=$PYTHONPATH:$INSTALL_PREFIX/lib64/python${PYTHON_VERSION}/site-packages
+    python setup.py install --prefix $INSTALL_PREFIX
+fi
+
+## Install iMinuit
+if [[ "$INSTALL_IMINUIT" -eq "1" ]]; then
+    cd $BUILD_PREFIX
+    wget_untar https://pypi.python.org/packages/source/i/iminuit/iminuit-1.2.tar.gz
+    cd iminuit-${IMINUIT_VERSION}
+    python setup.py build
+    export PYTHONPATH=$PYTHONPATH:$INSTALL_PREFIX/lib/python${PYTHON_VERSION}/site-packages
+    export PYTHONPATH=$PYTHONPATH:$INSTALL_PREFIX/lib64/python${PYTHON_VERSION}/site-packages
+    python setup.py install --prefix $INSTALL_PREFIX
+fi
+
+## Install Professor
+if [[ "$INSTALL_PROFESSOR" -eq "1" ]]; then
+    cd $BUILD_PREFIX
+    wget_untar http://www.hepforge.org/archive/professor/Professor-${PROFESSOR_VERSION}.tar.gz
+    cd Professor-$PROFESSOR_VERSION
+    CXXFLAGS="-I/$INSTALL_PREFIX/include -O4" CYTHON=$INSTALL_PREFIX/bin/cython make all
+    PREFIX=$INSTALL_PREFIX make install
+fi
+
+## Announce the build success
+echo; echo "All done. Now set some variables in your shell"
+echo; echo "LD_LIBRARY_PATH $INSTALL_PREFIX/lib"
+echo; echo "PATH $INSTALL_PREFIX/bin"
+echo; echo "PYTHONPATH $INSTALL_PREFIX/lib/python${PYTHON_VERSION}/site-packages"
