@@ -170,7 +170,6 @@ dist: all
        $(TESTSOURCES) \
        $(PYTHONSOURCES) pyext/setup.py pyext/professor2/misc/*py pyext/professor2/ml/*py\
        $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
-       $(wildcard contrib/*) \
        $(DISTNAME)/
 	tar czf $(DISTNAME).tar.gz $(DISTNAME)
 
