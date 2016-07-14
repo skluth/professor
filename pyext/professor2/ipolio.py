@@ -13,19 +13,23 @@ class IpolMeta(dict):
 
     @property
     def dim(self):
-        return len(self.pnames)
+        return int(self.get("Dimension", -1))
 
     @property
     def pnames(self):
-        return self["ParamNames"].split()
+        return self.get("ParamNames", "").split()
 
     @property
     def pvalsmin(self):
-        return [float(x) for x in self["MinParamVals"].split()]
+        return [float(x) for x in self.get("MinParamVals", "").split()]
 
     @property
     def pvalsmax(self):
-        return [float(x) for x in self["MaxParamVals"].split()]
+        return [float(x) for x in self.get("MaxParamVals", "").split()]
+
+    @property
+    def numinputs(self):
+        return int(self.get("NumInputs", -1))
 
     def read_ipolmeta(self, ifile):
         """
