@@ -1,9 +1,13 @@
 ## Makefile for Professor 2.x
 
 VERSION := 2.1.4
+DISTNAME := Professor-$(VERSION)
+$(info Building Professor $(VERSION))
 
 
 ## Default values for user-specifiable build variables
+
+SHELL := /bin/bash
 
 ifndef PREFIX
   PREFIX := /usr/local
@@ -36,15 +40,44 @@ ifndef CYTHON
   CYTHON := cython
 endif
 
+ifndef ROOTCONFIG
+  ROOTCONFIG := root-config
+endif
 
-###################
+
+## Check for compatible dependencies
+
+ROOT_VERSION := $(shell $(ROOTCONFIG) --version 2> /dev/null)
+ifeq "$(ROOT_VERSION)" ""
+  ROOT_VERSION := 0
+else
+  HAVE_ROOT := $(ROOT_VERSION)
+endif
+ifdef HAVE_ROOT
+  $(info ROOT $(ROOT_VERSION) is available... providing 'root' make target)
+else
+  $(info ROOT is not available... not making any ROOT integration)
+endif
 
 
-DISTNAME := Professor-$(VERSION)
+CYTHON_VERSION := $(shell $(CYTHON) --version 2>&1 | sed -e 's/Cython version \([0-9\.]\+\)/\1/')
+ifeq "$(CYTHON_VERSION)" ""
+  CYTHON_VERSION := NONE
+  CYTHON_VERSION1 := 0
+  CYTHON_VERSION2 := 0
+else
+  CYTHON_VERSION1 := $(shell echo $(CYTHON_VERSION) | cut -d. -f1)
+  CYTHON_VERSION2 := $(shell echo $(CYTHON_VERSION) | cut -d. -f2)
+  HAVE_GOOD_CYTHON := $(shell test "$(CYTHON_VERSION1)" -eq 0 -a "$(CYTHON_VERSION2)" -ge 20 && echo 1 || echo 0)
+endif
+ifdef HAVE_GOOD_CYTHON
+  $(info Cython $(CYTHON_VERSION) found... will rebuild C++/Python interface)
+else
+  $(info Insufficient Cython (v$(CYTHON_VERSION)) found... will build C++/Python interface from bundled C file)
+endif
 
-#SHELL := /bin/bash
-HAVE_ROOT := $(shell which root-config 2> /dev/null)
-HAVE_CYTHON := $(test `cython --version 2>&1 | sed -e 's/Cython version \([0-9\.]\+\)/\1/' | cut -d. -f2` -ge 20)
+
+## Build-file variables
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
@@ -55,6 +88,9 @@ BINPROGS := $(wildcard bin/*)
 CONTRIBPROGS := $(wildcard contrib/*)
 PYTHONSOURCES := $(wildcard pyext/professor2/*.py)
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
+
+
+## Make targets
 
 .PHONY := all lib pyext tests cxxtests pytests check icheck clean root dist
 
@@ -76,7 +112,7 @@ obj/%.o: src/%.cc $(LIBHEADERS)
 pyext: pyext/professor2/core.so $(wildcard pyext/professor2/*.py)
 	$(PYTHON) pyext/setup.py install --prefix=.
 
-ifdef HAVE_CYTHON
+ifdef HAVE_GOOD_CYTHON
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
 else
