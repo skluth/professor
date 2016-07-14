@@ -8,14 +8,24 @@ from professor2.histos import *
 class IpolMeta(dict):
 
     def __init__(self, ifile=None):
-        self.pnames = None
         if ifile:
             self.update(self.read_ipolmeta(ifile))
-            self.pnames = self["ParamNames"].split()
 
     @property
     def dim(self):
         return len(self.pnames)
+
+    @property
+    def pnames(self):
+        return self["ParamNames"].split()
+
+    @property
+    def pvalsmin(self):
+        return [float(x) for x in self["MinParamVals"].split()]
+
+    @property
+    def pvalsmax(self):
+        return [float(x) for x in self["MaxParamVals"].split()]
 
     def read_ipolmeta(self, ifile):
         """
