@@ -51,7 +51,7 @@ if not opts.QUIET:
 
 ## Read interpolated and reference histos, and run data
 IHISTOS, METADATA = prof.read_ipoldata(IFILE)
-DHISTOS = read_all_histos(REFDIR)
+DHISTOS = prof.read_all_histos(REFDIR)
 
 ## Try to read run histos and extract maximum errors
 MAXERRDICT = None

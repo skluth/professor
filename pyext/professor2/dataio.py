@@ -170,7 +170,7 @@ def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,
 
 def read_all_rundata(runsdir, pfname="params.dat", verbosity=1):
     rundirs = glob.glob(os.path.join(runsdir, "*"))
-    return prof.read_rundata(rundirs, pfname, verbosity)
+    return read_rundata(rundirs, pfname, verbosity)
 
 
 def find_maxerrs(histos):
