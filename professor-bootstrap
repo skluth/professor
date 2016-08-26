@@ -45,7 +45,7 @@ fi
 ## Install cython
 if [[ "$INSTALL_CYTHON" -eq "1" ]]; then
     cd $BUILD_PREFIX
-    wget_untar https://pypi.python.org/packages/source/c/Cython/Cython-${CYTHON_VERSION}.tar.gz
+    wget_untar https://pypi.python.org/packages/source/C/Cython/Cython-${CYTHON_VERSION}.tar.gz
     cd Cython-$CYTHON_VERSION
     mkdir -p $INSTALL_PREFIX/lib/python${PYTHON_VERSION}/site-packages
     mkdir -p $INSTALL_PREFIX/lib64/python${PYTHON_VERSION}/site-packages
