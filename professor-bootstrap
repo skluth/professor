@@ -10,7 +10,7 @@ test -z "$INSTALL_PROFESSOR" && INSTALL_PROFESSOR="1"
 
 test -z "$PYTHON_VERSION"    && PYTHON_VERSION="2.7"
 test -z "$EIGEN3_VERSION"    && EIGEN3_VERSION="2.7"
-test -z "$CYTHON_VERSION"    && CYTHON_VERSION="0.23.4"
+test -z "$CYTHON_VERSION"    && CYTHON_VERSION="0.23.5"
 test -z "$IMINUIT_VERSION"   && IMINUIT_VERSION="1.2"
 test -z "$PROFESSOR_VERSION" && PROFESSOR_VERSION="2.1.4"
 
@@ -45,7 +45,7 @@ fi
 ## Install cython
 if [[ "$INSTALL_CYTHON" -eq "1" ]]; then
     cd $BUILD_PREFIX
-    wget_untar http://cython.org/release/Cython-${CYTHON_VERSION}.tar.gz
+    wget_untar https://pypi.python.org/packages/source/c/Cython/Cython-${CYTHON_VERSION}.tar.gz
     cd Cython-$CYTHON_VERSION
     mkdir -p $INSTALL_PREFIX/lib/python${PYTHON_VERSION}/site-packages
     mkdir -p $INSTALL_PREFIX/lib64/python${PYTHON_VERSION}/site-packages

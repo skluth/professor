@@ -1,3 +1,7 @@
+2016-08-26  Holger Schulz  <holger.schulz@cern.ch>
+
+        * Use more readable Cython DL path in bootstrap
+
 2016-07-14  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Release version 2.1.4
