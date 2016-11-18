@@ -1,5 +1,4 @@
 #include "Professor/Ipol.h"
-//#include "Professor/Counter.h"
 #include "Eigen/SVD"
 #include <sstream>
 #include <cassert>
@@ -154,7 +153,7 @@ namespace Professor {
       }
 
 
-      vector<vector<int> > temp = BS;
+      auto temp = BS;
       vector<vector<int> > temp2;
       vector<int> e(dim,0);
 
@@ -162,11 +161,11 @@ namespace Professor {
       for (unsigned int o = 1; o < order; ++o) {
         temp2.clear();
        
-        for (unsigned int i=0;i<temp.size(); i++) {
-          for (unsigned int j = 0; j< BS.size(); j++) {
+        for ( auto const & t : temp) {
+          for (auto const & bs : BS) {
             // Create a new element
             for (unsigned int d = 0; d < dim; d++) {
-              e[d] = temp[i][d] + BS[j][d];
+              e[d] = t[d] + bs[d];
             }
             temp2.push_back(e);
           }
