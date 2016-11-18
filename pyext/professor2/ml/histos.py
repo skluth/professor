@@ -22,7 +22,7 @@ class MLBin(Bin):
 
     __slots__ = ["mlval", "__dict__"]
 
-    def __init__(self, xmin, xmax, X, Y, pnames=None):
+    def __init__(self, xmin, xmax, X, Y, pnames=None, pC=1.0, pEps=0.0):
         Bin.__init__(self, xmin, xmax)
         from numpy import array
         X=array(X)
@@ -37,7 +37,7 @@ class MLBin(Bin):
 
         # Machine Learning magic
         from sklearn import svm
-        ml = svm.SVR() # TODO --- explore parameters of SVR
+        ml = svm.SVR(kernel='rbf', C=pC, epsilon=pEps) # TODO --- explore parameters of SVR
         ml.fit(xscaled, yscaled[:,0]) # PArt of the hack
         self.mlval = ml
 
@@ -57,7 +57,7 @@ class MLBin(Bin):
                      )
         return db
 
-def mk_MLHisto(histos, runs, paramslist, paramnames=None):
+def mk_MLHisto(histos, runs, paramslist, paramnames=None, pC=1.0, pEps=0.0):
     from numpy import array
 
     nbins = len(histos.itervalues().next().bins)
@@ -69,6 +69,6 @@ def mk_MLHisto(histos, runs, paramslist, paramnames=None):
         xmin, xmax = xmins.pop(), xmaxs.pop()
         vals = [histos[run].bins[n].val for run in runs]
 
-        mbins.append(MLBin(xmin, xmax, array(paramslist), array(vals), paramnames))
+        mbins.append(MLBin(xmin, xmax, array(paramslist), array(vals), paramnames, pC, pEps))
 
     return MLHisto(mbins, histos.values()[0].path)
