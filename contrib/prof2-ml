@@ -24,6 +24,8 @@ op.add_option("-j", dest="MULTI", type=int, default=1, help="Number of threads t
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description to be written to the ipol output file")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--mlc", dest="MLC", type=float, default=1.0, help="The C parameter in the SVR")
+op.add_option("--mlepsilon", dest="MLEPSILON", type=float, default=0.0, help="The epsilon parameter in the SVR")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -140,7 +142,7 @@ def worker(q, rdict):
             break
         hn = q.get()
         histos = HISTOS[hn]
-        ih = mk_MLHisto(histos, RUNS, PARAMSLIST)
+        ih = mk_MLHisto(histos, RUNS, PARAMSLIST, pC=opts.MLC, pEps=opts.MLEPSILON)
         del HISTOS[hn] #< pro-actively clear up memory
         rdict[hn] = ih#zlib.compress(s, 9) #< save some memory
         del histos
