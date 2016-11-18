@@ -74,8 +74,9 @@ if opts.RUNCOMBS is not None:
 
 ## Some useful announcements about the data loaded and the interpolation planned
 if not opts.QUIET:
-    if (len(RUNS) < prof.numCoeffs(len(PARAMNAMES), opts.ORDER)):
-        print "Not enough runs for order %i polynomials"%opts.ORDER
+    minnruns =prof.numCoeffs(len(PARAMNAMES), opts.ORDER)
+    if (len(RUNS) < minnruns):
+        print "Not enough runs for order %i polynomials --- would require %i"%(opts.ORDER, minnruns)
         for i in xrange(1, opts.ORDER):
             if (prof.numCoeffs(len(PARAMNAMES), opts.ORDER -i) <= len(RUNS)):
                 print "Try order %i (min %i runs)"%(opts.ORDER -i, prof.numCoeffs(len(PARAMNAMES), opts.ORDER -i))
