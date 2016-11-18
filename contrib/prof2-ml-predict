@@ -33,7 +33,7 @@ if len(args) < 1:
     op.print_usage()
     sys.exit(1)
 PARAMSTR = args[0]
-IFILE = "ipol.dat"
+IFILE = "ml.pkl"
 if len(args) >= 2:
     IFILE = args[1]
 
