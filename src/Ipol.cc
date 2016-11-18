@@ -1,10 +1,10 @@
 #include "Professor/Ipol.h"
-#include "Professor/Counter.h"
+//#include "Professor/Counter.h"
 #include "Eigen/SVD"
 #include <sstream>
 #include <cassert>
 #include <cmath>
-
+#include <set>
 
 namespace Professor {
 
@@ -138,18 +138,51 @@ namespace Professor {
       throw IpolError("Polynomial order " + to_string(order) + " not implemented");
 
     const vector<int> zero(dim, 0);
-    vector< vector<int> > rtn;
-    rtn.push_back(zero);
+    set< vector<int> > rtn;
+    rtn.insert(zero);
 
-    for (unsigned int i = 0; i <= order; ++i) {
-      Professor::Counter c(dim,i);
-      while (c.next(dim-1)) {
-        if (c.sum() == i) {
-          rtn.push_back(c.data());
+
+
+    if (order>0) {
+    // The set of parameter base vectors
+      vector<vector<int> > BS;
+      for (unsigned int d = 0; d < dim; ++d) {
+        vector<int> p(dim,0);
+        p[d]=1;
+        rtn.insert(p);
+        BS.push_back(p);
+      }
+
+
+      vector<vector<int> > temp = BS;
+      vector<vector<int> > temp2;
+      vector<int> e(dim,0);
+
+      // Recursively add base vectors
+      for (unsigned int o = 1; o < order; ++o) {
+        temp2.clear();
+       
+        for (unsigned int i=0;i<temp.size(); i++) {
+          for (unsigned int j = 0; j< BS.size(); j++) {
+            // Create a new element
+            for (unsigned int d = 0; d < dim; d++) {
+              e[d] = temp[i][d] + BS[j][d];
+            }
+            temp2.push_back(e);
+          }
+        }
+        temp=temp2; // For the next order, we want to add base vectors 
+                    // to each element of the current order
+        for (auto const &v : temp2) {
+          rtn.insert(v); // The set takes care of not having duplicates.
         }
       }
     }
-    return rtn;
+
+    // Convert back to vector<vector<int> > TODO rewrite everything else such that it takes set<vector<int> > ?
+    vector<vector<int> > rtn2;
+    for (auto const &v : rtn) rtn2.push_back(v);
+    return rtn2;
   }
 
 
@@ -266,6 +299,7 @@ namespace Professor {
 
   /// TODO: How do we want to read in the MinMaxValues here?
   void Ipol::fromString(const string& s) {
+    std::cout << " in fromString" << endl;
     // Extract a name if given at the start of the string
     _name = (s.find(":") != std::string::npos) ? s.substr(0, s.find(":")) : "";
     // Load the rest of the string into a stringstream and load into numerical variables
@@ -276,7 +310,9 @@ namespace Professor {
     while (numss >> tmp) {
       _coeffs.push_back(tmp);
       ncoeffs += 1;
+      std::cout << "Read " << _coeffs.size() << " coefficients\n";
     }
+    std::cout << "Done \n";
     assert(ncoeffs == numCoeffs(dim(),order()));
     _structure = mkStructure(dim(), order());
   }

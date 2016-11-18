@@ -1,6 +1,6 @@
 ## Makefile for Professor 2.x
 
-VERSION := 2.1.4
+VERSION := 2.2.0
 DISTNAME := Professor-$(VERSION)
 $(info Building Professor $(VERSION))
 
@@ -81,7 +81,7 @@ endif
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
-LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Counter Ipol Version)
+LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol Version)
 TESTSOURCES := $(wildcard test/*.cc test/testPython*)
 TESTPROGS  := test/testParamPoints test/testIpol
 BINPROGS := $(wildcard bin/*)
