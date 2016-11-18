@@ -202,10 +202,10 @@ class ParamFrame(wx.Frame):
             from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
             pmin = float(METADATA["MinParamVals"].split()[i])
             pmax = float(METADATA["MaxParamVals"].split()[i])
-            
+
             from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
             slider = FloatSpin(self.panel, -1, style=0, value=pmin + 0.5*(pmax-pmin),
-                               min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50., size=(160,30))
+                               min_val=pmin, max_val=pmax, increment=abs(pmax-pmin)/50., size=(400,40))
             controlgrid.Add(slider, pos=(i,2))
             self.sliders[param] = slider
         self.Bind(EVT_FLOATSPIN, self.parent.sliderUpdate)
