@@ -11,7 +11,7 @@ Write out interpolated histograms at a given parameter point.
 
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
-op.add_option("--prefix", "--output", dest="OUTPUT", default="predictions", help="Prefix for outputs (default: %default)")
+op.add_option("-o", "--output", dest="OUTPUT", default="pred.yoda", help="Output file name (default: %default)")
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict output to a subset of histograms (default: %default)")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -46,14 +46,22 @@ if not opts.QUIET:
 PARAMS = None
 if os.path.exists(PARAMSTR):
     with open(args[0]) as f:
-        PARAMS = [float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
+        VALS  = [float(l.strip().split()[-1]) for l in f if not l.startswith("#")]
+    with open(args[0]) as f:
+        NAMES = [l.strip().split()[0] for l in f if not l.startswith("#")]
 else:
     print "No parameter file given or specified param file does not exist, exiting..."
     sys.exit(1)
 
+
+PARAMS=dict(zip(NAMES, VALS))
+
 ## Read ipol param names and histos
 META, IHISTOS = prof.read_ipolhistos(IFILE)
 PNAMES = META["ParamNames"].split()
+
+# Reorder parampoint values according to order of params in ipol file
+TESTPOINT = [PARAMS[k] for k in PNAMES]
 
 ## Weight file parsing
 if opts.WFILE:
@@ -67,8 +75,8 @@ if opts.WFILE:
 
 
 ## Write out ipolhistos
-ofile = opts.OUTPUT + "_prediction.yoda"
-scatters=[IHISTOS[k].toDataHisto(PARAMS).toScatter2D() for k in sorted(IHISTOS.keys())]
+ofile = opts.OUTPUT
+scatters=[IHISTOS[k].toDataHisto(TESTPOINT).toScatter2D() for k in sorted(IHISTOS.keys())]
 yoda.writeYODA(scatters, ofile)
 
 if not opts.QUIET:

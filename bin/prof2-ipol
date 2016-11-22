@@ -47,7 +47,16 @@ if not opts.QUIET:
 
 ## Load MC run histos and params
 try:
-    PARAMS, HISTOS = prof.read_all_rundata(RUNSDIR, opts.PNAME)
+    if RUNSDIR.endswith(".yaml"):
+        try:
+            import yaml
+        except ImportError, e:
+            print "Unable to import YAML:", e
+            import sys
+            sys.exit(1)
+        PARAMS, HISTOS = prof.read_all_rundata_yaml(RUNSDIR)
+    else:
+        PARAMS, HISTOS = prof.read_all_rundata(RUNSDIR, opts.PNAME)
     RUNS, PARAMNAMES, PARAMSLIST = prof.mk_ipolinputs(PARAMS)
 except Exception, e:
     print e

@@ -172,6 +172,24 @@ def read_all_rundata(runsdir, pfname="params.dat", verbosity=1):
     rundirs = glob.glob(os.path.join(runsdir, "*"))
     return read_rundata(rundirs, pfname, verbosity)
 
+def read_all_rundata_yaml(yamlfile):
+    from professor2.utils import mkdict
+    PARAMS = {}
+    HISTOS = {}
+    import yaml
+    print "Loading YAML from %s"%yamlfile
+    Y=yaml.load(open(yamlfile))
+    for num, y in enumerate(Y):
+        P=mkdict()
+        for p in sorted(y['Params'].keys()):
+            P[p] = float(y['Params'][p])
+        PARAMS[num]=P
+        for f in y['YodaFiles']:
+            hs = read_histos(f)
+            for path, hist in hs.iteritems():
+                HISTOS.setdefault(path, {})[num] = hist
+    return PARAMS, HISTOS
+
 
 def find_maxerrs(histos):
     """
