@@ -298,7 +298,6 @@ namespace Professor {
 
   /// TODO: How do we want to read in the MinMaxValues here?
   void Ipol::fromString(const string& s) {
-    std::cout << " in fromString" << endl;
     // Extract a name if given at the start of the string
     _name = (s.find(":") != std::string::npos) ? s.substr(0, s.find(":")) : "";
     // Load the rest of the string into a stringstream and load into numerical variables
@@ -309,9 +308,7 @@ namespace Professor {
     while (numss >> tmp) {
       _coeffs.push_back(tmp);
       ncoeffs += 1;
-      std::cout << "Read " << _coeffs.size() << " coefficients\n";
     }
-    std::cout << "Done \n";
     assert(ncoeffs == numCoeffs(dim(),order()));
     _structure = mkStructure(dim(), order());
   }
