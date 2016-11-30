@@ -1,6 +1,24 @@
+2016-11-30  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Replace Counter code when running mk_Structure with much faster code
+	
+	* Bump version to 2.2
+
+	* Bump DataFormat to binned 2
+
+	* Allow passing file names or open files (or similar streams) to
+	ipolio functions
+
+	* prof2-ipol can read yaml now
+
+	* Add some of Elliot's code for choosing sub spaces in prof2-ipol and
+	some plot routines to contrib
+
+	* Add SOBOL sampling to contrib
+
 2016-08-26  Holger Schulz  <holger.schulz@cern.ch>
 
-        * Use more readable Cython DL path in bootstrap
+	* Use more readable Cython DL path in bootstrap
 
 2016-07-18  Andy Buckley  <andy.buckley@cern.ch>
 
