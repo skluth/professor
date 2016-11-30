@@ -36,24 +36,27 @@ class IpolMeta(dict):
         Read in meta data from prof-ipol output 'ifile'
         """
         meta = {}
-        with open(ifile) as f:
-            for l in f:
-                ## Strip out comments
-                if "#" in l:
-                    l = l[:l.find("#")]
-                ## Ignore blank / pure whitespace lines
-                l = l.strip()
-                if not l:
-                    continue
-                ## Exit if we see the end-of-header indicator
-                if l == "---":
-                    break
-                ## Extract the key-value pair from the line
-                try:
-                    key, value = [str.strip(s) for s in l.split(":", 1)]
-                    meta[key] = value
-                except:
-                    print "Couldn't extract key-value pair from '%s'" % l
+
+        if type(ifile) == str:
+            ifile=open(ifile)
+        ifile.seek(0)
+        for l in ifile.readlines():
+            ## Strip out comments
+            if "#" in l:
+                l = l[:l.find("#")]
+            ## Ignore blank / pure whitespace lines
+            l = l.strip()
+            if not l:
+                continue
+            ## Exit if we see the end-of-header indicator
+            if l == "---":
+                break
+            ## Extract the key-value pair from the line
+            try:
+                key, value = [str.strip(s) for s in l.split(":", 1)]
+                meta[key] = value
+            except:
+                print "Couldn't extract key-value pair from '%s'" % l
         return meta
 
 
@@ -72,16 +75,18 @@ def read_simpleipols(ifile, paramlimits=None):
     respectively.
     """
     IOBJECTS = {}
-    with open(ifile, "r") as f:
-        name = ""
-        for line in f:
-            sline = line.strip()
-            if sline.startswith("/"):
-                name = sline.split()[0]
-            elif sline.startswith("val"):
-                IOBJECTS[name] = Ipol(sline)
-                if paramlimits:
-                    IOBJECTS[name].setParamLimits(*paramlimits)
+    if type(ifile) == str:
+        ifile=open(ifile)
+    ifile.seek(0)
+    name = ""
+    for line in ifile.readlines():
+        sline = line.strip()
+        if sline.startswith("/"):
+            name = sline.split()[0]
+        elif sline.startswith("val"):
+            IOBJECTS[name] = Ipol(sline)
+            if paramlimits:
+                IOBJECTS[name].setParamLimits(*paramlimits)
     return IOBJECTS
 
 
@@ -96,25 +101,28 @@ def read_binnedipols(ifile, paramlimits=None):
     respectively.
     """
     IHISTOS = {}
-    with open(ifile, "r") as f:
-        for line in f:
-            sline = line.strip()
-            if sline.startswith("/"):
-                fullpath, sxmin, sxmax = sline.split()
-                hpath, nbin = fullpath.split("#")
-                currentib = IpolBin(float(sxmin), float(sxmax))
-                IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
-            elif sline.startswith("val"):
-                currentib.ival = Ipol(sline)
-                if paramlimits:
-                    currentib.ival.setParamLimits(*paramlimits)
-                #print currentib.ival.coeffs()
-            elif sline.startswith("err"):
-                currentib.ierrs = Ipol(sline)
-                if paramlimits:
-                    currentib.ierrs.setParamLimits(*paramlimits)
-                #print currentib.ierrs.coeffs()
-            # TODO: read back asymm errs as two ipols
+    if type(ifile) == str:
+        ifile=open(ifile)
+    ifile.seek(0)
+    name = ""
+    for line in ifile.readlines():
+        sline = line.strip()
+        if sline.startswith("/"):
+            fullpath, sxmin, sxmax = sline.split()
+            hpath, nbin = fullpath.split("#")
+            currentib = IpolBin(float(sxmin), float(sxmax))
+            IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
+        elif sline.startswith("val"):
+            currentib.ival = Ipol(sline)
+            if paramlimits:
+                currentib.ival.setParamLimits(*paramlimits)
+            #print currentib.ival.coeffs()
+        elif sline.startswith("err"):
+            currentib.ierrs = Ipol(sline)
+            if paramlimits:
+                currentib.ierrs.setParamLimits(*paramlimits)
+            #print currentib.ierrs.coeffs()
+        # TODO: read back asymm errs as two ipols
     return IHISTOS
 
 
@@ -123,6 +131,8 @@ def read_ipoldata(ifile):
     imeta = read_ipolmeta(ifile)
     if not imeta["DataFormat"].startswith('binned'):
         raise IpolIOError("Error, DataFormat of ipol file %s is not binned" % ifile)
+    if not imeta["DataFormat"].endswith('2'):
+        raise IpolIOError("Error, DataFormat '%s' of ipol file %s is not supported by this version of Professor, please recalculate parametrisations." %(imeta["DataFormat"] ,ifile))
     paramlimits = None
     if bool(int(imeta.get("DoParamScaling", 0))):
         assert imeta.has_key("MinParamVals") and imeta.has_key("MaxParamVals")
@@ -130,8 +140,3 @@ def read_ipoldata(ifile):
         maxparamvals = [float(s) for s in imeta["MaxParamVals"].split()]
         paramlimits = (minparamvals, maxparamvals)
     return read_binnedipols(ifile, paramlimits), imeta
-
-# TODO: Backward compatibility alias: remove
-def read_ipolhistos(ifile):
-    hs, m = read_ipoldata(ifile)
-    return m, hs
