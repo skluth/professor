@@ -15,6 +15,7 @@ TODO:
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--pname", "--pfile", dest="PNAME", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")
+op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict ipol building to a subset of bins (default: %default)")
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
 op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median, symm (default: %default)") #< add rel, asymm
@@ -26,6 +27,7 @@ op.add_option("-j", dest="MULTI", type=int, default=1, help="Number of threads t
 op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description to be written to the ipol output file")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
+op.add_option("--split", dest="SPLIT", default=None, help="Can incorporate a linear split in parameter space. Provide \"ParamName1 ParamName2 Value1 Value2 Gradient (these describe the line down which to split the plot. Value1 and Value2 form the coords of a point on the line.) ABOVE/BELOW (ABOVE => use runs above the line etc)\"")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -44,6 +46,14 @@ import professor2 as prof
 if not opts.QUIET:
     print prof.logo
 
+# Read details of split in parameter space if necessary
+if opts.SPLIT != None:
+    Split = map(str, opts.SPLIT.split(' '))
+    splitParam1 = Split[0]
+    splitParam2 = Split[1]
+    splitVal1 = float(Split[2])
+    splitVal2 = float(Split[3])
+    splitGrad = float(Split[4])
 
 ## Load MC run histos and params
 try:
@@ -123,6 +133,32 @@ for irun, run in enumerate(RUNS):
             bad.append(run)
             badnum.append(irun)
             break
+if opts.LIMITS != None:
+    limits, fixed = prof.read_limitsandfixed(opts.LIMITS)
+    for irun, run in enumerate(RUNS):
+        for inam, nam in enumerate(PARAMNAMES):
+            if PARAMSLIST[irun][inam] <= limits[nam][0] or PARAMSLIST[irun][inam] >= limits[nam][1]:
+                bad.append(run)
+                badnum.append(irun)
+                break
+
+if opts.SPLIT != None:
+    ip1 = PARAMNAMES.index(splitParam1)
+    ip2 = PARAMNAMES.index(splitParam2)
+    for irun, run in enumerate(RUNS):
+        ycheck = PARAMSLIST[irun][ip2]-splitGrad*(PARAMSLIST[irun][ip1]-splitVal1)
+	if Split[5] == "ABOVE": #if taking values above the split, remove those below
+            if ycheck <= splitVal2:
+                bad.append(run)
+                badnum.append(irun)
+	elif Split[5] == "BELOW": #if taking values below the split, remove those above
+            if ycheck >= splitVal2:
+                bad.append(run)
+                badnum.append(irun)
+	else:
+            print "Error: must specify either ABOVE or BELOW the split"
+            sys.exit(1)
+
 if bad:
     print "Found %d bad runs in %d total... removing" % (len(bad), len(RUNS))
     goodr, goodp = [], []
@@ -201,7 +237,7 @@ with open(IFILE, "w") as f:
     #f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
     f.write("ProfVersion: %s\n" % prof.version())
     f.write("Date: %s\n" % prof.mk_timestamp())
-    f.write("DataFormat: binned 1\n") # This tells the reader how to treat the coefficients that follow
+    f.write("DataFormat: binned 2\n") # This tells the reader how to treat the coefficients that follow
     # Format and write out parameter names
     pstring = "ParamNames:"
     for p in PARAMNAMES:
