@@ -52,7 +52,6 @@ if not opts.QUIET:
 ## Read persisted interpolations to re-create the ipol Histos
 import cPickle
 IHISTOS=cPickle.load(open(IFILE))
-# METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
 
 ## Read reference data histos
 import os, sys, glob

@@ -57,7 +57,7 @@ else:
 PARAMS=dict(zip(NAMES, VALS))
 
 ## Read ipol param names and histos
-META, IHISTOS = prof.read_ipolhistos(IFILE)
+IHISTOS, META = prof.read_ipoldata(IFILE)
 PNAMES = META["ParamNames"].split()
 
 # Reorder parampoint values according to order of params in ipol file

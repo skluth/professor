@@ -105,7 +105,7 @@ if not os.path.exists(IFILE):
     sys.exit(1)
 
 ## Read in meta data and ipol histos
-META, IHISTOS = prof.read_ipolhistos(IFILE)
+IHISTOS, META = prof.read_ipoldata(IFILE)
 
 ## Weight file parsing
 if opts.WFILE:

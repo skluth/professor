@@ -70,7 +70,7 @@ except Exception, e:
     sys.exit(1)
 
 ## Load interpolated histograms from file
-IMETA, IHISTOS = prof.read_ipolhistos(IFILE)
+IHISTOS, IMETA = prof.read_ipoldata(IFILE)
 print("Loaded ipol histos from", IFILE)
 
 

@@ -36,7 +36,7 @@ if not opts.QUIET:
 
 
 ## Read in ipol histos
-METADATA, IHISTOS = prof.read_ipolhistos(IFILE)
+IHISTOS, METADATA = prof.read_ipoldata(IFILE)
 
 ## Weight file parsing
 if opts.WFILE:

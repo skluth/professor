@@ -25,7 +25,7 @@ IFILE = args[0]
 import professor2 as prof
 
 ## Read persisted interpolations to re-create the ipol Histos
-META, IHISTOS = prof.read_ipolhistos(IFILE)
+IHISTOS, META = prof.read_ipoldata(IFILE)
 maxlen = max(len(h) for h in IHISTOS.keys())
 hfmt = "{0:%ds}" % maxlen
 
