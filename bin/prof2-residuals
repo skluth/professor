@@ -120,6 +120,8 @@ for hn, mchistos in sorted(HISTOS.iteritems()):
     if hn in IHISTOS.keys():
         ihisto = IHISTOS[hn]
         for irun, run in enumerate(RUNS):
+            if not run in mchistos.keys():
+                continue
             mchisto = mchistos[run]
             assert mchisto.nbins == ihisto.nbins
             for ib in xrange(ihisto.nbins):
