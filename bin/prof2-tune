@@ -92,12 +92,19 @@ for ihn in IHISTOS.keys():
 
 ## Prepare lists of ibins and dbins
 IBINS, DBINS, MAXERRS = [], [], []
+BINDICES={}
 for a in available:
+    BINDICES[a[0]] = []
     # TODO: print out the available observables
-    IBINS.extend(IHISTOS[a[0]].bins)
-    DBINS.extend(DHISTOS[a[1]].bins)
-    if MAXERRDICT:
-        MAXERRS.extend(MAXERRS[a[0]])
+    if len(IHISTOS[a[0]].bins) != len(DHISTOS[a[1]].bins):
+        print "Inconsistency discovered between data bins and parametrised bins:"
+        print "Removing histogram", a[0]
+    else:
+        IBINS.extend(IHISTOS[a[0]].bins)
+        DBINS.extend(DHISTOS[a[1]].bins)
+        BINDICES[a[0]] = range(len(IBINS),  len(IBINS) +     len(IHISTOS[a[0]]))
+        if MAXERRDICT:
+            MAXERRS.extend(MAXERRS[a[0]])
 if not MAXERRS:
     MAXERRS = None
 
@@ -131,7 +138,13 @@ def simpleGoF(params):
         err2 += ibin.err(params, emax=maxierr)**2
         # TODO: compute asymm error for appropriate deviation direction cf. sum([e**2 for e in ibin.ierrs])
         if not err2:
-            raise prof.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF")
+            culprit=""
+            i_culprit=-1
+            for k, v in BINDICES.iteritems():
+                if num in v:
+                    culprit=k
+                    i_culprit = v.index(num)
+            raise prof.StatError("Zero uncertainty on a bin (%s : %i) being used in the fit -- cannot compute a reasonable GoF"%(culprit, i_culprit))
         # TODO: should we square w too, so it penalised deviations _linearly_?
         chi2 += w * diff**2 / err2
     return chi2
@@ -182,6 +195,7 @@ try:
     from iminuit import Minuit
 except ImportError, e:
     print "Unable to import iminuit, exiting", e
+    print "Try installing iminuit with pip: pip install iminuit --user"
     import sys
     sys.exit(1)
 
