@@ -67,7 +67,7 @@ matchers = prof.read_pointmatchers(opts.WFILE) if opts.WFILE else None
 
 ## Find things available in both ipol and ref data, and in the weight file if there is one
 available = []
-for ihn in IHISTOS.keys():
+for ihn in sorted(IHISTOS.keys()):
     ## Set default bin weights
     for ib in IHISTOS[ihn].bins:
         ib.w = 1.0
@@ -88,21 +88,24 @@ for ihn in IHISTOS.keys():
             # TODO: we should eliminate this potential mismatch of ref and MC hnames
             available.append([ihn,rhn])
             break #< TODO: ok?
+        # else:
+            # print "Could not find %s"%ihn
 
 
 ## Prepare lists of ibins and dbins
 IBINS, DBINS, MAXERRS = [], [], []
-BINDICES={}
+BINDICES={} # Allows for more helpful error messages in case of prof.StatError
 for a in available:
-    BINDICES[a[0]] = []
     # TODO: print out the available observables
     if len(IHISTOS[a[0]].bins) != len(DHISTOS[a[1]].bins):
         print "Inconsistency discovered between data bins and parametrised bins:"
         print "Removing histogram", a[0]
+        del IHISTOS[a[0]]
+        del DHISTOS[a[1]]
     else:
+        BINDICES[a[0]] = range(len(IBINS),  len(IBINS) +     len(IHISTOS[a[0]])) # This is for debugging
         IBINS.extend(IHISTOS[a[0]].bins)
         DBINS.extend(DHISTOS[a[1]].bins)
-        BINDICES[a[0]] = range(len(IBINS),  len(IBINS) +     len(IHISTOS[a[0]]))
         if MAXERRDICT:
             MAXERRS.extend(MAXERRS[a[0]])
 if not MAXERRS:
@@ -144,7 +147,9 @@ def simpleGoF(params):
                 if num in v:
                     culprit=k
                     i_culprit = v.index(num)
-            raise prof.StatError("Zero uncertainty on a bin (%s : %i) being used in the fit -- cannot compute a reasonable GoF"%(culprit, i_culprit))
+            # from IPython import embed
+            # embed()
+            raise prof.StatError("Zero uncertainty on a bin (%s : bin # %i)  being used in the fit -- cannot compute a reasonable GoF! \n See weight-syntax in documentation."%(culprit, i_culprit))
         # TODO: should we square w too, so it penalised deviations _linearly_?
         chi2 += w * diff**2 / err2
     return chi2
@@ -286,11 +291,21 @@ print("Minimisation finished after %s seconds" % (time.time() - start_time))
 if not opts.QUIET:
     chi2 = minuit.fval
     ndof = len(DBINS) - (len(PNAMES) - len(fixed.keys()))
-    print "'chi2': %.2f --- Ndf : %i" % (chi2, ndof)
+    print "'chi2': %.2f --- Ndf : %i --- ratio : %.2f" % (chi2, ndof, chi2/ndof)
 
 ## Check if result is in validity range
 result = [minuit.values[p] for p in PNAMES]
 rok, rng = prof.is_inrange(result, pmins, pmaxs)
+
+if not rok:
+    msg="Warning --- parameters are outside the validity of the parametrisation:"
+    for i in rng:
+        msg+="\n %s=%f ! in [%f,%f]"%(PNAMES[i], result[i], pmins[i], pmaxs[i])
+    msg+= "\n You might want to impose limits (--limits) on those parameters."
+    if not opts.QUIET:
+        print msg
+
+
 
 # Max number of characters in any of parameter names --- for formatting (ljust)
 LMAX=max([len(p) for p in PNAMES])
