@@ -1,3 +1,8 @@
+2016-12-15  Holger Schulz  <holger.schulz@cern.ch>
+
+        * More robust scripts and more meaningful error messages, especially
+	prof2-tune
+
 2016-11-30  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Replace Counter code when running mk_Structure with much faster code
