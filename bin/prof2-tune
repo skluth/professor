@@ -24,6 +24,7 @@ op.add_option("-g", "--gradient", dest="GRADIENT", action="store_true", default=
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 op.add_option("-s", "--strategy", dest="STRATEGY",  default=1, type=int, help="Set Minuit strategy [0 fast, 1 default, 2 slow]")
+op.add_option("--filter", dest="FILTER", action="store_true", default=False, help="Filter out data bins that have 0 error")
 opts, args = op.parse_args()
 
 ## Get mandatory arguments
@@ -93,7 +94,7 @@ for ihn in sorted(IHISTOS.keys()):
 
 
 ## Prepare lists of ibins and dbins
-IBINS, DBINS, MAXERRS = [], [], []
+IBINS, DBINS, MAXERRS, FILTERED = [], [], [], []
 BINDICES={} # Allows for more helpful error messages in case of prof.StatError
 for a in available:
     # TODO: print out the available observables
@@ -103,13 +104,23 @@ for a in available:
         del IHISTOS[a[0]]
         del DHISTOS[a[1]]
     else:
-        BINDICES[a[0]] = range(len(IBINS),  len(IBINS) +     len(IHISTOS[a[0]])) # This is for debugging
-        IBINS.extend(IHISTOS[a[0]].bins)
-        DBINS.extend(DHISTOS[a[1]].bins)
+        BINDICES[a[0]] = []#range(len(IBINS),  len(IBINS) +     len(IHISTOS[a[0]])) # This is for debugging
+        for nb in xrange(len(IHISTOS[a[0]].bins)):
+            if opts.FILTER and DHISTOS[a[1]].bins[nb].err ==0:
+                FILTERED.append(1)
+                continue
+            if IHISTOS[a[0]].bins[nb].w >0:
+                IBINS.append(IHISTOS[a[0]].bins[nb])
+                DBINS.append(DHISTOS[a[1]].bins[nb])
+                BINDICES[a[0]].append(len(IBINS))
         if MAXERRDICT:
             MAXERRS.extend(MAXERRS[a[0]])
 if not MAXERRS:
     MAXERRS = None
+
+if opts.DEBUG:
+    print "DEBUG: filtered %i bins due to zero data error"%len(FILTERED)
+
 
 
 ## Sanity checks
@@ -147,9 +158,7 @@ def simpleGoF(params):
                 if num in v:
                     culprit=k
                     i_culprit = v.index(num)
-            # from IPython import embed
-            # embed()
-            raise prof.StatError("Zero uncertainty on a bin (%s : bin # %i)  being used in the fit -- cannot compute a reasonable GoF! \n See weight-syntax in documentation."%(culprit, i_culprit))
+            raise prof.StatError("Zero uncertainty on a bin being used in the fit -- cannot compute a reasonable GoF!\n\tObservable: %s\n\t%s %f+=%f\n\t%s \nSee weight-syntax in documentation or user --filter CL arg to remove bins with zero data error automatically"%(culprit, ibin, ival, ibin.err(params, emax=maxierr),  DBINS[num]))
         # TODO: should we square w too, so it penalised deviations _linearly_?
         chi2 += w * diff**2 / err2
     return chi2

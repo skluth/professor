@@ -144,8 +144,8 @@ class IpolBin(Bin):
 
     __slots__ = ["ival", "ierrs", "__dict__"]
 
-    def __init__(self, xmin, xmax, ival=None, ierrs=None):
-        Bin.__init__(self, xmin, xmax)
+    def __init__(self, xmin, xmax, ival=None, ierrs=None, n=None):
+        Bin.__init__(self, xmin, xmax, n)
         self.ival = ival
         self.ierrs = ierrs
 

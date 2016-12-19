@@ -1,6 +1,19 @@
+2016-12-19  Holger Schulz  <holger.schulz@cern.ch>
+
+	* Even more robust prof-tune, added --filter CL option to
+	automatically get rid of zero error bins
+
+	* Fixed a bug where IpolBin.n was never set which is needed for
+	the PointMatcher (i.e. weights syntax)
+
+	* Not using YODA Pointmatcher but own due to different regexes
+	required.
+
+	* Make release 2.2
+
 2016-12-15  Holger Schulz  <holger.schulz@cern.ch>
 
-        * More robust scripts and more meaningful error messages, especially
+	* More robust scripts and more meaningful error messages, especially
 	prof2-tune
 
 2016-11-30  Holger Schulz  <holger.schulz@cern.ch>

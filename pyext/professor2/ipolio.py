@@ -110,7 +110,7 @@ def read_binnedipols(ifile, paramlimits=None):
         if sline.startswith("/"):
             fullpath, sxmin, sxmax = sline.split()
             hpath, nbin = fullpath.split("#")
-            currentib = IpolBin(float(sxmin), float(sxmax))
+            currentib = IpolBin(float(sxmin), float(sxmax), n=int(nbin))
             IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
         elif sline.startswith("val"):
             currentib.ival = Ipol(sline)
