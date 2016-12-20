@@ -87,6 +87,7 @@ TESTSOURCES := $(wildcard test/*.cc test/testPython*)
 TESTPROGS  := test/testParamPoints test/testIpol
 BINPROGS := $(wildcard bin/*)
 CONTRIBPROGS := $(wildcard contrib/*)
+JUPYTERNBS := $(wildcard jupyter/*)
 PYTHONSOURCES := $(wildcard pyext/professor2/*.py)
 CYTHONSOURCES := $(wildcard pyext/professor2/*.pxd) $(wildcard pyext/professor2/*.pyx)
 
@@ -154,6 +155,7 @@ icheck: tests
 install: all
 	mkdir -p $(PREFIX)/bin && cp bin/* $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/contrib && cp contrib/* $(PREFIX)/contrib/
+	mkdir -p $(PREFIX)/jupyter && cp jupyter/* $(PREFIX)/jupyter/
 	mkdir -p $(PREFIX)/include && cp -r include/Professor $(PREFIX)/include/
 	test -d lib   && mkdir -p $(PREFIX)/lib   && cp -r lib/* $(PREFIX)/lib/ || true
 	test -d lib64 && mkdir -p $(PREFIX)/lib64 && cp -r lib64/* $(PREFIX)/lib64/ || true
@@ -168,6 +170,7 @@ dist: all
        $(LIBSOURCES) \
        $(BINPROGS) \
        $(CONTRIBPROGS) \
+       $(JUPYTERNBS) \
        $(TESTSOURCES) \
        $(PYTHONSOURCES) pyext/setup.py pyext/professor2/misc/*py pyext/professor2/ml/*py\
        $(CYTHONSOURCES) $(wildcard pyext/professor2/*.cpp) \
