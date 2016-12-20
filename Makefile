@@ -60,7 +60,8 @@ else
 endif
 
 
-CYTHON_VERSION := $(shell $(CYTHON) --version 2>&1 | sed -e 's/Cython version \([0-9\.]\+\)/\1/')
+#CYTHON_VERSION := $(shell $(CYTHON) --version 1> /dev/null)
+CYTHON_VERSION := $(shell $(CYTHON) --version < /dev/null 2>&1 | grep -i 'Cython version' | awk '{ print $3 }')
 ifeq "$(CYTHON_VERSION)" ""
   CYTHON_VERSION := NONE
   CYTHON_VERSION1 := 0
@@ -117,7 +118,7 @@ pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
 	$(CYTHON) pyext/professor2/core.pyx --cplus
 else
 pyext/professor2/core.cpp: $(LIBHEADERS) $(CYTHONSOURCES) lib
-	$(error "Cython >= 0.20 not available; can't build $@")
+	$(info "Cython >= 0.20 not available; can't build $@")
 endif
 
 pyext/professor2/core.so: pyext/professor2/core.cpp
