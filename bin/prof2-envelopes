@@ -6,6 +6,8 @@
 Envelope of input data
 """
 
+import matplotlib, os
+matplotlib.use(os.environ.get("MPL_BACKEND", "Agg"))
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--pname", "--pfile", dest="PNAME", default="params.dat", help="Name of the params file to be found in each run directory (default: %default)")

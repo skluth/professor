@@ -1,3 +1,9 @@
+2016-12-19  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Use Agg as default matplotlib backend.
+
+	* Bump version to 2.2.1
+
 2016-12-19  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Even more robust prof-tune, added --filter CL option to

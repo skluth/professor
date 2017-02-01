@@ -9,6 +9,11 @@ Gradient calculation to display sensitivity to parameter shifts
 
 """
 
+
+import matplotlib, os
+matplotlib.use(os.environ.get("MPL_BACKEND", "Agg"))
+
+
 import optparse
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict plotting to a subset of histograms (default: %default)")

@@ -4,6 +4,10 @@
 Given an output file from mapbuilder, plot a heat map of chi2 values
 '''
 
+import matplotlib, os
+matplotlib.use(os.environ.get("MPL_BACKEND", "Agg"))
+
+
 import numpy
 import matplotlib.pyplot as pyplot
 from matplotlib import cm

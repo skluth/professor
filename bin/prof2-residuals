@@ -21,7 +21,11 @@ TODO:
  * Support runcomb filtering
 """
 
+
 from __future__ import print_function
+
+import matplotlib, os
+matplotlib.use(os.environ.get("MPL_BACKEND", "Agg"))
 
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)

@@ -23,6 +23,9 @@ TODO:
 
 from __future__ import print_function
 
+import matplotlib, os
+matplotlib.use(os.environ.get("MPL_BACKEND", "Agg"))
+
 import optparse, os, sys
 op = optparse.OptionParser(usage=__doc__)
 #op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="File from which to read the bin interpolations (default: %default)")
