@@ -1,4 +1,14 @@
-2016-12-19  Holger Schulz  <holger.schulz@durham.ac.uk>
+2017-02-02  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Update Copyright string
+	
+	* Instead of exiting when prof2-ipol encounters nan coefficients in
+	value or error ipols, spit out a warning and ignore that histogram
+	entirely --- this makes prof2-ipol and friends much more robust
+
+	* tag as 2.2.1 and release.
+
+2017-02-01  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Use Agg as default matplotlib backend.
 
