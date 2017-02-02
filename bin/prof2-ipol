@@ -188,15 +188,18 @@ def worker(q, rdict):
         histos = HISTOS[hn]
         ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR, opts.ERR_ORDER)
         del HISTOS[hn] #< pro-actively clear up memory
-        s = ""
-        for i, ib in enumerate(ih.bins):
-            s += "%s#%d %.5e %.5e\n" % (hn, i, ib.xmin, ib.xmax)
-            s += "  " + ib.ival.toString("val") + "\n"
-            if ib.ierrs:
-                s += "  " + ib.ierrs.toString("err") + "\n"
+        if ih is None:
+            print "Ignoring", hn
+        else:
+            s = ""
+            for i, ib in enumerate(ih.bins):
+                s += "%s#%d %.5e %.5e\n" % (hn, i, ib.xmin, ib.xmax)
+                s += "  " + ib.ival.toString("val") + "\n"
+                if ib.ierrs:
+                    s += "  " + ib.ierrs.toString("err") + "\n"
+            rdict[hn] = zlib.compress(s, 9) #< save some memory
+            del s
         del ih #< pro-actively clear up memory
-        rdict[hn] = zlib.compress(s, 9) #< save some memory
-        del s
         del histos
 
 

@@ -57,10 +57,8 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
         # nan check in coeffs
         import math
         if any([math.isnan(x) for x in valipol.coeffs]):
-            print "Error: nan coefficient encountered in %s"%histos.values()[0].path
-            print "Check inputs or remove from weights"
-            import sys
-            sys.exit(1)
+            print "Warning: nan coefficient encountered in value ipol for %s"%histos.values()[0].path
+            return None
 
         ## Build the error interpolation(s)
         if not errmode or errmode == "none":
@@ -85,5 +83,8 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
             # erripols = [erripol0, erripol1]
         else:
             raise Exception("Unknown error interpolation mode '%s'" % errmode)
+        if any([math.isnan(x) for x in erripols.coeffs]):
+            print "Warning: nan coefficient encountered in error ipol for %s"%histos.values()[0].path
+            return None
         ibins.append(IpolBin(xmin, xmax, valipol, erripols))
     return Histo(ibins, histos.values()[0].path)
