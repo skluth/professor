@@ -61,12 +61,13 @@ endif
 
 
 #CYTHON_VERSION := $(shell $(CYTHON) --version 1> /dev/null)
-CYTHON_VERSION := $(shell $(CYTHON) --version < /dev/null 2>&1 | grep -i 'Cython version' | awk '{ print $3 }')
+CYTHON_VERSION := $(shell $(CYTHON) --version < /dev/null 2>&1 | grep -i 'Cython version' | cut -d\  -f3)
 ifeq "$(CYTHON_VERSION)" ""
   CYTHON_VERSION := NONE
   CYTHON_VERSION1 := 0
   CYTHON_VERSION2 := 0
 else
+  CYTHON_VERSION := $(shell echo $(CYTHON_VERSION) | sed -e 's/\([0-9\.]\+\)[ab].*/\1/')
   CYTHON_VERSION1 := $(shell echo $(CYTHON_VERSION) | cut -d. -f1)
   CYTHON_VERSION2 := $(shell echo $(CYTHON_VERSION) | cut -d. -f2)
   HAVE_GOOD_CYTHON := $(shell test "$(CYTHON_VERSION1)" -eq 0 -a "$(CYTHON_VERSION2)" -ge 20 && echo 1 || echo 0)
