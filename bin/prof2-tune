@@ -20,6 +20,7 @@ op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file
 op.add_option("--output", dest="OUTPUT", default="tunes", help="Prefix for outputs (default: %default)")
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 op.add_option("--scan", dest="SCAN", default=None, type=int, help="Perform a brute force scan of SCAN points to find minimiser start point")
+op.add_option("--limit-errs", dest="USE_RUNSDIR", action="store_true", default=False, help="Re-read the runsdir to regularise error ipols")
 op.add_option("-g", "--gradient", dest="GRADIENT", action="store_true", default=False, help="Run minimisation with analytic gradient (EXPERIMENTAL!)")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
@@ -56,11 +57,12 @@ DHISTOS = prof.read_all_histos(REFDIR)
 
 ## Try to read run histos and extract maximum errors
 MAXERRDICT = None
-try:
-    _, RUNHISTOS = prof.read_all_rundata(RUNSDIR, None) #< don't care about reading params files
-    MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
-except:
-    print "Could not read run data for error regularisation -- chi2 may be unstable"
+if USE_RUNSDIR:
+    try:
+        _, RUNHISTOS = prof.read_all_rundata(RUNSDIR, None) #< don't care about reading params files
+        MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
+    except:
+        print "Could not read run data for error regularisation -- chi2 may be unstable"
 
 ## Weight file parsing
 matchers = prof.read_pointmatchers(opts.WFILE) if opts.WFILE else None
