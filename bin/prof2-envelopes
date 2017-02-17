@@ -112,7 +112,7 @@ def plot_envelope(env, data=None, name="envelope"):
         MEAN.append( ymean )
         MEAN.append( ymean )
 
-    # Envelope 
+    # Envelope
     axmain.fill_between(X, LOWER, UPPER, edgecolor="none", facecolor='yellow', interpolate=False)
     # Mean of envelope
     axmain.plot(X, MEAN, "b-", label="Mean")
@@ -142,6 +142,8 @@ def plot_envelope(env, data=None, name="envelope"):
 
     # Save image as PDF
     plt.savefig(outname)
+    plt.clf()
+
 
 ## Read reference data histos
 import os, sys, glob
