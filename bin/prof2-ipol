@@ -4,7 +4,7 @@
 %prog <runsdir> [<ipolfile>=ipol.dat] [opts]
 
 Interpolate histo bin values as a function of the parameter space by loading
-from the usual data directory structure $datadir/mc/{rundirs}
+run data and parameter lists from run directories in $runsdir (often "mc")
 
 TODO:
  * Use weight file position matches to exclude some bins, as well as path matching
@@ -40,6 +40,9 @@ IFILE = "ipol.dat"
 if len(args) >= 2:
     IFILE = args[1]
 
+## By default, use the same ipol order for errors as for values
+if opts.ERR_ORDER is None:
+    opts.ERR_ORDER = opts.ORDER
 
 ## Load the Professor machinery
 import professor2 as prof
