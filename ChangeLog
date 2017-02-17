@@ -1,7 +1,15 @@
+2017-02-17  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Add a --limit-errs argument for prof2-tune, to avoid annoying
+	re-reading of large run dirs
+
+	* Tweaks to default error ipol order, and release figure handles
+	in envelope plotting.
+
 2017-02-02  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Update Copyright string
-	
+
 	* Instead of exiting when prof2-ipol encounters nan coefficients in
 	value or error ipols, spit out a warning and ignore that histogram
 	entirely --- this makes prof2-ipol and friends much more robust
@@ -35,7 +43,7 @@
 2016-11-30  Holger Schulz  <holger.schulz@cern.ch>
 
 	* Replace Counter code when running mk_Structure with much faster code
-	
+
 	* Bump version to 2.2
 
 	* Bump DataFormat to binned 2
