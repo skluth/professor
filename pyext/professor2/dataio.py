@@ -139,9 +139,9 @@ def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,
     numruns = len(dirs)
     for num, d in enumerate(sorted(dirs)):
         run = os.path.basename(d)
-        if verbosity >= 2 or (verbosity >= 1 and (num % 100 == 0 or num == numruns)):
-            pct = 100*num/float(numruns)
-            print "Reading run '%s' data: %d/%d = %2.0f%%" % (run, num, numruns, pct)
+        if verbosity >= 2 or (verbosity >= 1 and (num % 100 == 99)): # or num == numruns-1)):
+            pct = 100*(num+1)/float(numruns)
+            print "Reading run '%s' data: %d/%d = %2.0f%%" % (run, num+1, numruns, pct)
         files = glob.glob(os.path.join(d, "*"))
         for f in files:
             ## Params file
