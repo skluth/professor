@@ -1,3 +1,7 @@
+2017-02-21  Andy Buckley  <andy.buckley@cern.ch>
+
+	* Change prof2-ipol ierr mode default to 'symm'
+
 2017-02-17  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Add a --limit-errs argument for prof2-tune, to avoid annoying

@@ -64,7 +64,7 @@ DHISTOS = prof.read_all_histos(REFDIR)
 
 ## Try to read run histos and extract maximum errors
 MAXERRDICT = None
-if USE_RUNSDIR:
+if opts.USE_RUNSDIR:
     try:
         _, RUNHISTOS = prof.read_all_rundata(RUNSDIR, None) #< don't care about reading params files
         MAXERRDICT = prof.find_maxerrs(RUNHISTOS)
@@ -128,14 +128,14 @@ if not MAXERRS:
     MAXERRS = None
 
 if opts.DEBUG:
-    print "DEBUG: filtered %i bins due to zero data error"%len(FILTERED)
+    print "DEBUG: filtered %i bins due to zero data error" % len(FILTERED)
 
 
 
 ## Sanity checks
 assert len(IBINS) == len(DBINS)
 if not IBINS:
-    print "No bins ..., exiting"
+    print "No bins... exiting"
     sys.exit(1)
 assert MAXERRS is None or len(IBINS) == len(MAXERRS)
 

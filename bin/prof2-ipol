@@ -18,7 +18,7 @@ op.add_option("--pname", "--pfile", dest="PNAME", default="params.dat", help="Na
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file, used to restrict ipol building to a subset of bins (default: %default)")
 op.add_option("--order", dest="ORDER", default=3, type=int, help="Global order of polynomials for interpolation")
-op.add_option("--ierr",  dest="IERR", default="median", help="Whether to interpolate MC errors: none, mean, median, symm (default: %default)") #< add rel, asymm
+op.add_option("--ierr",  dest="IERR", default="symm", help="Whether to interpolate MC errors: none, mean, median, symm (default: %default)") #< add rel, asymm
 op.add_option("--eorder", dest="ERR_ORDER", default=None, type=int, help="Global order of polynomials for uncertainty interpolation (default: same as from --order)")
 op.add_option("--rc", dest="RUNCOMBS", default=None, help="Ru combination file")
 # TODO: Add a no-scale option
