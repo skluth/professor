@@ -8,10 +8,25 @@ class PointMatcher(object):
     """\
     System for selecting subsets of bins based on a search range
     syntax extended from Professor weight files:
-    Path structure: /path/parts/to/histo[syst_variation]@xmin:xmax
+    Path structure: /path/parts/to/histo[syst_variation]@x
+                or: /path/parts/to/histo[syst_variation]#n
+                or: /path/parts/to/histo[syst_variation]@nmin:nmax
                 or: /path/parts/to/histo[syst_variation]#nmin:nmax
 
-    TODO: Extend to multi-dimensional ranges i.e. @xmin:xmax,#nymin:nymax,...
+    The weight file syntax is derived from YODA path syntax, and allows selecting
+    individual bins or bin-ranges either by physical value (an '@' range) or by bin
+    number (a '#' range).
+
+    Blank lines and lines starting with a # symbol will be ignored.
+
+    The bin indices used with the # syntax start at 0, and the end index in a
+    range is non-inclusive. In the range form, if xmin/nmin or xmax/nmax is left
+    blank, it defaults to the accepting all bins from the start of the histogram,
+    or all bins to the end of the histogram respectively.
+
+    TODO:
+    * Extend to multi-dimensional ranges i.e. @xmin:xmax,#nymin:nymax,...
+    * Allow mixed ranges, e.g. @xmin#nmin?
     """
 
     def __init__(self, patt):
