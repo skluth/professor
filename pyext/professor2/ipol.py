@@ -18,7 +18,42 @@ def mk_ipolinputs(params):
     paramslist = [[params[run][pn] for pn in paramnames] for run in runs]
     return runs, paramnames, paramslist
 
+def mk_ipolbin(P, V, E, xmin, xmax, order, errmode, errorder):
+    valipol = Ipol(P, V, order)
+    # nan check in coeffs
+    import math
+    if any([math.isnan(x) for x in valipol.coeffs]):
+        print "Warning: nan coefficient encountered in value ipol for %s"%histos.values()[0].path
+        return None
 
+    ## Build the error interpolation(s)
+    if not errmode or errmode == "none":
+        erripols = None
+    ## Build the error interpolation(s)
+    elif errmode == "mean":
+        meanerr = sum(E) / float(len(E)) #histos[run].bins[binnr].err for run in runs) / float(len(runs))
+        erripols = Ipol(P, [meanerr], 0) #< const 0th order interpolation
+    elif errmode == "median":
+        medianerr = E[len(E)//2]
+        erripols = Ipol(P, [medianerr], 0) #< const 0th order interpolation
+    elif errmode == "symm":
+        erripols = Ipol(P, E, order)
+    elif errmode == "asymm":
+        raise Exception("Error interpolation mode 'asymm' not yet supported")
+        # errs0 = [histos[run].bins[n].errs[0] for run in runs]
+        # erripol0 = Ipol(paramslist, errs0, order)
+        # errs1 = [histos[run].bins[n].errs[1] for run in runs]
+        # erripol1 = Ipol(paramslist, errs1, order)
+        # erripols = [erripol0, erripol1]
+    else:
+        raise Exception("Unknown error interpolation mode '%s'" % errmode)
+    if erripols is not None:
+        if any([math.isnan(x) for x in erripols.coeffs]):
+            print "Warning: nan coefficient encountered in error ipol for %s"%histos.values()[0].path
+            return None
+    return IpolBin(xmin, xmax, valipol, erripols)
+
+# Keep this for backward compatibility 
 def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
     """\
     Make a prof.IpolHisto from a dict of prof.DataHistos and the corresponding
@@ -46,46 +81,11 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
     for n in xrange(nbins):
         ## Check that the bin edges are consistent and extract their values
         # TODO: move bin edge consistency checking into the Histo base class
-        xmins = set([histos[run].bins[n].xmin for run in runs])
-        xmaxs = set([histos[run].bins[n].xmax for run in runs])
-        assert len(xmins) == len(xmaxs) == 1
-        xmin, xmax = xmins.pop(), xmaxs.pop()
-        ## Build the value interpolation
+        xmax = histos.values()[0].bins[n].xmax
+        xmin = histos.values()[0].bins[n].xmin
         vals = [histos[run].bins[n].val for run in runs]
-        valipol = Ipol(paramslist, vals, order)
-
-        # nan check in coeffs
-        import math
-        if any([math.isnan(x) for x in valipol.coeffs]):
-            print "Warning: nan coefficient encountered in value ipol for %s"%histos.values()[0].path
-            return None
-
-        ## Build the error interpolation(s)
-        if not errmode or errmode == "none":
-            erripols = None
-        ## Build the error interpolation(s)
-        elif errmode == "mean":
-            meanerr = sum(histos[run].bins[n].err for run in runs) / float(len(runs))
-            erripols = Ipol(paramslist, [meanerr], 0) #< const 0th order interpolation
-        elif errmode == "median":
-            errs = [histos[run].bins[n].err for run in runs]
-            medianerr = errs[len(runs)//2]
-            erripols = Ipol(paramslist, [medianerr], 0) #< const 0th order interpolation
-        elif errmode == "symm":
-            errs = [histos[run].bins[n].err for run in runs]
-            erripols = Ipol(paramslist, errs, order)
-        elif errmode == "asymm":
-            raise Exception("Error interpolation mode 'asymm' not yet supported")
-            # errs0 = [histos[run].bins[n].errs[0] for run in runs]
-            # erripol0 = Ipol(paramslist, errs0, order)
-            # errs1 = [histos[run].bins[n].errs[1] for run in runs]
-            # erripol1 = Ipol(paramslist, errs1, order)
-            # erripols = [erripol0, erripol1]
-        else:
-            raise Exception("Unknown error interpolation mode '%s'" % errmode)
-        if erripols is not None:
-            if any([math.isnan(x) for x in erripols.coeffs]):
-                print "Warning: nan coefficient encountered in error ipol for %s"%histos.values()[0].path
-                return None
-        ibins.append(IpolBin(xmin, xmax, valipol, erripols))
+        errs = [histos[run].bins[n].err for run in runs]
+        ibins.append(mk_ipolbin(paramslist, vals, errs, xmin, xmax, order, errmode, errorder))
     return Histo(ibins, histos.values()[0].path)
+
+

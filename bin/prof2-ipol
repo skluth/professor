@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import division
 
 """\
 %prog <runsdir> [<ipolfile>=ipol.dat] [opts]
@@ -75,7 +76,6 @@ except Exception, e:
     print e
     sys.exit(1)
 
-# TODO: add runcomb file parsing to select a runs subset
 # --rc runcombs.dat:4
 # would use the 4th line of the runcombs.dat file
 if opts.RUNCOMBS is not None:
@@ -120,6 +120,10 @@ if opts.WFILE:
             print "Observable %s passed weight file path filter" % hn
     print "Filtered observables by path, %d remaining" % len(HISTOS)
 HNAMES = HISTOS.keys()
+
+
+
+
 
 ## If there's nothing left to interpolate, exit!
 if not HNAMES:
@@ -177,36 +181,46 @@ if not RUNS:
     print "No valid runs remaining... exiting"
     sys.exit(1)
 
+BNAMES = []
+for hn in HNAMES:
+    histos = HISTOS[hn]
+    nbins = histos.values()[0].nbins
+    for n in xrange(nbins):
+        BNAMES.append([hn, n])
 
-IHISTOS = {}
 
 import zlib
-
 def worker(q, rdict):
     "Function to make bin ipols and store ipol persistency strings for each histo"
     while True:
         if q.empty():
             break
-        hn = q.get()
+        temp = q.get()
+        hn=temp[0]
         histos = HISTOS[hn]
-        ih = prof.mk_ipolhisto(histos, RUNS, PARAMSLIST, opts.ORDER, opts.IERR, opts.ERR_ORDER)
-        del HISTOS[hn] #< pro-actively clear up memory
-        if ih is None:
-            print "Ignoring", hn
+        n = temp[1]
+        xmax = histos.values()[0].bins[n].xmax
+        xmin = histos.values()[0].bins[n].xmin
+        vals = [histos[run].bins[n].val for run in RUNS]
+        errs = [histos[run].bins[n].err for run in RUNS]
+        ib = prof.mk_ipolbin(PARAMSLIST, vals, errs, xmin, xmax, opts.ORDER, opts.IERR, opts.ERR_ORDER)
+        if ib is None:
+            print "Ignoring", hn, "Bin number", n
         else:
             s = ""
-            for i, ib in enumerate(ih.bins):
-                s += "%s#%d %.5e %.5e\n" % (hn, i, ib.xmin, ib.xmax)
-                s += "  " + ib.ival.toString("val") + "\n"
-                if ib.ierrs:
-                    s += "  " + ib.ierrs.toString("err") + "\n"
-            rdict[hn] = zlib.compress(s, 9) #< save some memory
+            s += "%s#%d %.5e %.5e\n" % (hn, n, ib.xmin, ib.xmax)
+            s += "  " + ib.ival.toString("val") + "\n"
+            if ib.ierrs:
+                s += "  " + ib.ierrs.toString("err") + "\n"
+            rdict[(hn,n)] = zlib.compress(s, 9) #< save some memory
             del s
-        del ih #< pro-actively clear up memory
-        del histos
+        del ib #< pro-actively clear up memory
+        if len(rdict.keys())%10 ==0:
+            sys.stderr.write('\rdone {0:%}'.format(len(rdict.keys())/len(BNAMES)))
 
 
-print "\n\nParametrising...\n"
+
+print "\n\nParametrising %i objects...\n"%len(BNAMES)
 import time, multiprocessing
 time1 = time.time()
 
@@ -215,22 +229,20 @@ from multiprocessing import Manager
 manager = Manager()
 tempDict = manager.dict()
 
+
 ## The job queue
 q = multiprocessing.Queue()
-map(lambda x:q.put(x), HNAMES)
+map(lambda x:q.put(x), BNAMES)
 
 ## Fire away
 workers = [multiprocessing.Process(target=worker, args=(q, tempDict)) for i in range(opts.MULTI)]
 map(lambda x:x.start(), workers)
 map(lambda x:x.join(),  workers)
 
-## Finally copy the result dictionary into the object itself
-for k in tempDict.keys():
-    IHISTOS[k] = tempDict[k]
 
 ## Timing
 time2 = time.time()
-print 'Parametrisation took %0.2f s' % ((time2-time1))
+sys.stderr.write('\rParametrisation took %0.2f s' % ((time2-time1)))
 
 ## Active memory clean-up
 del HISTOS
@@ -240,7 +252,7 @@ del HISTOS
 with open(IFILE, "w") as f:
     if opts.SUMMARY is not None:
         f.write("Summary: %s\n" % opts.SUMMARY)
-    #f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
+    f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
     f.write("ProfVersion: %s\n" % prof.version())
     f.write("Date: %s\n" % prof.mk_timestamp())
     f.write("DataFormat: binned 2\n") # This tells the reader how to treat the coefficients that follow
@@ -271,9 +283,10 @@ with open(IFILE, "w") as f:
 
 ## Write out numerical data for all interpolations
 s = ""
-for hname in sorted(IHISTOS.keys()):
-    ih = IHISTOS[hname]
-    s += zlib.decompress(ih)
+for hn in sorted(HNAMES):
+    thisbins=sorted(filter(lambda x: x[0]==hn,tempDict.keys()))
+    for ipolstring in [zlib.decompress(tempDict[x]) for x in thisbins]:
+        s+=ipolstring
 
 # Open file for write/append
 with open(IFILE, "a") as f:
