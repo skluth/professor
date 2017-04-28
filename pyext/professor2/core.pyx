@@ -48,7 +48,7 @@ cdef class Ipol:
             vals = list(args[1])
             order = int(args[2])
             name = ""
-            threshold = 1e-15 #< ???
+            threshold = 1e-40 #< ???
             if len(args) == 4:
                 try:
                     threshold = float(args[3])
