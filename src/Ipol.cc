@@ -87,7 +87,13 @@ namespace Professor {
       // The vector of values (corresponding to anchors)
       MC[a] = vals[a];
     }
+
+    #if EIGEN_WORLD_VERSION >= 3 && EIGEN_MAJOR_VERSION >= 3 && EIGEN_MINOR_VERSION >= 3
+    BDCSVD<MatrixXd> svd(DP,ComputeFullU|ComputeFullV );
+    #else
     JacobiSVD<MatrixXd> svd = DP.jacobiSvd(ComputeThinU|ComputeThinV);
+    #endif
+
     #if EIGEN_WORLD_VERSION >= 3 && EIGEN_MAJOR_VERSION >= 2 && EIGEN_MINOR_VERSION >= 1
     svd.setThreshold(threshold); // Needed TODO find transform for dependence on stuff
     #endif
