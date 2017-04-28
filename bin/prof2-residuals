@@ -141,6 +141,9 @@ for hn, mchistos in sorted(HISTOS.iteritems()):
                 ## Error residuals
                 # print(ihisto.bins[ib].err(PARAMSLIST[irun]) , mchisto.bins[ib].err)
                 absres = ihisto.bins[ib].err(PARAMSLIST[irun]) - mchisto.bins[ib].err
+                import math
+                if math.isnan(mchisto.bins[ib].err):
+                    continue
                 if mchisto.bins[ib].err != 0:
                     relres = absres / mchisto.bins[ib].err
                     hreserr.fill(relres)
