@@ -39,6 +39,7 @@ op.add_option("--wfile", dest="WFILE", default=None, help="Path to a weight file
 op.add_option("--output", dest="OUTPUT", default="tunes", help="Prefix for outputs (default: %default)")
 op.add_option("--limits", dest="LIMITS", default=None, help="Simple text file with parameter limits and fixed parameters")
 op.add_option("--scan", dest="SCAN", default=None, type=int, help="Perform a brute force scan of SCAN points to find minimiser start point")
+op.add_option("--minos", dest="MINOS", default=False, action="store_true", help="Run Minos algorithm after minimisation")
 op.add_option("--limit-errs", dest="USE_RUNSDIR", action="store_true", default=False, help="Re-read the runsdir to regularise error ipols")
 op.add_option("-g", "--gradient", dest="GRADIENT", action="store_true", default=False, help="Run minimisation with analytic gradient (EXPERIMENTAL!)")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
@@ -313,6 +314,8 @@ import time
 start_time = time.time()
 ## Lift off
 minuit.migrad()
+if opts.MINOS:
+    minuit.minos()
 print("Minimisation finished after %s seconds" % (time.time() - start_time))
 
 
@@ -334,7 +337,6 @@ if not rok:
     msg+= "\n You might want to impose limits (--limits) on those parameters."
     if not opts.QUIET:
         print msg
-
 
 
 # Max number of characters in any of parameter names --- for formatting (ljust)
@@ -360,6 +362,8 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
             fstring += "\n#\t%s\t%f" % (p.ljust(LMAX), fixed[p])
     f.write("\n#\n# Fixed: %s\n" % fstring)
     f.write("#\n# Minimisation result:\n#\n")
+    f.write("# GOF %f\n"%chi2)
+    f.write("# NDOF %f\n"%ndof)
     ## The tuned parameter values
     for i, p in enumerate(PNAMES):
         f.write("%s\t%f\n" % (p.ljust(LMAX), minuit.values[PNAMES[i]]))
