@@ -216,7 +216,7 @@ def worker(q, rdict):
             del s
         del ib #< pro-actively clear up memory
         if len(rdict.keys())%10 ==0:
-            sys.stderr.write('\rdone {0:%}'.format(len(rdict.keys())/len(BNAMES)))
+            sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/len(BNAMES)))
 
 
 
@@ -242,7 +242,7 @@ map(lambda x:x.join(),  workers)
 
 ## Timing
 time2 = time.time()
-sys.stderr.write('\rParametrisation took %0.2f s' % ((time2-time1)))
+sys.stderr.write('\rParametrisation took %0.2fs' % ((time2-time1)))
 
 ## Active memory clean-up
 del HISTOS

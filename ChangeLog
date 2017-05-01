@@ -1,3 +1,15 @@
+2017-04-28  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Use BDSSVD in case Eigen >=3.3.3
+
+	* Reworked prof2-ipol and ipol.py to use mk_ipolbin rather than
+	mk_ipolhisto, some speedups plus additional benefit of being
+	able to fiddle with inividual bins in the ipol building stage
+
+	* add --minos switch to prof2-tune toi run MINOS
+
+	* Write GOF and NDOF into result file
+
 2017-02-21  Andy Buckley  <andy.buckley@cern.ch>
 
 	* Change prof2-ipol ierr mode default to 'symm'
