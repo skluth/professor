@@ -321,9 +321,9 @@ print("Minimisation finished after %s seconds" % (time.time() - start_time))
 
 ## Now process the result:
 ## Goodness of fit
+chi2 = minuit.fval
+ndof = len(DBINS) - (len(PNAMES) - len(fixed.keys()))
 if not opts.QUIET:
-    chi2 = minuit.fval
-    ndof = len(DBINS) - (len(PNAMES) - len(fixed.keys()))
     print "'chi2': %.2f --- Ndf : %i --- ratio : %.2f" % (chi2, ndof, chi2/ndof)
 
 ## Check if result is in validity range
