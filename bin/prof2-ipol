@@ -188,9 +188,10 @@ for hn in HNAMES:
     for n in xrange(nbins):
         BNAMES.append([hn, n])
 
+NBINS=len(BNAMES)
 
 import zlib
-def worker(q, rdict):
+def worker(q, rdict, counter):
     "Function to make bin ipols and store ipol persistency strings for each histo"
     while True:
         if q.empty():
@@ -212,11 +213,14 @@ def worker(q, rdict):
             s += "  " + ib.ival.toString("val") + "\n"
             if ib.ierrs:
                 s += "  " + ib.ierrs.toString("err") + "\n"
-            rdict[(hn,n)] = zlib.compress(s, 9) #< save some memory
+            # rdict[(hn,n)] = zlib.compress(s, 9) #< save some memory
+            rdict[(hn,n)] = s #< save some memory
             del s
         del ib #< pro-actively clear up memory
-        if len(rdict.keys())%10 ==0:
-            sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/len(BNAMES)))
+        counter.value+=1
+        if counter.value==500:
+            counter.value=0
+            sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/NBINS))
 
 
 
@@ -225,24 +229,30 @@ import time, multiprocessing
 time1 = time.time()
 
 ## A shared memory object is required for coefficient retrieval
-from multiprocessing import Manager
+from multiprocessing import Manager, Value
 manager = Manager()
 tempDict = manager.dict()
 
+# This for the status --- modululs is too expensive
+ndone=Value('i', 0)
 
 ## The job queue
 q = multiprocessing.Queue()
+
 map(lambda x:q.put(x), BNAMES)
 
+
+
 ## Fire away
-workers = [multiprocessing.Process(target=worker, args=(q, tempDict)) for i in range(opts.MULTI)]
+workers = [multiprocessing.Process(target=worker, args=(q, tempDict, ndone)) for i in xrange(opts.MULTI)]
 map(lambda x:x.start(), workers)
 map(lambda x:x.join(),  workers)
+map(lambda x:x.terminate(), workers)
 
 
 ## Timing
 time2 = time.time()
-sys.stderr.write('\rParametrisation took %0.2fs' % ((time2-time1)))
+sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
 
 ## Active memory clean-up
 del HISTOS
@@ -285,7 +295,7 @@ with open(IFILE, "w") as f:
 s = ""
 for hn in sorted(HNAMES):
     thisbins=sorted(filter(lambda x: x[0]==hn,tempDict.keys()))
-    for ipolstring in [zlib.decompress(tempDict[x]) for x in thisbins]:
+    for ipolstring in [tempDict[x] for x in thisbins]:
         s+=ipolstring
 
 # Open file for write/append

@@ -1,6 +1,6 @@
 ## Makefile for Professor 2.x
 
-VERSION := 2.2.2
+VERSION := 2.2.2beta
 DISTNAME := Professor-$(VERSION)
 $(info Building Professor $(VERSION))
 
@@ -24,7 +24,7 @@ ifndef CPPFLAGS
 endif
 
 ifndef CXXFLAGS
-  CXXFLAGS := -O3
+  CXXFLAGS := -O3 -march=native
   ifdef DEBUG
 	ifneq ($(DEBUG),0)
 	  CXXFLAGS += -g
