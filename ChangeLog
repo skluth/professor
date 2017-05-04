@@ -1,3 +1,9 @@
+2017-05-04  Holger Schulz  <holger.schulz@durham.ac.uk>
+
+	* Fix in prof2-tune when checking analysis names, at the same time
+	allow for for closure test tuning, i.e. tune against input folder.
+
+
 2017-05-02  Holger Schulz  <holger.schulz@durham.ac.uk>
 
 	* Use  -march=native according to eigen3 faq for better performance

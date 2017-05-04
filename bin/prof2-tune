@@ -107,7 +107,7 @@ for ihn in sorted(IHISTOS.keys()):
             posmatch_matchers = [(m,wstr) for (m,wstr) in pathmatch_matchers if m.match_pos(ib)]
             ib.w = float(posmatch_matchers[-1][1]) if posmatch_matchers else 0 #< NB. using last match
     for rhn in DHISTOS.keys():
-        if ihn in rhn: #< TODO: short for rhn = "/REF/"+ihn ?
+        if ihn==rhn or rhn=="/REF/"+ihn: #< TODO: short for rhn = "/REF/"+ihn ?
             # TODO: we should eliminate this potential mismatch of ref and MC hnames
             available.append([ihn,rhn])
             break #< TODO: ok?
