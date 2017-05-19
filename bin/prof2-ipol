@@ -181,78 +181,81 @@ if not RUNS:
     print "No valid runs remaining... exiting"
     sys.exit(1)
 
-BNAMES = []
-for hn in HNAMES:
-    histos = HISTOS[hn]
-    nbins = histos.values()[0].nbins
-    for n in xrange(nbins):
-        BNAMES.append([hn, n])
+CONFIG = {"MULTI":opts.MULTI, "ORDER":opts.ORDER, "IERR":opts.IERR, "ERR_ORDER":opts.ERR_ORDER}
+tempDict = prof.mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CONFIG)
 
-NBINS=len(BNAMES)
+# BNAMES = []
+# for hn in HNAMES:
+    # histos = HISTOS[hn]
+    # nbins = histos.values()[0].nbins
+    # for n in xrange(nbins):
+        # BNAMES.append([hn, n])
 
-import zlib
-def worker(q, rdict, counter):
-    "Function to make bin ipols and store ipol persistency strings for each histo"
-    while True:
-        if q.empty():
-            break
-        temp = q.get()
-        hn=temp[0]
-        histos = HISTOS[hn]
-        n = temp[1]
-        xmax = histos.values()[0].bins[n].xmax
-        xmin = histos.values()[0].bins[n].xmin
-        vals = [histos[run].bins[n].val for run in RUNS]
-        errs = [histos[run].bins[n].err for run in RUNS]
-        ib = prof.mk_ipolbin(PARAMSLIST, vals, errs, xmin, xmax, opts.ORDER, opts.IERR, opts.ERR_ORDER)
-        if ib is None:
-            print "Ignoring", hn, "Bin number", n
-        else:
-            s = ""
-            s += "%s#%d %.5e %.5e\n" % (hn, n, ib.xmin, ib.xmax)
-            s += "  " + ib.ival.toString("val") + "\n"
-            if ib.ierrs:
-                s += "  " + ib.ierrs.toString("err") + "\n"
-            # rdict[(hn,n)] = zlib.compress(s, 9) #< save some memory
-            rdict[(hn,n)] = s #< save some memory
-            del s
-        del ib #< pro-actively clear up memory
-        counter.value+=1
-        if counter.value==500:
-            counter.value=0
-            sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/NBINS))
+# NBINS=len(BNAMES)
 
-
-
-print "\n\nParametrising %i objects...\n"%len(BNAMES)
-import time, multiprocessing
-time1 = time.time()
-
-## A shared memory object is required for coefficient retrieval
-from multiprocessing import Manager, Value
-manager = Manager()
-tempDict = manager.dict()
-
-# This for the status --- modululs is too expensive
-ndone=Value('i', 0)
-
-## The job queue
-q = multiprocessing.Queue()
-
-map(lambda x:q.put(x), BNAMES)
+# import zlib
+# def worker(q, rdict, counter):
+    # "Function to make bin ipols and store ipol persistency strings for each histo"
+    # while True:
+        # if q.empty():
+            # break
+        # temp = q.get()
+        # hn=temp[0]
+        # histos = HISTOS[hn]
+        # n = temp[1]
+        # xmax = histos.values()[0].bins[n].xmax
+        # xmin = histos.values()[0].bins[n].xmin
+        # vals = [histos[run].bins[n].val for run in RUNS]
+        # errs = [histos[run].bins[n].err for run in RUNS]
+        # ib = prof.mk_ipolbin(PARAMSLIST, vals, errs, xmin, xmax, opts.ORDER, opts.IERR, opts.ERR_ORDER)
+        # if ib is None:
+            # print "Ignoring", hn, "Bin number", n
+        # else:
+            # s = ""
+            # s += "%s#%d %.5e %.5e\n" % (hn, n, ib.xmin, ib.xmax)
+            # s += "  " + ib.ival.toString("val") + "\n"
+            # if ib.ierrs:
+                # s += "  " + ib.ierrs.toString("err") + "\n"
+            # # rdict[(hn,n)] = zlib.compress(s, 9) #< save some memory
+            # rdict[(hn,n)] = s #< save some memory
+            # del s
+        # del ib #< pro-actively clear up memory
+        # counter.value+=1
+        # if counter.value==500:
+            # counter.value=0
+            # sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/NBINS))
 
 
 
-## Fire away
-workers = [multiprocessing.Process(target=worker, args=(q, tempDict, ndone)) for i in xrange(opts.MULTI)]
-map(lambda x:x.start(), workers)
-map(lambda x:x.join(),  workers)
-map(lambda x:x.terminate(), workers)
+# print "\n\nParametrising %i objects...\n"%len(BNAMES)
+# import time, multiprocessing
+# time1 = time.time()
+
+# ## A shared memory object is required for coefficient retrieval
+# from multiprocessing import Manager, Value
+# manager = Manager()
+# tempDict = manager.dict()
+
+# # This for the status --- modululs is too expensive
+# ndone=Value('i', 0)
+
+# ## The job queue
+# q = multiprocessing.Queue()
+
+# map(lambda x:q.put(x), BNAMES)
 
 
-## Timing
-time2 = time.time()
-sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
+
+# ## Fire away
+# workers = [multiprocessing.Process(target=worker, args=(q, tempDict, ndone)) for i in xrange(opts.MULTI)]
+# map(lambda x:x.start(), workers)
+# map(lambda x:x.join(),  workers)
+# # map(lambda x:x.terminate(), workers)
+
+
+# ## Timing
+# time2 = time.time()
+# sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
 
 ## Active memory clean-up
 del HISTOS

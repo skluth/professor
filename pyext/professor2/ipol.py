@@ -89,3 +89,80 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
     return Histo(ibins, histos.values()[0].path)
 
 
+
+def mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CFG):
+
+    BNAMES = []
+    for hn in HNAMES:
+        histos = HISTOS[hn]
+        nbins = histos.values()[0].nbins
+        for n in xrange(nbins):
+            BNAMES.append([hn, n])
+
+    NBINS=len(BNAMES)
+
+    MSGEVERY = int(NBINS/100.);
+
+    import sys
+    import professor2 as prof
+    def worker(q, rdict, counter):
+        "Function to make bin ipols and store ipol persistency strings for each histo"
+        while True:
+            if q.empty():
+                break
+            temp = q.get()
+            hn=temp[0]
+            histos = HISTOS[hn]
+            n = temp[1]
+            xmax = histos.values()[0].bins[n].xmax
+            xmin = histos.values()[0].bins[n].xmin
+            vals = [histos[run].bins[n].val for run in RUNS]
+            errs = [histos[run].bins[n].err for run in RUNS]
+            ib = prof.mk_ipolbin(PARAMSLIST, vals, errs, xmin, xmax, CFG["ORDER"], CFG["IERR"], CFG["ERR_ORDER"])
+            if ib is None:
+                print "Ignoring", hn, "Bin number", n
+            else:
+                s = ""
+                s += "%s#%d %.5e %.5e\n" % (hn, n, ib.xmin, ib.xmax)
+                s += "  " + ib.ival.toString("val") + "\n"
+                if ib.ierrs:
+                    s += "  " + ib.ierrs.toString("err") + "\n"
+                rdict[(hn,n)] = s
+                del s
+            del ib #< pro-actively clear up memory
+            counter.value+=1
+            if counter.value==MSGEVERY:
+                counter.value=0
+                sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/NBINS))
+
+
+
+    print "\n\nParametrising %i objects...\n"%len(BNAMES)
+    import time, multiprocessing
+    # time1 = time.time()
+
+    ## A shared memory object is required for coefficient retrieval
+    from multiprocessing import Manager, Value
+    manager = Manager()
+    tempDict = manager.dict()
+
+    # This for the status --- modululs is too expensive
+    ndone=Value('i', 0)
+
+    ## The job queue
+    q = multiprocessing.Queue()
+
+    map(lambda x:q.put(x), BNAMES)
+
+
+
+    ## Fire away
+    workers = [multiprocessing.Process(target=worker, args=(q, tempDict, ndone)) for i in xrange(CFG["MULTI"])]
+    map(lambda x:x.start(), workers)
+    map(lambda x:x.join(),  workers)
+
+    # ## Timing
+    # time2 = time.time()
+    # sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
+
+    return tempDict
