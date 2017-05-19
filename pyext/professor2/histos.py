@@ -1,5 +1,8 @@
 # -*- python -*-
 
+
+
+
 class Histo(object):
     "A simple histogram -- just a Bin container with an optional path name"
 
@@ -46,6 +49,13 @@ class DataHisto(Histo):
         import yoda
         return yoda.Scatter2D(points, path, path)
 
+    def mkSmearedCopy(self, SEED):
+        from copy import deepcopy
+        B=deepcopy(self.bins)
+        Ysmeared = [b.smearBin(SEED) for b in B]
+        for num, b in enumerate(B):
+            b.val=Ysmeared[num]
+        return Histo(B, self.path)
 
 class IpolHisto(Histo):
     "Specialisation of Histo as a container of IpolBins"
@@ -80,6 +90,9 @@ class Bin(object):
 
     def __cmp__(self, other):
         return cmp(self.xmin, other.xmin)
+
+    def smear(self, SEED):
+        pass
 
 
 class DataBin(Bin):
@@ -127,6 +140,11 @@ class DataBin(Bin):
             self._errs = e
         else:
             self._errs = [e,e]
+
+    def smearBin(self, SEED):
+        import random
+        random.seed(SEED)
+        return self.val + random.gauss(0, self.err)
 
     def __repr__(self):
         return "<%s x=[%.3g..%.3g], y=%.3g, ey=[%.3g,%.3g]>" % \
