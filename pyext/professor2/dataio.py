@@ -118,12 +118,12 @@ def read_all_histos(dirpath, stripref=True):
     If stripref = True, remove any leading /REF prefix from the histo path
     before putting it in the dictionary.
     """
+
     histos = {}
     filepaths = glob.glob(os.path.join(dirpath, "*"))
     for fp in filepaths:
         histos.update(read_histos(fp, stripref))
     return histos
-
 
 def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,aida,flat"):
     """
@@ -167,10 +167,127 @@ def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,
             params = None
     return params, histos
 
+def read_params(topdir, pfname="params.dat", verbosity=0):
+    """
+    Read interpolation anchor point data from a provided set of run directory paths.
 
-def read_all_rundata(runsdir, pfname="params.dat", verbosity=1):
+    Returns a dict mapping run names (i.e. rundir basenames) to
+    the parameter value list for each run.
+    """
+    params = {}
+    import os, glob, re
+    re_pfname = re.compile(pfname) if pfname else None
+    dirs = [x for x in glob.glob(os.path.join(topdir, "*")) if os.path.isdir(x)]
+    numruns = len(dirs)
+    for num, d in enumerate(sorted(dirs)):
+        run = os.path.basename(d)
+        if verbosity >= 2 or (verbosity >= 1 and (num % 100 == 99 or num == 0)):
+            pct = 100*(num+1)/float(numruns)
+            print "Reading run '%s' data: %d/%d = %2.0f%%" % (run, num+1, numruns, pct)
+        files = glob.glob(os.path.join(d, "*"))
+        for f in files:
+            ## Params file
+            #if os.path.basename(f) == pfname:
+            if re_pfname and re_pfname.search(os.path.basename(f)):
+                params[run] = read_paramsfile(f)
+
+        ## Check that a params file was found and read in this dir... or that no attempt was made to find one
+        if pfname:
+            if run not in params.keys():
+                raise Exception("No params file '%s' found in run dir '%s'" % (pfname, d))
+        else:
+            params = None
+    return params
+
+# TODO this is much slower --- understand why!
+# # http://stackoverflow.com/questions/16415156/using-sets-with-the-multiprocessing-module
+# def read_rundata(dirs, pfname="params.dat", verbosity=1, nthreads=1): #, formats="yoda,root,aida,flat"):
+    # """
+    # Read interpolation anchor point data from a provided set of run directory paths.
+
+    # Returns a pair of dicts, the first mapping run names (i.e. rundir basenames) to
+    # the parameter value list for each run, and the second mapping observable names
+    # (i.e. histogram paths) to a run -> histo dict.
+    # """
+    # params, histos = {}, {}
+    # import os, glob, re
+    # re_pfname = re.compile(pfname) if pfname else None
+    # import time, multiprocessing
+    # time1 = time.time()
+
+    # from multiprocessing.managers import Manager
+
+    # params = {}
+    # histos = {}
+    # manager = SyncManager()
+    # manager.start()
+    # histflat = manager.list()
+
+    # # Logic:
+    # #   
+    # #   Only directories containing the uniquely named params file are valid,
+    # #   so read the params first and ignore all directories not having one
+    # #   of those and then use the runs to prepare structure for multiproc dict
+    # #
+    # ## The job queue
+    # q = multiprocessing.Queue()
+    # #
+    # for d in dirs:
+        # run = os.path.basename(d)
+        # files = glob.glob(os.path.join(d, "*"))
+        # for f in files:
+            # ## Params file
+            # if re_pfname and re_pfname.search(os.path.basename(f)):
+                # params[run]=read_paramsfile(f)
+                # # histos[run]={}
+                # q.put(d)
+
+
+
+    # import sys
+
+    # def worker(q, rflat):
+        # while True:
+            # if q.empty():
+                # break
+            # d = q.get()
+            # run = os.path.basename(d)
+            # files = glob.glob(os.path.join(d, "*"))
+            # for f in files:
+                # ## Params file
+                # if re_pfname and not  re_pfname.search(os.path.basename(f)):
+                    # try:
+                        # ## Read as a path -> Histo dict
+                        # hs = read_histos(f)
+                        # temp=[]
+                        # for path, hist in hs.iteritems():
+                            # rflat.append([path,run,hist])
+
+                    # except Exception, e:
+                        # print e
+                        # pass #< skip files that can't be read as histos
+
+
+    # workers = [multiprocessing.Process(target=worker, args=(q, histflat)) for i in range(nthreads)]
+    # map(lambda x:x.start(), workers)
+    # map(lambda x:x.join(),  workers)
+    # time2 = time.time()
+    # sys.stderr.write('\rReading took %0.2fs\n\n' % ((time2-time1)))
+
+    # for p, r, h in histflat:
+        # histos.setdefault(p, {})[r] =h
+
+    # time3 = time.time()
+    # sys.stderr.write('\rData preparaion took %0.2fs\n\n' % ((time3-time2)))
+
+
+
+    # return params, histos
+
+
+def read_all_rundata(runsdir, pfname="params.dat", verbosity=1):#, nthreads=1):
     rundirs = glob.glob(os.path.join(runsdir, "*"))
-    return read_rundata(rundirs, pfname, verbosity)
+    return read_rundata(rundirs, pfname, verbosity)#, nthreads)
 
 def read_all_rundata_yaml(yamlfile):
     from professor2.utils import mkdict
