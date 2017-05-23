@@ -1,9 +1,12 @@
 #! /usr/bin/env python
 
 """\
-    %prog <runsdir> [opts] 0:1 10:100
+%prog <runsdir> [opts] M:N [M2:N2 ...]
 
-Write run combinations
+Write random run combinations to file. Run combination specs are given in the
+format M:N where N is the number of combinations to make, and M is the number of
+runs from <runsdir> to randomly leave out, e.g. 0:1 for the single complete
+combination, and 10:100 for 100 combinations from which 10 runs have been excluded.
 """
 
 import optparse, os, sys
@@ -44,10 +47,10 @@ with open(opts.OUTNAME, "w") as f:
         # The run combinations
         RC = [r for r in prof.sampling.xrandomUniqueCombinations(RUNS, len(RUNS)-minus, NC)]
         for r in RC:
-            f.write("%s\n"%str(r).replace("[","").replace("]","").replace(",","").replace("'",""))
+            f.write("%s\n" % str(r).replace("[","").replace("]","").replace(",","").replace("'",""))
 
 
 if not opts.QUIET:
-    print "Run combs written to %s"%opts.OUTNAME
+    print "Run combs written to %s" % opts.OUTNAME
 
 sys.exit(0)
