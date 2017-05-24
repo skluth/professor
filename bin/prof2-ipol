@@ -62,6 +62,7 @@ if opts.SPLIT != None:
 ## Load MC run histos and params
 try:
     if RUNSDIR.endswith(".yaml"):
+        # TODO: document this
         try:
             import yaml
         except ImportError, e:
@@ -76,12 +77,12 @@ except Exception, e:
     print e
     sys.exit(1)
 
-# --rc runcombs.dat:4
-# would use the 4th line of the runcombs.dat file
+## Handle run combns spec
+## e.g. --rc runcombs.dat:4 would use the 4th line of the runcombs.dat file
 if opts.RUNCOMBS is not None:
     f_rc, line = opts.RUNCOMBS.split(":")
     with open(f_rc) as f:
-        temp=[l for l in f]
+        temp = [l for l in f]
     thisRC = temp[int(line)].split()
 
     # Filtering and overwriting
@@ -90,24 +91,25 @@ if opts.RUNCOMBS is not None:
         if r in thisRC:
             thisRUNS.append(r)
             thisPARAMSLIST.append(PARAMSLIST[num])
-    RUNS=thisRUNS
-    PARAMSLIST=thisPARAMSLIST
+    RUNS = thisRUNS
+    PARAMSLIST = thisPARAMSLIST
 
 
 ## Some useful announcements about the data loaded and the interpolation planned
 if not opts.QUIET:
-    minnruns =prof.numCoeffs(len(PARAMNAMES), opts.ORDER)
+    minnruns = prof.numCoeffs(len(PARAMNAMES), opts.ORDER)
     if (len(RUNS) < minnruns):
-        print "Not enough runs for order %i polynomials --- would require %i"%(opts.ORDER, minnruns)
+        print "Not enough runs for order %i polynomials --- would require %i" % (opts.ORDER, minnruns)
         for i in xrange(1, opts.ORDER):
             if (prof.numCoeffs(len(PARAMNAMES), opts.ORDER -i) <= len(RUNS)):
-                print "Try order %i (min %i runs)"%(opts.ORDER -i, prof.numCoeffs(len(PARAMNAMES), opts.ORDER -i))
+                print "Try order %i (min %i runs)" % (opts.ORDER -i, prof.numCoeffs(len(PARAMNAMES), opts.ORDER -i))
         import sys
         sys.exit(1)
     else:
         print "Building %dD interpolations in %d params: require at least %d runs" % \
             (opts.ORDER, len(PARAMNAMES), prof.numCoeffs(len(PARAMNAMES), opts.ORDER))
-        print "Loaded %d distinct observables from %d runs" % (len(HISTOS), len(RUNS))
+        print "Loaded %d distinct observables (%d bins) from %d runs" % \
+            (len(HISTOS), sum(hs[RUNS[0]].nbins for hs in HISTOS.values()), len(RUNS))
 
 
 ## Weight file parsing to select a histos subset

@@ -6,7 +6,7 @@ from professor2.histos import *
 
 def mk_ipolinputs(params):
     """
-    Make sorted run and parameter lists suitable for passing to prof.Ipol
+    Make sorted run name and parameter name & value lists, suitable for passing to prof.Ipol
 
     params is a dict (actually, prefer OrderedDict) of run_names -> param_vals,
     as returned from read_rundata
@@ -17,6 +17,7 @@ def mk_ipolinputs(params):
     paramnames = params[runs[0]].keys()
     paramslist = [[params[run][pn] for pn in paramnames] for run in runs]
     return runs, paramnames, paramslist
+
 
 def mk_ipolbin(P, V, E, xmin, xmax, order, errmode, errorder):
     valipol = Ipol(P, V, order)
@@ -53,7 +54,8 @@ def mk_ipolbin(P, V, E, xmin, xmax, order, errmode, errorder):
             return None
     return IpolBin(xmin, xmax, valipol, erripols)
 
-# Keep this for backward compatibility 
+
+# Keep this for backward compatibility
 def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
     """\
     Make a prof.IpolHisto from a dict of prof.DataHistos and the corresponding
