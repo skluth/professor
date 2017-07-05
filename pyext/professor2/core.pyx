@@ -23,6 +23,9 @@ cdef class ParamPoints:
     def __del__(self):
         del self._ptr
 
+    def __dealloc__(self):
+        del self._ptr
+
 
 cdef class Ipol:
     """An interpolation of a scalar function built from a list of values across
@@ -61,6 +64,10 @@ cdef class Ipol:
 
     def __del__(self):
         del self._ptr
+
+    def __dealloc__(self):
+        del self._ptr
+
 
     @property
     def coeffs(self):
