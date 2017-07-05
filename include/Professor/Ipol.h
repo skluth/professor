@@ -107,6 +107,10 @@ namespace Professor {
       fromString(s);
     };
 
+    ~Ipol() {
+      _coeffs.clear();
+      _structure.clear();
+    };
 
     /// Get string representation
     std::string toString(const std::string& name="") const;
