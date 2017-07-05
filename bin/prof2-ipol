@@ -25,7 +25,7 @@ op.add_option("--rc", dest="RUNCOMBS", default=None, help="Ru combination file")
 # TODO: Add a no-scale option
 # TODO: Change to instead (optionally) specify the max number of parallel threads/procs. Use by default if ncores > 1?
 op.add_option("-j", dest="MULTI", type=int, default=1, help="Number of threads to use")
-op.add_option("--summ",  dest="SUMMARY", default=None, help="Summary description to be written to the ipol output file")
+op.add_option("--summ",  dest="SUMMARY", default="", help="Summary description to be written to the ipol output file")
 op.add_option("-v", "--debug", dest="DEBUG", action="store_true", default=False, help="Turn on some debug messages")
 op.add_option("-q", "--quiet", dest="QUIET", action="store_true", default=False, help="Turn off messages")
 op.add_option("--split", dest="SPLIT", default=None, help="Can incorporate a linear split in parameter space. Provide \"ParamName1 ParamName2 Value1 Value2 Gradient (these describe the line down which to split the plot. Value1 and Value2 form the coords of a point on the line.) ABOVE/BELOW (ABOVE => use runs above the line etc)\"")
@@ -182,126 +182,11 @@ if not RUNS:
     sys.exit(1)
 
 CONFIG = {"MULTI":opts.MULTI, "ORDER":opts.ORDER, "IERR":opts.IERR, "ERR_ORDER":opts.ERR_ORDER}
-tempDict = prof.mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CONFIG)
+IPOLDICT = prof.mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CONFIG)
 
-# BNAMES = []
-# for hn in HNAMES:
-    # histos = HISTOS[hn]
-    # nbins = histos.values()[0].nbins
-    # for n in xrange(nbins):
-        # BNAMES.append([hn, n])
-
-# NBINS=len(BNAMES)
-
-# import zlib
-# def worker(q, rdict, counter):
-    # "Function to make bin ipols and store ipol persistency strings for each histo"
-    # while True:
-        # if q.empty():
-            # break
-        # temp = q.get()
-        # hn=temp[0]
-        # histos = HISTOS[hn]
-        # n = temp[1]
-        # xmax = histos.values()[0].bins[n].xmax
-        # xmin = histos.values()[0].bins[n].xmin
-        # vals = [histos[run].bins[n].val for run in RUNS]
-        # errs = [histos[run].bins[n].err for run in RUNS]
-        # ib = prof.mk_ipolbin(PARAMSLIST, vals, errs, xmin, xmax, opts.ORDER, opts.IERR, opts.ERR_ORDER)
-        # if ib is None:
-            # print "Ignoring", hn, "Bin number", n
-        # else:
-            # s = ""
-            # s += "%s#%d %.5e %.5e\n" % (hn, n, ib.xmin, ib.xmax)
-            # s += "  " + ib.ival.toString("val") + "\n"
-            # if ib.ierrs:
-                # s += "  " + ib.ierrs.toString("err") + "\n"
-            # # rdict[(hn,n)] = zlib.compress(s, 9) #< save some memory
-            # rdict[(hn,n)] = s #< save some memory
-            # del s
-        # del ib #< pro-actively clear up memory
-        # counter.value+=1
-        # if counter.value==500:
-            # counter.value=0
-            # sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/NBINS))
-
-
-
-# print "\n\nParametrising %i objects...\n"%len(BNAMES)
-# import time, multiprocessing
-# time1 = time.time()
-
-# ## A shared memory object is required for coefficient retrieval
-# from multiprocessing import Manager, Value
-# manager = Manager()
-# tempDict = manager.dict()
-
-# # This for the status --- modululs is too expensive
-# ndone=Value('i', 0)
-
-# ## The job queue
-# q = multiprocessing.Queue()
-
-# map(lambda x:q.put(x), BNAMES)
-
-
-
-# ## Fire away
-# workers = [multiprocessing.Process(target=worker, args=(q, tempDict, ndone)) for i in xrange(opts.MULTI)]
-# map(lambda x:x.start(), workers)
-# map(lambda x:x.join(),  workers)
-# # map(lambda x:x.terminate(), workers)
-
-
-# ## Timing
-# time2 = time.time()
-# sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
 
 ## Active memory clean-up
 del HISTOS
 
 ## Write out meta info
-# TODO: Move the format writing into the prof2 Python library
-with open(IFILE, "w") as f:
-    if opts.SUMMARY is not None:
-        f.write("Summary: %s\n" % opts.SUMMARY)
-    f.write("DataDir: %s\n" % os.path.abspath(RUNSDIR))
-    f.write("ProfVersion: %s\n" % prof.version())
-    f.write("Date: %s\n" % prof.mk_timestamp())
-    f.write("DataFormat: binned 2\n") # This tells the reader how to treat the coefficients that follow
-    # Format and write out parameter names
-    pstring = "ParamNames:"
-    for p in PARAMNAMES:
-        pstring += " %s" % p
-    f.write(pstring + "\n")
-    # Dimension (consistency check)
-    f.write("Dimension: %i\n" % len(PARAMNAMES))
-    # Interpolation validity (hypercube edges)
-    minstring = "MinParamVals:"
-    for v in prof.mk_minvals(PARAMSLIST):
-        minstring += " %f" % v
-    f.write(minstring + "\n")
-    maxstring = "MaxParamVals:"
-    for v in prof.mk_maxvals(PARAMSLIST):
-        maxstring += " %f" % v
-    f.write(maxstring + "\n")
-    f.write("DoParamScaling: 1\n")
-    # Number of inputs per bin
-    f.write("NumInputs: %i\n" % len(PARAMSLIST))
-    s_runs = "Runs:"
-    for r in RUNS:
-        s_runs +=" %s"%r
-    f.write("%s\n"%s_runs)
-    f.write("---\n")
-
-## Write out numerical data for all interpolations
-s = ""
-for hn in sorted(HNAMES):
-    thisbins=sorted(filter(lambda x: x[0]==hn,tempDict.keys()))
-    for ipolstring in [tempDict[x] for x in thisbins]:
-        s+=ipolstring
-
-# Open file for write/append
-with open(IFILE, "a") as f:
-    f.write(s)
-print "\nOutput written to %s" % IFILE
+prof.writeIpol(IFILE, IPOLDICT, [PARAMNAMES, PARAMSLIST], RUNS, opts.SUMMARY, RUNSDIR)
