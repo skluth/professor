@@ -76,11 +76,8 @@ def read_histos_yoda(path):
             s2s.append(ao.mkScatter())
         del aos #< pro-active YODA memory clean-up
         #
-        #s2s = [ao.mkScatter() for ao in yoda.read(path, asdict=False)]
-        for s2 in s2s:
+        for s2 in filter(lambda x:x.dim==2, s2s): # Filter for Scatter1D
             bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrAvg) for p in s2.points]
-            #bins = [DataBin(p.xMin, p.xMax, p.y*(p.xMax-p.xMin), p.yErrAvg) for p in s2.points]
-            # bins = [DataBin(p.xMin, p.xMax, p.y, p.yErrs) for p in s2.points]
             histos[s2.path] = Histo(bins, s2.path)
         del s2s #< pro-active YODA memory clean-up
     except Exception, e:
