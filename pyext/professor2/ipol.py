@@ -1,5 +1,6 @@
 # -*- python -*-
 
+from __future__ import division
 from professor2.core import *
 from professor2.histos import *
 
@@ -23,7 +24,7 @@ def mk_ipolbin(P, V, E, xmin, xmax, order, errmode, errorder):
     # nan check in coeffs
     import math
     if any([math.isnan(x) for x in valipol.coeffs]):
-        print "Warning: nan coefficient encountered in value ipol"
+        print "Warning: nan coefficient encountered in value ipol for %s"%histos.values()[0].path
         return None
 
     ## Build the error interpolation(s)
@@ -49,7 +50,7 @@ def mk_ipolbin(P, V, E, xmin, xmax, order, errmode, errorder):
         raise Exception("Unknown error interpolation mode '%s'" % errmode)
     if erripols is not None:
         if any([math.isnan(x) for x in erripols.coeffs]):
-            print "Warning: nan coefficient encountered in error ipol"
+            print "Warning: nan coefficient encountered in error ipol for %s"%histos.values()[0].path
             return None
     return IpolBin(xmin, xmax, valipol, erripols)
 
@@ -86,23 +87,11 @@ def mk_ipolhisto(histos, runs, paramslist, order, errmode=None, errorder=None):
         vals = [histos[run].bins[n].val for run in runs]
         errs = [histos[run].bins[n].err for run in runs]
         ibins.append(mk_ipolbin(paramslist, vals, errs, xmin, xmax, order, errmode, errorder))
-        if ibins[-1] is None:
-            print "in bin %i of %s"%(n, histos.values()[0].path)
     return Histo(ibins, histos.values()[0].path)
 
-# https://stackoverflow.com/questions/2130016/splitting-a-list-of-into-n-parts-of-approximately-equal-length
-def chunkIt(seq, num):
-  avg = len(seq) / float(num)
-  out = []
-  last = 0.0
 
-  while last < len(seq):
-    out.append(seq[int(last):int(last + avg)])
-    last += avg
 
-  return out
-
-def mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CFG, nchunks=10):
+def mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CFG):
 
     BNAMES = []
     for hn in HNAMES:
@@ -115,19 +104,14 @@ def mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CFG, nchunks=10):
 
     MSGEVERY = int(NBINS/100.);
 
-    import sys, zlib
+    import sys
     import professor2 as prof
     def worker(q, rdict, counter):
         "Function to make bin ipols and store ipol persistency strings for each histo"
-        import sys
         while True:
             if q.empty():
                 break
-            try:
-                temp = q.get(False)
-            except:
-                break
-
+            temp = q.get()
             hn=temp[0]
             histos = HISTOS[hn]
             n = temp[1]
@@ -136,115 +120,50 @@ def mkStandardIpols(HISTOS, HNAMES, RUNS, PARAMSLIST, CFG, nchunks=10):
             vals = [histos[run].bins[n].val for run in RUNS]
             errs = [histos[run].bins[n].err for run in RUNS]
             ib = prof.mk_ipolbin(PARAMSLIST, vals, errs, xmin, xmax, CFG["ORDER"], CFG["IERR"], CFG["ERR_ORDER"])
-            if ib is not None:
+            if ib is None:
+                print "Ignoring", hn, "Bin number", n
+            else:
                 s = ""
                 s += "%s#%d %.5e %.5e\n" % (hn, n, ib.xmin, ib.xmax)
                 s += "  " + ib.ival.toString("val") + "\n"
                 if ib.ierrs:
                     s += "  " + ib.ierrs.toString("err") + "\n"
-                rdict.put( [hn,n, zlib.compress(s, 9)])
+                rdict[(hn,n)] = s
                 del s
-            else:
-                print "in bin %i of %s"%(n, histos.values()[0].path)
             del ib #< pro-actively clear up memory
-            del histos
             counter.value+=1
             if counter.value==MSGEVERY:
                 counter.value=0
-                sys.stderr.write('\rProgress: {current}/{total}'.format(current=rdict.qsize(), total=NBINS))
-            q.task_done()
-        return
+                sys.stderr.write('\rProgress: {0:.1%}'.format(len(rdict.keys())/NBINS))
 
 
 
-    rDict={}
     print "\n\nParametrising %i objects...\n"%len(BNAMES)
-    import time
-    time1 = time.time()
+    import time, multiprocessing
+    # time1 = time.time()
 
-    from multiprocessing import Manager, Process
-    manager = Manager()
-
-    # This for the status --- modulus is too expensive
-    ndone=manager.Value('i', 0)
     ## A shared memory object is required for coefficient retrieval
-    r = manager.Queue()
-    for chunk in chunkIt(BNAMES, nchunks): # The chunking is necessary as the memory blows up otherwise
+    from multiprocessing import Manager, Value
+    manager = Manager()
+    tempDict = manager.dict()
+
+    # This for the status --- modululs is too expensive
+    ndone=Value('i', 0)
+
+    ## The job queue
+    q = multiprocessing.Queue()
+
+    map(lambda x:q.put(x), BNAMES)
 
 
-        ## The job queue
-        q = manager.Queue()
 
-        ## Fire away
-        workers = [Process(target=worker, args=(q, r, ndone)) for i in xrange(CFG["MULTI"])]
-        map(lambda x:q.put(x), chunk)
-        map(lambda x:x.start(), workers)
+    ## Fire away
+    workers = [multiprocessing.Process(target=worker, args=(q, tempDict, ndone)) for i in xrange(CFG["MULTI"])]
+    map(lambda x:x.start(), workers)
+    map(lambda x:x.join(),  workers)
 
-        map(lambda x:x.join(),  workers)
-        map(lambda x:x.terminate(),  workers)
+    # ## Timing
+    # time2 = time.time()
+    # sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
 
-        # ## Timing
-    while not r.empty():
-        a,b,c = r.get()
-        rDict[(a,b)] =c
-
-    time2 = time.time()
-    sys.stderr.write('\rParametrisation took %0.2fs.\nWriting output...' % ((time2-time1)))
-
-    return rDict
-
-def writeIpol(fname, ipolDict, params, runs=[], summary="", runsdir=""):
-    PARAMNAMES = params[0]
-    PARAMSLIST = params[1]
-
-    import os, tempfile, zlib
-    if fname=="temp":
-        f=tempfile.NamedTemporaryFile(delete=False)
-    else:
-        f=open(fname, "w")
-
-    import professor2 as prof
-    f.write("Summary: %s\n" % summary)
-    f.write("DataDir: %s\n" % os.path.abspath(runsdir))
-    f.write("ProfVersion: %s\n" % prof.version())
-    f.write("Date: %s\n" % prof.mk_timestamp())
-    f.write("DataFormat: binned 2\n") # This tells the reader how to treat the coefficients that follow
-    # Format and write out parameter names
-    pstring = "ParamNames:"
-    for p in PARAMNAMES:
-        pstring += " %s" % p
-    f.write(pstring + "\n")
-    # Dimension (consistency check)
-    f.write("Dimension: %i\n" % len(PARAMNAMES))
-    # Interpolation validity (hypercube edges)
-    minstring = "MinParamVals:"
-    for v in prof.mk_minvals(PARAMSLIST):
-        minstring += " %f" % v
-    f.write(minstring + "\n")
-    maxstring = "MaxParamVals:"
-    for v in prof.mk_maxvals(PARAMSLIST):
-        maxstring += " %f" % v
-    f.write(maxstring + "\n")
-    f.write("DoParamScaling: 1\n")
-    # Number of inputs per bin
-    f.write("NumInputs: %i\n" % len(PARAMSLIST))
-    s_runs = "Runs:"
-    for r in runs:
-        s_runs +=" %s"%r
-    f.write("%s\n"%s_runs)
-    f.write("---\n")
-
-    ## Write out numerical data for all interpolations
-    s = ""
-    HNAMES=sorted(list(set([x[0] for x in ipolDict.keys()])))
-    for hn in sorted(HNAMES):
-        thisbins=sorted(filter(lambda x: x[0]==hn, ipolDict.keys()))
-        for ipolstring in [ipolDict[x] for x in thisbins]:
-            s+=zlib.decompress(ipolstring)
-
-    f.write(s)
-    f.close()
-    if not fname=="temp":
-        print "\nOutput written to %s" % fname
-    else:
-        return f
+    return tempDict

@@ -122,6 +122,7 @@ def read_all_histos(dirpath, stripref=True):
         histos.update(read_histos(fp, stripref))
     return histos
 
+
 def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,aida,flat"):
     """
     Read interpolation anchor point data from a provided set of run directory paths.
@@ -163,6 +164,7 @@ def read_rundata(dirs, pfname="params.dat", verbosity=1): #, formats="yoda,root,
         else:
             params = None
     return params, histos
+
 
 def read_params(topdir, pfname="params.dat", verbosity=0):
     """
@@ -221,7 +223,7 @@ def read_params(topdir, pfname="params.dat", verbosity=0):
     # histflat = manager.list()
 
     # # Logic:
-    # #   
+    # #
     # #   Only directories containing the uniquely named params file are valid,
     # #   so read the params first and ignore all directories not having one
     # #   of those and then use the runs to prepare structure for multiproc dict
@@ -285,6 +287,7 @@ def read_params(topdir, pfname="params.dat", verbosity=0):
 def read_all_rundata(runsdir, pfname="params.dat", verbosity=1):#, nthreads=1):
     rundirs = glob.glob(os.path.join(runsdir, "*"))
     return read_rundata(rundirs, pfname, verbosity)#, nthreads)
+
 
 def read_all_rundata_yaml(yamlfile):
     from professor2.utils import mkdict
