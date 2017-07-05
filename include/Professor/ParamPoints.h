@@ -35,6 +35,10 @@ namespace Professor {
     /// @todo Also take the parameter names as an arg
     ParamPoints(const std::vector< std::vector<double> >& ppoints);
 
+    ~ParamPoints() {
+      _parampoints.clear();
+    }
+
     /// Implicit conversion operator to vector<vector<double>> = vector<ParamPoint>
     operator std::vector< std::vector<double> > () const {
       return _parampoints;
