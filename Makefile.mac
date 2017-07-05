@@ -106,7 +106,7 @@ lib: lib/libProfessor2.so
 
 lib/libProfessor2.so: $(LIBOBJECTS)
 	mkdir -p lib
-	$(CXX) -shared -Wl -o $@ $(LIBOBJECTS)
+	$(CXX) -shared -Wl,-soname,libProfessor2.so -o $@ $(LIBOBJECTS)
 
 obj/%.o: src/%.cc $(LIBHEADERS)
 	mkdir -p obj
