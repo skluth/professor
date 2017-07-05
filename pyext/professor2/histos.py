@@ -249,3 +249,15 @@ class IpolBin(Bin):
             pass
         s += ">"
         return s
+
+
+
+def mkEnvelope(histos):
+    """ Take DataHistos and return coordinates for plotting """
+    # Iterate over bins, get envelope representation
+    # For each bin, return [xmin, xmax, mean(y), min(y), max(y)]
+    E=[]
+    for num, b in enumerate(histos[histos.keys()[0]].bins):
+        t_b = [x.bins[num].val for x in histos.values()]
+        E.append([b.xmin, b.xmax, sum(t_b)/len(t_b), min(t_b), max(t_b)])
+    return E
