@@ -387,6 +387,19 @@ with open("%s_results.txt" % opts.OUTPUT,"w") as f:
             else:
                 s+= "    ---"
         f.write(s+"\n")
+    f.write("#\n# Covariance matrix:\n#\n")
+    for i in PNAMES:
+        s="# %s"%i.ljust(LMAX)
+        for j in PNAMES:
+            if i in CNAMES and j in CNAMES:
+                if minuit.covariance[(i,j)] >=0:
+                    s+= "    %e"%minuit.covariance[(i,j)]
+                else:
+                    s+= "   %e"%minuit.covariance[(i,j)]
+            else:
+                s+= "    ---"
+        f.write(s+"\n")
+
     # Weights ---  dump them all at the end
     f.write("#\n#\n# Weights used\n#\n")
     #
