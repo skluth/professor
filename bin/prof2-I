@@ -64,9 +64,8 @@ if REFDIR is not None:
     ## Find things available in both
     available = []
     for i in IHISTOS.keys():
-        for r in HISTOS.keys():
-            if i in r:
-                available.append([i,r])
+        if i in HISTOS.keys():
+            available.append([i,i])
     ibins = []
     databins = []
     for a in available:
@@ -149,7 +148,7 @@ def mk_line(obs, ppoint, derivative=False):
         Y.append(y)
     return X, Y
 
-def mk_data(obs, prefix="/REF"):
+def mk_data(obs, prefix=""):
     X, Y, dY = [], [], []
     try:
         for b in HISTOS[prefix+obs].bins:
