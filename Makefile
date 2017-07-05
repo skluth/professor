@@ -1,6 +1,6 @@
 ## Makefile for Professor 2.x
 
-VERSION := 2.2.2beta
+VERSION := 2.2.2beta4
 DISTNAME := Professor-$(VERSION)
 $(info Building Professor $(VERSION))
 
