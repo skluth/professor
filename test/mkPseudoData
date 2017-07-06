@@ -1,0 +1,46 @@
+#! /usr/bin/env python
+
+
+def mkPoint(x, P):
+    v=x
+    for p in P:
+        v+=p
+
+    for p1 in P:
+        for p2 in P:
+            v += p1*p2
+
+    return v
+
+
+def mkHisto(P, nbins):
+    import yoda
+    s = yoda.Scatter2D("/PSEUDODATA/H1")
+    for i in xrange(nbins):
+        val = mkPoint(10+i, P)
+        import math
+        sigma =  0.1*math.sqrt(val)
+        import random
+        dy = random.gauss(0, sigma)
+        val+=dy
+        yerr=abs(dy)
+        s.addPoint(i,val, xerrs=0.5, yerrs=yerr)
+    return s
+
+NBINS = 50
+
+
+import sys
+INDIR=sys.argv[1]
+
+import professor2 as prof
+import glob
+rf = glob.glob("%s/*/params.dat"%INDIR)
+P=[prof.read_paramsfile(x).values() for x in rf]
+
+for num, pfile in enumerate(rf):
+    H=mkHisto(P[num], NBINS)
+    hfile = pfile.replace("params.dat", "pseudo.yoda")
+    import yoda
+    yoda.write([H], hfile)
+
