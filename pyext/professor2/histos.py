@@ -52,7 +52,7 @@ class DataHisto(Histo):
     def mkSmearedCopy(self, SEED):
         from copy import deepcopy
         B=deepcopy(self.bins)
-        Ysmeared = [b.smearBin(SEED) for b in B]
+        Ysmeared = [b.smearBin() for b in B]
         for num, b in enumerate(B):
             b.val=Ysmeared[num]
         return Histo(B, self.path)
@@ -141,9 +141,8 @@ class DataBin(Bin):
         else:
             self._errs = [e,e]
 
-    def smearBin(self, SEED):
+    def smearBin(self):
         import random
-        random.seed(SEED)
         return self.val + random.gauss(0, self.err)
 
     def __repr__(self):
