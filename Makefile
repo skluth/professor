@@ -83,7 +83,8 @@ endif
 
 LIBHEADERS := $(wildcard include/Professor/*.h)
 LIBSOURCES := $(wildcard src/*.cc)
-LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol Version)
+# LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol Version)
+LIBOBJECTS := $(patsubst %,obj/%.o, ParamPoints Ipol Version SimplexInterpolation)
 TESTSOURCES := $(wildcard test/*.cc test/testPython*)
 TESTPROGS  := test/testParamPoints test/testIpol
 BINPROGS := $(wildcard bin/*)

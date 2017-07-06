@@ -48,3 +48,34 @@ cdef extern from "Professor/Ipol.h" namespace "Professor":
         void setParamLimits(const vector[double]&, const vector[double]&) except +
         void setMinParamVals(const vector[double]&) except +
         void setMaxParamVals(const vector[double]&) except +
+
+
+
+
+
+
+cdef extern from "Professor/SimplexInterpolation.h" namespace "Professor":
+    cdef cppclass SimplexInterpolation:
+
+        SimplexInterpolation( const ParamPoints& p, const vector[double]& ) except +
+
+#        string name() except +
+#        int order() except +
+#        int dim() except +
+
+#        const ParamPoints& params() except +
+
+        double value(const vector[double]&) except +
+
+        double derivative(const vector[double]&) except +
+        const vector[double] gradient(const vector[double]&) except +
+
+        string toString() except +
+        string toString(const string&) except +
+
+#        const vector[double]& minParamVals() except +
+#        const vector[double]& maxParamVals() except +
+#        void setParamLimits(const vector[double]&, const vector[double]&) except +
+#        void setMinParamVals(const vector[double]&) except +
+#        void setMaxParamVals(const vector[double]&) except +
+

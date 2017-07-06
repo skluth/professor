@@ -113,7 +113,10 @@ def read_binnedipols(ifile, paramlimits=None):
             currentib = IpolBin(float(sxmin), float(sxmax), n=int(nbin))
             IHISTOS.setdefault(hpath, IpolHisto(path=hpath)).bins.append(currentib)
         elif sline.startswith("val"):
-            currentib.ival = Ipol(sline)
+
+            # currentib.ival = Ipol(sline)
+            currentib.ival = MyIpol(sline)
+
             if paramlimits:
                 currentib.ival.setParamLimits(*paramlimits)
             #print currentib.ival.coeffs()

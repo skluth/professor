@@ -1,5 +1,8 @@
+// -*- C++ -*-
 #ifndef PROF_IPOL_H
 #define PROF_IPOL_H
+
+#include "Professor/IIpol.h"
 
 #include "Professor/ParamPoints.h"
 #include <string>
@@ -10,12 +13,10 @@
 
 namespace Professor {
 
-
-  /// Throwable error
-  struct IpolError : public std::runtime_error {
-    IpolError(const std::string& reason) : std::runtime_error(reason) { }
-  };
-
+  // /// Throwable error
+  // struct IpolError : public std::runtime_error {
+  //   IpolError(const std::string& reason) : std::runtime_error(reason) { }
+  // };
 
   /// @name Calculator functions for parameterisation elements
   //@{
@@ -71,7 +72,7 @@ namespace Professor {
 
 
   /// The heart of Professor: the interpolation of a single numerical value through the parameter space
-  class Ipol {
+  class Ipol : public IIpol {
   public:
 
     /// @brief Constructor for calculation of coefficients
@@ -107,10 +108,8 @@ namespace Professor {
       fromString(s);
     };
 
-    ~Ipol() {
-      _coeffs.clear();
-      _structure.clear();
-    };
+    // Virtual dtor needed:
+    virtual ~Ipol() {}
 
     /// Get string representation
     std::string toString(const std::string& name="") const;
@@ -181,21 +180,21 @@ namespace Professor {
     //@}
 
 
-    /// @name Limit-setting
-    //@{
+    /* /// @name Limit-setting */
+    /* //@{ */
 
-    void setParamLimits(const std::vector<double>& minpvs, const std::vector<double>& maxpvs) {
-      setMinParamVals(minpvs);
-      setMaxParamVals(maxpvs);
-    }
+    /* void setParamLimits(const std::vector<double>& minpvs, const std::vector<double>& maxpvs) { */
+    /*   setMinParamVals(minpvs); */
+    /*   setMaxParamVals(maxpvs); */
+    /* } */
 
-    const std::vector<double>& minParamVals() { return _minPV; }
-    const std::vector<double>& maxParamVals() { return _maxPV; }
+    /* const std::vector<double>& minParamVals() { return _minPV; } */
+    /* const std::vector<double>& maxParamVals() { return _maxPV; } */
 
-    void setMinParamVals(const std::vector<double>& minpvs) { _minPV = minpvs; }
-    void setMaxParamVals(const std::vector<double>& maxpvs) { _maxPV = maxpvs; }
+    /* void setMinParamVals(const std::vector<double>& minpvs) { _minPV = minpvs; } */
+    /* void setMaxParamVals(const std::vector<double>& maxpvs) { _maxPV = maxpvs; } */
 
-    //@}
+    /* //@} */
 
 
   private:
@@ -203,7 +202,8 @@ namespace Professor {
     int _dim, _order;
     std::vector<std::vector<int> > _structure;
     std::string _name;
-    std::vector<double> _coeffs, _minPV, _maxPV;
+    //    std::vector<double> _coeffs, _minPV, _maxPV;
+    std::vector<double> _coeffs;
 
   };
 

@@ -188,3 +188,140 @@ cdef class Ipol:
 
     def __repr__(self):
         return self.toString(self.name)
+
+
+cdef class MyIpol( Ipol ):
+    """An interpolation of a scalar function built from a list of values across
+    a set of parameter point anchors. Attempt to subclass
+    """
+
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+cdef class SimplexInterpolation:
+    """An interpolation of a scalar function built from a list of values across
+    a set of parameter point anchors using simplices
+
+    The main workhorse object in Professor. The interpolation coefficients are
+    calculated lazily, i.e. when first used.
+    """
+    cdef c.SimplexInterpolation* _ptr
+
+    def __cinit__(self, *args):
+        pp = ParamPoints( args[0] )
+        vals = list(args[1])
+        self._ptr = new c.SimplexInterpolation( deref(pp._ptr), vals )
+
+    def __del__(self):
+        del self._ptr
+
+#    @property
+#    def name(self):
+#        return self._ptr.name()
+
+    def value(self, *params, vmin=None, vmax=None):
+        """Calculate the value of this interpolation at the given params point,
+        forcing return within the range vmin..vmax.
+
+        params can be an expanded tuple of floats, an unexpanded iterable of
+        floats, or an ordered dict of paramname -> value.
+        """
+
+        import collections
+
+        ## Detect if the params have been passed as a single iterable and convert
+        if len(params) == 1 and isinstance(params[0], collections.Iterable):
+            params = params[0]
+            ## Further, detect if the params have been passed as a (ordered!) dict-like and extract the (ordered) values
+            if isinstance(params, collections.Mapping):
+                params = params.values()
+
+        ## Ensure that the param values are floats
+        params = [float(p) for p in params]
+
+        ## Compute the interpolated value at 'params' and impose optional range limits
+        v = self._ptr.value(params)
+        if vmin is not None and v < vmin:
+            return vmin
+        if vmax is not None and v > vmax:
+            return vmax
+
+        return v
+
+    ## Alias
+    val = value
+
+
+    def derivative(self, *params):
+        import collections
+
+        ## Detect if the params have been passed as a single iterable and convert
+        if len(params) == 1 and isinstance(params[0], collections.Iterable):
+            params = params[0]
+            ## Further, detect if the params have been passed as a (ordered!) dict-like and extract the (ordered) values
+            if isinstance(params, collections.Mapping):
+                params = params.values()
+
+        ## Ensure that the param values are floats
+        params = [float(p) for p in params]
+        return  self._ptr.derivative(params)
+
+    ## Alias
+    der = derivative
+
+
+    def gradient(self, *params):
+        import collections
+
+        ## Detect if the params have been passed as a single iterable and convert
+        if len(params) == 1 and isinstance(params[0], collections.Iterable):
+            params = params[0]
+            ## Further, detect if the params have been passed as a (ordered!) dict-like and extract the (ordered) values
+            if isinstance(params, collections.Mapping):
+                params = params.values()
+
+        ## Ensure that the param values are floats
+        params = [float(p) for p in params]
+        return  self._ptr.gradient(params)
+
+    ## Alias
+    grad = gradient
+
+
+
+#    def setParamLimits(self, pmins, pmaxs):
+#        "Set the minimum and maximum param values via 2 lists ordered cf. the param names. Used in SVD internal scaling."
+#        self._ptr.setParamLimits(pmins, pmaxs)
+
+#    def minParamVals(self):
+#        "Get the minimum param values used in SVD internal scaling."
+#        return self._ptr.minParamVals()
+#    def setMinParamVals(self, pmins):
+#        "Set the minimum param values via a list of values ordered cf. the param names. Used in SVD internal scaling."
+#        self._ptr.setMinParamVals(pmins)
+
+#    def maxParamVals(self):
+#        "Get the maximum param values used in SVD internal scaling."
+#        return self._ptr.maxParamVals()
+#    def setMaxParamVals(self, pmaxs):
+#        "Set the maximum param values via a list of values ordered cf. the param names. Used in SVD internal scaling."
+#        self._ptr.setMaxParamVals(pmaxs)
+
+
+    def toString(self, name=""):
+        "Produce a persistent string representing this Ipol object"
+        return self._ptr.toString(name)
+
+    def __repr__(self):
+        return self.toString(self.name)
+
